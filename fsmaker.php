@@ -10,7 +10,7 @@ if (php_sapi_name() !== 'cli') {
 class fsmaker
 {
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const VERSION = 0.3;
+    const VERSION = 0.4;
 
     public function __construct($argv)
     {
@@ -24,6 +24,8 @@ class fsmaker
             echo $this->createControllerAction();
         } elseif($argv[1] === 'translations') {
             echo $this->updateTranslationsAction();
+        } elseif($argv[1] === 'extension') {
+            echo $this->createExtensionAction();
         } else {
             echo $this->help();
         }
@@ -378,6 +380,7 @@ create:
 $ fsmaker plugin
 $ fsmaker model
 $ fsmaker controller
+$ fsmaker extension
 
 download:
 $ fsmaker translations\n";
@@ -439,6 +442,246 @@ $ fsmaker translations\n";
             echo " - vacío\n";
         }
     }
-}
 
+    private function createExtensionAction()
+    {
+       $option = (int) $this->prompt('Extensión de ... 1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView');
+        if(false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            return "Esta no es la carpeta raíz del plugin.\n";
+        } elseif($option === 1) {
+            $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
+            return $this->createExtensionTabla($name);
+        } elseif($option === 2) {
+            $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
+            return $this->createExtensionModelo($name);
+        } elseif($option === 3) {
+            $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
+            return $this->createExtensionControlador($name);
+        } elseif($option === 4) {
+            $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
+            return $this->createExtensionXMLView($name);
+        } elseif($option < 1 || $option > 4) {
+            return "Opción no válida.\n";
+        }
+    }
+    
+    private function createExtensionModelo($name)
+    {
+        if(empty($name)) {
+            return '';
+        }
+
+        $filename = 'Extension/Model/' . $name . '.php';
+        if(file_exists($filename)) {
+            return "La extensión del modelo " . $name . " ya existe.\n";
+        }
+        
+        echo '* '.$filename."\n";
+        file_put_contents($filename, '<?php
+namespace FacturaScripts\\'.$this->getNamespace().'\\Extension\\Model;
+
+class '.$name.'
+{
+    /* 
+    // Ejemplo para añadir un método ... añadir el método usado()
+    public function usado() {
+        return function() {
+            return $this->usado;
+        };
+    }
+    
+    // ***************************************
+    // ** Métodos disponibles para extender **
+    // ***************************************
+    
+    // clear()
+    public function clear() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // delete() se ejecuta una vez realizado el delete() del modelo.
+    public function delete() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // deleteBefore() se ejecuta antes de hacer el delete() del modelo. Si devolvemos false, impedimos el delete().
+    public function deleteBefore() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+
+    // save() se ejecuta una vez realizado el save() del modelo.
+    public function save() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // saveBefore() se ejecuta antes de hacer el save() del modelo. Si devolvemos false, impedimos el save().
+    public function saveBefore() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+
+    // saveInsert() se ejecuta una vez realizado el saveInsert() del modelo.
+    public function saveInsert() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // saveInsertBefore() se ejecuta antes de hacer el saveInsert() del modelo. Si devolvemos false, impedimos el saveInsert().
+    public function saveInsertBefore() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // saveUpdate() se ejecuta una vez realizado el saveUpdate() del modelo.
+    public function saveUpdate() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    
+    // saveUpdateBefore() se ejecuta antes de hacer el saveUpdate() del modelo. Si devolvemos false, impedimos el saveUpdate().
+    public function saveUpdateBefore() {
+       return function() {
+            /// tu código aquí
+         };
+    }
+    */
+
+}');
+        $aDevolver = "La extensión del modelo fué creada correctamente ... " . $name . "\n\n"
+                   . "Las extensiones de archivos xml se integran automáticamente al activar el plugin o reconstruir Dinamic.\n"
+                   . "En cambio, las extensiones de archivo php se deben cargar explícitamente, y se deben hacer desde el \n"
+                   . "archivo Init.php del plugin, en el método init().\n\n"
+                   . "Para más información visite https://facturascripts.com/publicaciones/extensiones-de-modelos";
+        return $aDevolver;
+    }
+
+    private function createExtensionTabla($name)
+    {
+        if(empty($name)) {
+            return '';
+        }
+
+        $filename = 'Extension/Table/' . $name . '.xml';
+        if(file_exists($filename)) {
+            return "La extensión de la tabla " . $name . " ya existe.\n";
+        }
+        
+        echo '* '.$filename."\n";
+        file_put_contents($filename, '<?xml version="1.0" encoding="UTF-8"?>
+<table>
+    <column>
+        <name>usado</name>
+        <type>boolean</type>
+    </column>
+</table>
+
+');
+     
+    }
+
+    private function createExtensionControlador($name)
+    {
+        if(empty($name)) {
+            return '';
+        }
+
+        $filename = 'Extension/Controller/' . $name . '.php';
+        if(file_exists($filename)) {
+            return "La extensión del controlador " . $name . " ya existe.\n";
+        }
+        
+        echo '* '.$filename."\n";
+        file_put_contents($filename, '<?php
+namespace FacturaScripts\\'.$this->getNamespace().'\\Extension\\Controller;
+
+class '.$name.'
+{
+    /* 
+    // createViews() se ejecuta una vez realiado el createViews() del controlador.
+    public function createViews() {
+       return function() {
+          /// tu código aquí
+       };
+    }
+
+    // execAfterAction() se ejecuta tras el execAfterAction() del controlador.
+    public function execAfterAction() {
+       return function($action) {
+          /// tu código aquí
+       };
+    }
+
+    // execPreviousAction() se ejecuta después del execPreviousAction() del controlador. Si devolvemos false detenemos la ejecución del controlador.
+    public function execPreviousAction() {
+       return function($action) {
+          /// tu código aquí
+       };
+    }
+
+    // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
+    public function loadData() {
+       return function($viewName, $view) {
+          /// tu código aquí
+       };
+    }
+    */
+
+}');
+     
+        $aDevolver = "La extensión del controlador fué creada correctamente ... " . $name . "\n\n"
+                   . "Las extensiones de archivos xml se integran automáticamente al activar el plugin o reconstruir Dinamic.\n"
+                   . "En cambio, las extensiones de archivo php se deben cargar explícitamente, y se deben hacer desde el \n"
+                   . "archivo Init.php del plugin, en el método init().\n\n"
+                   . "Para más información visite https://facturascripts.com/publicaciones/extensiones-de-controladores";
+        return $aDevolver;
+        
+    }
+
+    private function createExtensionXMLView($name)
+    {
+        if(empty($name)) {
+            return '';
+        }
+
+        $filename = 'Extension/XMLView/' . $name . '.xml';
+        if(file_exists($filename)) {
+            return "El fichero XMLView " . $name . " ya existe.\n";
+        }
+        
+        echo '* '.$filename."\n";
+        file_put_contents($filename, '<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <group name="options" numcolumns="12" valign="bottom">
+           <column name="usado">
+              <widget type="checkbox" fieldname="usado" />
+           </column>
+        </group>
+    </columns>
+</view>
+
+');
+     
+    }
+
+    
+}
+    
 new fsmaker($argv);
+
+
+
+
+
