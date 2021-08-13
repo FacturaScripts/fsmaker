@@ -12,7 +12,6 @@ class fsmaker
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const VERSION = 0.4;
     const OK = " -> OK.\n";
-    
 
     public function __construct($argv)
     {
@@ -615,13 +614,13 @@ $ fsmaker translations\n";
             return "Esta no es la carpeta raíz del plugin.\n";
         } elseif($option === 1) {
             $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
-            return $this->createExtensionTabla($name);
+            return $this->createExtensionTable($name);
         } elseif($option === 2) {
             $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
-            return $this->createExtensionModelo($name);
+            return $this->createExtensionModel($name);
         } elseif($option === 3) {
             $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
-            return $this->createExtensionControlador($name);
+            return $this->createExtensionController($name);
         } elseif($option === 4) {
             $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
             return $this->createExtensionXMLView($name);
@@ -630,7 +629,7 @@ $ fsmaker translations\n";
         }
     }
     
-    private function createExtensionModelo(string $name): string
+    private function createExtensionModel(string $name): string
     {
         if(empty($name)) {
             return '* No introdujo el nombre del modelo a extender.\n';
@@ -730,7 +729,7 @@ class '.$name.'
         return $aDevolver;
     }
 
-    private function createExtensionTabla(string $name): string
+    private function createExtensionTable(string $name): string
     {
         if(empty($name)) {
             return '* No introdujo el nombre de la tabla a extender.\n';
@@ -755,7 +754,7 @@ class '.$name.'
         return self::OK;
     }
 
-    private function createExtensionControlador(string $name): string
+    private function createExtensionController(string $name): string
     {
         if(empty($name)) {
             return '* No introdujo el nombre del controlador a extender.\n';
