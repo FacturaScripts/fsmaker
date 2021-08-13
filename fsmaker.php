@@ -11,6 +11,8 @@ class fsmaker
 {
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const VERSION = 0.4;
+    const OK = " -> OK.\n";
+    
 
     public function __construct($argv)
     {
@@ -35,11 +37,6 @@ class fsmaker
         } else {
             echo $this->help();
         }
-    }
-
-    private function fraseBien(): string
-    {
-        return " -> OK.\n";
     }
 
     private function createControllerAction(): string
@@ -85,7 +82,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Base\\Controller
         /// tu código aquí
     }
 }');
-        echo $this->fraseBien();
+        echo self::OK;
         
         // Creamos vista twig
         $viewFilename = $this->isCoreFolder() ? 'Core/View/'.$name.'.html.twig' : 'View/'.$name.'.html.twig';
@@ -108,7 +105,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Base\\Controller
     {{ parent() }}
 {% endblock %}');
         
-        return $this->fraseBien();
+        return self::OK;
     }
 
     private function createCron(string $name="")
@@ -143,7 +140,7 @@ class Cron extends \\FacturaScripts\\Core\\Base\\CronClass
     }
 }');
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -176,7 +173,7 @@ class Edit'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
 }');
         
         
-        echo $this->fraseBien();
+        echo self::OK;
         
         $xmlviewFilename = $this->isCoreFolder() ? 'Core/XMLView/Edit'.$modelName.'.xml' : 'XMLView/Edit'.$modelName.'.xml';
         if(file_exists($xmlviewFilename)) {
@@ -202,7 +199,7 @@ class Edit'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
     </columns>
 </view>');
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -227,7 +224,7 @@ class Edit'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
         file_put_contents($fileName, "/.idea/\n/nbproject/\n/node_modules/\n"
             ."/vendor/\n.DS_Store\n.htaccess\n*.cache\n*.lock\n.vscode\n*.code-workspace");
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -253,7 +250,7 @@ min_version = 2021
 name = ".$name."
 version = 0.1");
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -288,7 +285,7 @@ class Init extends \\FacturaScripts\\Core\\Base\\InitClass
     }
 }");
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -331,7 +328,7 @@ class List'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
     }
 }');
         
-        echo $this->fraseBien();
+        echo self::OK;
         
         $xmlviewFilename = $this->isCoreFolder() ? 'Core/XMLView/List'.$modelName.'.xml' : 'XMLView/List'.$modelName.'.xml';
         if(file_exists($xmlviewFilename)) {
@@ -355,7 +352,7 @@ class List'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
     </columns>
 </view>');
         
-        echo $this->fraseBien();
+        echo self::OK;
         return "";
     }
 
@@ -404,7 +401,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
     }
 }');
         
-        echo $this->fraseBien();
+        echo self::OK;
         
         
         $tableFilename = $this->isCoreFolder() ? 'Core/Table/'.$tableName.'.xml' : 'Table/'.$tableName.'.xml';
@@ -429,7 +426,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         <type>PRIMARY KEY (id)</type>
     </constraint>
 </table>');
-            echo $this->fraseBien();
+            echo self::OK;
         } else {
             echo "\n".'* '.$tableFilename." YA EXISTE";
         }
@@ -495,7 +492,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         
         mkdir($name, 0755);
         
-        echo $this->fraseBien();
+        echo self::OK;
         
         
         $folders = [
@@ -506,7 +503,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         foreach($folders as $folder) {
             echo '* '.$name.'/'.$folder."";
             mkdir($name.'/'.$folder, 0755, true);
-            echo $this->fraseBien();
+            echo self::OK;
         }
 
         foreach(explode(',', self::TRANSLATIONS) as $filename) {
@@ -514,7 +511,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
             file_put_contents($name.'/Translation/'.$filename.'.json', '{
     "'.$name.'": "'.$name.'"
 }');
-            echo $this->fraseBien();
+            echo self::OK;
         }
 
         $this->createGitIgnore($name);
@@ -755,7 +752,7 @@ class '.$name.'
 
 ');
      
-        return $this->fraseBien();
+        return self::OK;
     }
 
     private function createExtensionControlador(string $name): string
@@ -839,7 +836,7 @@ class '.$name.'
 
 ');
     
-        return $this->fraseBien();
+        return self::OK;
     }
 
     
