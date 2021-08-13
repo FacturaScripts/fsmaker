@@ -30,8 +30,6 @@ class fsmaker
             echo $this->createGitIgnore("");
         } elseif($argv[1] === 'cron') {
             echo $this->createCron("");
-        } elseif($argv[1] === 'ini') {
-            echo $this->createIni("");
         } elseif($argv[1] === 'init') {
             echo $this->createInit("");
         } else {
@@ -548,7 +546,6 @@ $ fsmaker controller
 $ fsmaker extension
 $ fsmaker gitignore
 $ fsmaker cron
-$ fsmaker ini
 $ fsmaker init
 
 download:
