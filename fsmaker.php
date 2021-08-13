@@ -31,7 +31,7 @@ class fsmaker
         }
     }
 
-    private function createControllerAction()
+    private function createControllerAction(): string
     {
         $option = (int) $this->prompt('1=Controller, 2=ListController, 3=EditController');
         if(false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
@@ -51,7 +51,7 @@ class fsmaker
         if(file_exists($filename)) {
             return "El controlador ".$name." ya existe.\n";
         } elseif(empty($name)) {
-            return '';
+            return 'No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n';
         }
 
         echo '* '.$filename."\n";
@@ -73,6 +73,9 @@ class '.$name.' extends \\FacturaScripts\\Core\\Base\\Controller
         /// tu código aquí
     }
 }');
+        echo "Creado correctamente.\n\n";
+        
+        // Creamos vista twig
         $viewFilename = $this->isCoreFolder() ? 'Core/View/'.$name.'.html.twig' : 'View/'.$name.'.html.twig';
         if(file_exists($viewFilename)) {
             return;
@@ -92,9 +95,11 @@ class '.$name.' extends \\FacturaScripts\\Core\\Base\\Controller
 {% block javascripts %}
     {{ parent() }}
 {% endblock %}');
+        
+        return 'Creado correctamente \n';
     }
 
-    private function createCron($folder)
+    private function createCron(string $folder)
     {
         echo '* '.$folder."/Cron.php\n";
         file_put_contents($folder.'/Cron.php', "<?php
@@ -111,9 +116,11 @@ class Cron extends \\FacturaScripts\\Core\\Base\\CronClass
         */
     }
 }');
+        
+        echo "Creado correctamente.\n";
     }
 
-    private function createEditController($modelName)
+    private function createEditController($modelName): string
     {
         $filename = $this->isCoreFolder() ? 'Core/Controller/Edit'.$modelName.'.php' : 'Controller/Edit'.$modelName.'.php';
         if(file_exists($filename)) {
@@ -139,9 +146,13 @@ class Edit'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
         return $pageData;
     }
 }');
+        
+        
+        echo 'Creado correctamente \n\n';
+        
         $xmlviewFilename = $this->isCoreFolder() ? 'Core/XMLView/Edit'.$modelName.'.xml' : 'XMLView/Edit'.$modelName.'.xml';
         if(file_exists($xmlviewFilename)) {
-            return '';
+            return '* '.$xmlviewFilename." ya existe\n";
         }
 
         echo '* '.$xmlviewFilename."\n";
@@ -161,16 +172,20 @@ class Edit'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
         </group>
     </columns>
 </view>');
+        
+        return 'Creado correctamente \n';
     }
 
-    private function createGitIgnore($folder)
+    private function createGitIgnore(string $folder)
     {
         echo '* '.$folder."/.gitignore\n";
         file_put_contents($folder.'/.gitignore', "/.idea/\n/nbproject/\n/node_modules/\n"
             ."/vendor/\n.DS_Store\n.htaccess\n*.cache\n*.lock\n.vscode\n*.code-workspace");
+        
+        echo 'Creado correctamente.n';
     }
 
-    private function createIni($folder)
+    private function createIni(string $folder)
     {
         echo '* '.$folder."/facturascripts.ini\n";
         file_put_contents($folder.'/facturascripts.ini', "description = '".$folder."'
@@ -195,9 +210,11 @@ class Init extends \\FacturaScripts\\Core\\Base\\InitClass
         /// se ejecutar cada vez que se instala o actualiza el plugin
     }
 }");
+        
+        echo 'Creado correctamente.n';
     }
 
-    private function createListController($modelName)
+    private function createListController(string $modelName): string
     {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
@@ -205,7 +222,7 @@ class Init extends \\FacturaScripts\\Core\\Base\\InitClass
         if(file_exists($filename)) {
             return "El controlador ".$filename." ya existe.\n";
         } elseif(empty($modelName)) {
-            return '';
+            return 'No introdujo el nombre del Controlador';
         }
 
         echo '* '.$filename."\n";
@@ -233,9 +250,12 @@ class List'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
         $this->addSearchFields($viewName, ["id", "name"]);
     }
 }');
+        
+        echo 'Creado correctamente.\n\n';
+        
         $xmlviewFilename = $this->isCoreFolder() ? 'Core/XMLView/List'.$modelName.'.xml' : 'XMLView/List'.$modelName.'.xml';
         if(file_exists($xmlviewFilename)) {
-            return '';
+            return '* '.$xmlviewFilename." ya existe\n";
         }
 
         echo '* '.$xmlviewFilename."\n";
@@ -253,14 +273,16 @@ class List'.$modelName.' extends \\FacturaScripts\\Core\\Lib\\ExtendedController
         </column>
     </columns>
 </view>');
+        
+        return 'Creado correctamente.\n';
     }
 
-    private function createModelAction()
+    private function createModelAction(): string
     {
         $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
         $tableName = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
         if(empty($name) || empty($tableName)) {
-            return '';
+            return '* No introdujo ni el modelo ni la tabla.\n';
         } elseif(false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             return "Esta no es la carpeta raíz del plugin.\n";
         }
@@ -295,6 +317,9 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         return "'.$tableName.'";
     }
 }');
+        
+        echo 'Creado correctamente.\n';
+        
         $tableFilename = $this->isCoreFolder() ? 'Core/Table/'.$tableName.'.xml' : 'Table/'.$tableName.'.xml';
         if(false === file_exists($tableFilename)) {
             echo '* '.$tableFilename."\n";
@@ -317,6 +342,8 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         <type>PRIMARY KEY (id)</type>
     </constraint>
 </table>');
+        } else {
+            echo '* '.$tableFilename." ya existe\n\n";
         }
 
         if($this->prompt('¿Crear EditController? 1=Si, 0=No') === '1') {
@@ -326,24 +353,29 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         if($this->prompt('¿Crear ListController? 1=Si, 0=No') === '1') {
             $this->createListController($name);
         }
+        
+        return "";
     }
 
-    private function createPluginAction()
+    private function createPluginAction(): string
     {
         $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/');
         if(empty($name)) {
-            return '';
+            return 'No introdujo el nombre del plugin.\n';
         } elseif(file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
             return "No se puede crear un plugin en esta carpeta.\n";
         } elseif(file_exists($name)) {
             return "El plugin ".$name." ya existe.\n";
         }
         
+        echo '* '.$name."\n";
+        
         mkdir($name, 0755);
         $folders = [
             'Assets/CSS','Assets/Images','Assets/JS','Controller','Data/Codpais/ESP','Data/Lang/ES','Extension/Controller',
             'Extension/Model','Extension/Table','Extension/XMLView','Model/Join','Table','Translation','View','XMLView'
         ];
+        
         foreach($folders as $folder) {
             echo '* '.$name.'/'.$folder."\n";
             mkdir($name.'/'.$folder, 0755, true);
@@ -360,9 +392,11 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         $this->createCron($name);
         $this->createIni($name);
         $this->createInit($name);
+        
+        return 'Creado correctamente plugin '.$name."\n";
     }
 
-    private function getNamespace()
+    private function getNamespace(): string
     {
         if($this->isCoreFolder()) {
             return 'Core';
@@ -372,7 +406,7 @@ class '.$name.' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         return 'Plugins\\'.$ini['name'];
     }
 
-    private function help()
+    private function help(): string
     {
         return 'FacturaScripts Maker v' . self::VERSION . "
 
@@ -386,17 +420,17 @@ download:
 $ fsmaker translations\n";
     }
 
-    private function isCoreFolder()
+    private function isCoreFolder(): bool
     {
         return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
     }
 
-    private function isPluginFolder()
+    private function isPluginFolder(): bool
     {
         return file_exists('facturascripts.ini');
     }
 
-    private function prompt($label, $pattern = '')
+    private function prompt($label, $pattern = ''): string
     {
         echo $label . ': ';
         $matches = [];
@@ -409,7 +443,7 @@ $ fsmaker translations\n";
         return $value;
     }
 
-    private function updateTranslationsAction()
+    private function updateTranslationsAction(): string
     {
         $folder = '';
         $project = '';
@@ -441,9 +475,11 @@ $ fsmaker translations\n";
 
             echo " - vacío\n";
         }
+        
+        return "";
     }
 
-    private function createExtensionAction()
+    private function createExtensionAction(): string
     {
        $option = (int) $this->prompt('Extensión de ... 1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView');
         if(false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
@@ -465,15 +501,15 @@ $ fsmaker translations\n";
         }
     }
     
-    private function createExtensionModelo($name)
+    private function createExtensionModelo(string $name): string
     {
         if(empty($name)) {
-            return '';
+            return '* No introdujo el nombre del modelo a extender.\n';
         }
 
         $filename = 'Extension/Model/' . $name . '.php';
         if(file_exists($filename)) {
-            return "La extensión del modelo " . $name . " ya existe.\n";
+            return "* La extensión del modelo " . $name . " ya existe.\n";
         }
         
         echo '* '.$filename."\n";
@@ -482,7 +518,6 @@ namespace FacturaScripts\\'.$this->getNamespace().'\\Extension\\Model;
 
 class '.$name.'
 {
-    /* 
     // Ejemplo para añadir un método ... añadir el método usado()
     public function usado() {
         return function() {
@@ -556,7 +591,6 @@ class '.$name.'
             /// tu código aquí
          };
     }
-    */
 
 }');
         $aDevolver = "La extensión del modelo fué creada correctamente ... " . $name . "\n\n"
@@ -567,15 +601,15 @@ class '.$name.'
         return $aDevolver;
     }
 
-    private function createExtensionTabla($name)
+    private function createExtensionTabla(string $name): string
     {
         if(empty($name)) {
-            return '';
+            return '* No introdujo el nombre de la tabla a extender.\n';
         }
 
         $filename = 'Extension/Table/' . $name . '.xml';
         if(file_exists($filename)) {
-            return "La extensión de la tabla " . $name . " ya existe.\n";
+            return "* La extensión de la tabla " . $name . " ya existe.\n";
         }
         
         echo '* '.$filename."\n";
@@ -589,17 +623,18 @@ class '.$name.'
 
 ');
      
+        return 'Creado correctamente, \n';
     }
 
-    private function createExtensionControlador($name)
+    private function createExtensionControlador(string $name): string
     {
         if(empty($name)) {
-            return '';
+            return '* No introdujo el nombre del controlador a extender.\n';
         }
 
         $filename = 'Extension/Controller/' . $name . '.php';
         if(file_exists($filename)) {
-            return "La extensión del controlador " . $name . " ya existe.\n";
+            return "* La extensión del controlador " . $name . " ya existe.\n";
         }
         
         echo '* '.$filename."\n";
@@ -608,7 +643,6 @@ namespace FacturaScripts\\'.$this->getNamespace().'\\Extension\\Controller;
 
 class '.$name.'
 {
-    /* 
     // createViews() se ejecuta una vez realiado el createViews() del controlador.
     public function createViews() {
        return function() {
@@ -636,7 +670,6 @@ class '.$name.'
           /// tu código aquí
        };
     }
-    */
 
 }');
      
@@ -652,12 +685,12 @@ class '.$name.'
     private function createExtensionXMLView($name)
     {
         if(empty($name)) {
-            return '';
+            return '* No introdujo el nombre del XMLView a extender.\n';
         }
 
         $filename = 'Extension/XMLView/' . $name . '.xml';
         if(file_exists($filename)) {
-            return "El fichero XMLView " . $name . " ya existe.\n";
+            return "* El fichero XMLView " . $name . " ya existe.\n";
         }
         
         echo '* '.$filename."\n";
@@ -673,7 +706,8 @@ class '.$name.'
 </view>
 
 ');
-     
+    
+        return 'Creado correctamente, \n';
     }
 
     
