@@ -1,0 +1,34 @@
+<?php
+namespace FacturaScripts\[[NAME_SPACE]]\Extension\Controller;
+
+class [[NAME]]
+{
+    // createViews() se ejecuta una vez realiado el createViews() del controlador.
+    public function createViews() {
+       return function() {
+          /// tu código aquí
+       };
+    }
+
+    // execAfterAction() se ejecuta tras el execAfterAction() del controlador.
+    public function execAfterAction() {
+       return function($action) {
+          /// tu código aquí
+       };
+    }
+
+    // execPreviousAction() se ejecuta después del execPreviousAction() del controlador. Si devolvemos false detenemos la ejecución del controlador.
+    public function execPreviousAction() {
+       return function($action) {
+          /// tu código aquí
+       };
+    }
+
+    // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
+    public function loadData() {
+       return function($viewName, $view) {
+          /// tu código aquí
+       };
+    }
+
+}

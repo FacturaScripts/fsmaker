@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <column name="code" order="100">
+            <widget type="text" fieldname="id" />
+        </column>
+        <column name="name" order="110">
+            <widget type="text" fieldname="name" />
+        </column>
+        <column name="creation-date" display="right" order="120">
+            <widget type="datetime" fieldname="creationdate" />
+        </column>
+    </columns>
+</view>

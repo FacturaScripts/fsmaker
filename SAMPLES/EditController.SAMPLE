@@ -1,0 +1,16 @@
+<?php
+namespace FacturaScripts\[[NAME_SPACE]]\Controller;
+
+class Edit[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\EditController
+{
+    public function getModelClassName() {
+        return "[[MODEL_NAME]]";
+    }
+
+    public function getPageData() {
+        $pageData = parent::getPageData();
+        $pageData["title"] = "[[MODEL_NAME]]";
+        $pageData["icon"] = "fas fa-search";
+        return $pageData;
+    }
+}');

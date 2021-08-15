@@ -1,0 +1,24 @@
+<?php
+namespace FacturaScripts\[[NAME_SPACE]]\Controller;
+
+class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\ListController
+{
+    public function getPageData() {
+        $pageData = parent::getPageData();
+        $pageData["title"] = "[[TITLE]]";
+        $pageData["menu"] = "[[MENU]]";
+        $pageData["icon"] = "fas fa-search";
+        return $pageData;
+    }
+
+    protected function createViews() {
+        $this->createViews[[MODEL_NAME]]();
+    }
+
+    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]") {
+        $this->addView($viewName, "[[MODEL_NAME]]", "[[TITLE]]");
+        $this->addOrderBy($viewName, ["id"], "id");
+        $this->addOrderBy($viewName, ["name"], "name", 1);
+        $this->addSearchFields($viewName, ["id", "name"]);
+    }
+}

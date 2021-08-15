@@ -1,0 +1,18 @@
+<?php
+namespace FacturaScripts\[[NAME_SPACE]]\Controller;
+
+class [[NAME]] extends \FacturaScripts\Core\Base\Controller
+{
+    public function getPageData() {
+        $pageData = parent::getPageData();
+        $pageData["title"] = "[[NAME]]";
+        $pageData["menu"] = "admin";
+        $pageData["icon"] = "fas fa-page";
+        return $pageData;
+    }
+    
+    public function privateCore(&$response, $user, $permissions) {
+        parent::privateCore($response, $user, $permissions);
+        /// tu código aquí
+    }
+}
