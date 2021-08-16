@@ -63,7 +63,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[NAME]]']
                                , [$this->getNamespace(), $name]
                                , $sample );
@@ -80,7 +80,7 @@ class fsmaker {
         echo '* ' . $viewFilename;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/View.html.twig.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample);
         file_put_contents($viewFilename, $template);
 
@@ -109,7 +109,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Cron.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Cron.php.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         
@@ -128,7 +128,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]']
                                , [$this->getNamespace(), $modelName]
                                , $sample );
@@ -144,7 +144,7 @@ class fsmaker {
         echo '* ' . $xmlviewFilename;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
         file_put_contents($xmlviewFilename, $template);
         
@@ -173,7 +173,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/gitignore.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/gitignore.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         
@@ -192,7 +192,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/facturascripts.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/facturascripts.ini.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
 
@@ -221,7 +221,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Init.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Init.php.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         
         file_put_contents($fileName, $template);
@@ -244,7 +244,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]']
                                , [$this->getNamespace(), $modelName, $title, $menu]
                                , $sample );
@@ -260,7 +260,7 @@ class fsmaker {
         echo '* ' . $xmlviewFilename;
 
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
         file_put_contents($xmlviewFilename, $template);
         
@@ -288,7 +288,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]', '[[TABLE_NAME]]'], [$name, $this->getNamespace(), $tableName], $sample);
         file_put_contents($fileName, $template);
         
@@ -298,11 +298,11 @@ class fsmaker {
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
             
-            if ($this->create_xmlTable_byFields($tableFilename) = "") {
+            if ($this->create_xmlTable_byFields($tableFilename, $tableName) === "") {
                 // NO se introdujeron campos
                 // Creamos el .xml con el formato .SAMPLE
                 $path_parts = pathinfo(__FILE__);
-                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Table.SAMPLE");
+                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/table.xml.sample");
                 $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
                 file_put_contents($tableFilename, $template);
             }
@@ -511,7 +511,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName . "\n";
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionModel.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionModel.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         file_put_contents($fileName, $template);
         
@@ -530,11 +530,11 @@ $ fsmaker translations\n";
 
         echo '* ' . $fileName;
         
-        if ($this->create_xmlTable_byFields($fileName) = "") {
+        if ($this->create_xmlTable_byFields($fileName, $name) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
             $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.SAMPLE");
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.xml.sample");
             $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
             file_put_contents($fileName, $template);
         }
@@ -555,7 +555,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName . "\n";
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionController.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         //$template = str_replace(, $this->getNamespace(), $sample);
         
@@ -577,7 +577,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionXMLView.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionXMLView.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
         file_put_contents($fileName, $template);
         
@@ -616,15 +616,40 @@ $ fsmaker translations\n";
         $end = false;
         while ( ! $end ) {
             echo "\n\n";
-            $field = (string) $this->prompt('Nombre del field(vacío salimos del bucle)');
+            $field = (string) $this->prompt('Nombre del field(vacío = EXIT de crear fields)');
             if ($field === "") {
                 $end = true;
             } else {
                 $salir = false;
                 while (! $salir) {
-                    $type = (int) $this->prompt('0=Volver a preguntar el nombre, 1=serial, 2=integer, 3=double precision, 4=boolean, 5=character varying, 6=text, 7=timestamp, 8=date, 9=time');
+                    $type = (int) $this->prompt( "\nElija el tipo de campo\n"
+                                               . "0=Volver a preguntar el nombre\n"
+                                               . "1=serial\n"
+                                               . "2=integer\n"
+                                               . "3=double precision\n"
+                                               . "4=boolean\n"
+                                               . "5=character varying\n"
+                                               . "6=text\n"
+                                               . "7=timestamp\n"
+                                               . "8=date\n"
+                                               . "9=time\n" );
+                    
                     if ($type > 0 || $option < 10) {
-                        $salir = true;
+                        
+                        if ($type === 1) {
+                            // He mos elegido serial, así que tengo que comprobar que no exista de antes
+                            $salir = true;
+                            foreach ($array_fields as $key => $campo) { //si usamos $field en vez de $campo borramos el último nonbre introducido, el que hemos dicho que era serial por última vez
+                                if ($array_types[$key] === 'serial'){
+                                    echo "\nYa hay un campo de tipo serial.\n";
+                                    $salir = false;
+                                } else {
+                                    $salir = true;
+                                }
+                            }
+                        } else {
+                            $salir = true;
+                        }
                     }
                 }
                 
@@ -639,7 +664,7 @@ $ fsmaker translations\n";
                     } elseif ($type === 4) {
                         $array_types[] = 'boolean';
                     } elseif ($type === 5) {
-                        $cantidad = (int) $this->prompt('Cantidad caracteres');
+                        $cantidad = (int) $this->prompt("\nCantidad caracteres");
                         $array_types[] = "character varying($cantidad)";
                     } elseif ($type === 6) {
                         $array_types[] = 'text';
@@ -656,7 +681,7 @@ $ fsmaker translations\n";
         }
     }
 
-    private function create_xmlTable_byFields($tableFilename) : string {
+    private function create_xmlTable_byFields($tableFilename, $tableName) : string {
         $array_fields = array();
         $array_types = array();
         $this->askByFields($array_fields, $array_types);
@@ -679,9 +704,22 @@ $ fsmaker translations\n";
                     . '<table>' . "\n"
                     . $sample;
 
+
+            // Crear primary key
+            foreach ($array_fields as $key => $field) {
+                if ($array_types[$key] === 'serial'){
+                    $sample = $sample 
+                        . "\n"
+                        . "    <constraint>\n"
+                        . '        <name>' . $tableName . "_pkey</name>\n"
+                        . '        <type>PRIMARY KEY (' . $array_fields[$key] . ")</type>\n"
+                        . "    </constraint>\n";
+                }
+            }
+
             $sample = $sample 
                     . '</table>' . "\n";
-
+                            
             file_put_contents($tableFilename, $sample);
         }
         
@@ -692,3 +730,10 @@ $ fsmaker translations\n";
 
 new fsmaker($argv);
 
+
+
+
+/*
+ * if anidados intentar solucionarlos con return sin demás if
+ * nombres de funciones sin _ usar funcionLllamada()
+ */
