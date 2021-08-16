@@ -730,10 +730,3 @@ $ fsmaker translations\n";
 
 new fsmaker($argv);
 
-
-
-
-/*
- * if anidados intentar solucionarlos con return sin demás if
- * nombres de funciones sin _ usar funcionLllamada()
- */
