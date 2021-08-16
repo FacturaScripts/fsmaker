@@ -298,11 +298,15 @@ class fsmaker {
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
             
-            $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Table.SAMPLE");
-            $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
-            file_put_contents($tableFilename, $template);
-            
+            if ($this->create_xmlTable_byFields($tableFilename) = "") {
+                // NO se introdujeron campos
+                // Creamos el .xml con el formato .SAMPLE
+                $path_parts = pathinfo(__FILE__);
+                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Table.SAMPLE");
+                $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
+                file_put_contents($tableFilename, $template);
+            }
+
             echo self::OK;
         } else {
             echo "\n" . '* ' . $tableFilename . " YA EXISTE";
@@ -526,11 +530,14 @@ $ fsmaker translations\n";
 
         echo '* ' . $fileName;
         
-        
-        $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.SAMPLE");
-        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
-        file_put_contents($fileName, $template);
+        if ($this->create_xmlTable_byFields($fileName) = "") {
+            // NO se introdujeron campos
+            // Creamos el .xml con el formato .SAMPLE
+            $path_parts = pathinfo(__FILE__);
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.SAMPLE");
+            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
+            file_put_contents($fileName, $template);
+        }
 
         return self::OK;
     }
@@ -603,6 +610,82 @@ $ fsmaker translations\n";
         file_put_contents($fileName, $newFileStr);
 
         return self::OK;
+    }
+    
+    private function askByFields(&$array_fields, &$array_types) {
+        $end = false;
+        while ( ! $end ) {
+            echo "\n\n";
+            $field = (string) $this->prompt('Nombre del field(vacío salimos del bucle)');
+            if ($field === "") {
+                $end = true;
+            } else {
+                $salir = false;
+                while (! $salir) {
+                    $type = (int) $this->prompt('0=Volver a preguntar el nombre, 1=serial, 2=integer, 3=double precision, 4=boolean, 5=character varying, 6=text, 7=timestamp, 8=date, 9=time');
+                    if ($type > 0 || $option < 10) {
+                        $salir = true;
+                    }
+                }
+                
+                if ($type > 0) {
+                    $array_fields[] = $field;
+                    if ($type === 1) {
+                        $array_types[] = 'serial';
+                    } elseif ($type === 2) {
+                        $array_types[] = 'integer';
+                    } elseif ($type === 3) {
+                        $array_types[] = 'double precision';
+                    } elseif ($type === 4) {
+                        $array_types[] = 'boolean';
+                    } elseif ($type === 5) {
+                        $cantidad = (int) $this->prompt('Cantidad caracteres');
+                        $array_types[] = "character varying($cantidad)";
+                    } elseif ($type === 6) {
+                        $array_types[] = 'text';
+                    } elseif ($type === 7) {
+                        $array_types[] = 'timestamp';
+                    } elseif ($type === 8) {
+                        $array_types[] = 'date';
+                    } else {
+                        $array_types[] = 'time';
+                    }
+                }
+                
+            }
+        }
+    }
+
+    private function create_xmlTable_byFields($tableFilename) : string {
+        $array_fields = array();
+        $array_types = array();
+        $this->askByFields($array_fields, $array_types);
+
+        // var_dump($array_fields, $array_types);
+
+        // Creamos el .xml con los campos introducidos
+        $sample = "";
+        foreach ($array_fields as $key => $field) {
+            $sample = $sample 
+                . "    <column>\n"
+                . "        <name>$array_fields[$key]</name>\n"
+                . "        <type>$array_types[$key]</type>\n"
+                . "    </column>\n";
+        }                
+
+        if ($sample <> "") {
+            // Se introdujeron campos
+            $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+                    . '<table>' . "\n"
+                    . $sample;
+
+            $sample = $sample 
+                    . '</table>' . "\n";
+
+            file_put_contents($tableFilename, $sample);
+        }
+        
+        return $sample;
     }
         
 }
