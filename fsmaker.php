@@ -298,7 +298,7 @@ class fsmaker {
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
             
-            if ($this->create_xmlTable_byFields($tableFilename, $tableName) === "") {
+            if ($this->createXMLTableByFields($tableFilename, $tableName) === "") {
                 // NO se introdujeron campos
                 // Creamos el .xml con el formato .SAMPLE
                 $path_parts = pathinfo(__FILE__);
@@ -530,7 +530,7 @@ $ fsmaker translations\n";
 
         echo '* ' . $fileName;
         
-        if ($this->create_xmlTable_byFields($fileName, $name) === "") {
+        if ($this->createXMLTableByFields($fileName, $name) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
             $path_parts = pathinfo(__FILE__);
@@ -681,7 +681,7 @@ $ fsmaker translations\n";
         }
     }
 
-    private function create_xmlTable_byFields($tableFilename, $tableName) : string {
+    private function createXMLTableByFields($tableFilename, $tableName) : string {
         $array_fields = array();
         $array_types = array();
         $this->askByFields($array_fields, $array_types);
@@ -730,10 +730,3 @@ $ fsmaker translations\n";
 
 new fsmaker($argv);
 
-
-
-
-/*
- * if anidados intentar solucionarlos con return sin demás if
- * nombres de funciones sin _ usar funcionLllamada()
- */
