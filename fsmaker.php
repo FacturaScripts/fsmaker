@@ -616,7 +616,7 @@ $ fsmaker translations\n";
         $end = false;
         while ( ! $end ) {
             echo "\n\n";
-            $field = (string) $this->prompt('Nombre del field(vacío salimos del bucle)');
+            $field = (string) $this->prompt('Nombre del field(vacío = EXIT de crear fields)');
             if ($field === "") {
                 $end = true;
             } else {
@@ -664,7 +664,7 @@ $ fsmaker translations\n";
                     } elseif ($type === 4) {
                         $array_types[] = 'boolean';
                     } elseif ($type === 5) {
-                        $cantidad = (int) $this->prompt('Cantidad caracteres');
+                        $cantidad = (int) $this->prompt('\nCantidad caracteres');
                         $array_types[] = "character varying($cantidad)";
                     } elseif ($type === 6) {
                         $array_types[] = 'text';
