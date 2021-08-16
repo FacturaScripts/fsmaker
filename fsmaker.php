@@ -63,7 +63,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[NAME]]']
                                , [$this->getNamespace(), $name]
                                , $sample );
@@ -80,7 +80,7 @@ class fsmaker {
         echo '* ' . $viewFilename;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/View.html.twig.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample);
         file_put_contents($viewFilename, $template);
 
@@ -109,7 +109,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Cron.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Cron.php.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         
@@ -128,7 +128,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]']
                                , [$this->getNamespace(), $modelName]
                                , $sample );
@@ -144,7 +144,7 @@ class fsmaker {
         echo '* ' . $xmlviewFilename;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
         file_put_contents($xmlviewFilename, $template);
         
@@ -173,7 +173,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/gitignore.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/gitignore.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         
@@ -192,7 +192,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/facturascripts.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/facturascripts.ini.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
 
@@ -221,7 +221,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Init.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Init.php.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         
         file_put_contents($fileName, $template);
@@ -244,7 +244,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.php.sample");
         $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]']
                                , [$this->getNamespace(), $modelName, $title, $menu]
                                , $sample );
@@ -260,7 +260,7 @@ class fsmaker {
         echo '* ' . $xmlviewFilename;
 
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController_xml.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
         file_put_contents($xmlviewFilename, $template);
         
@@ -288,7 +288,7 @@ class fsmaker {
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]', '[[TABLE_NAME]]'], [$name, $this->getNamespace(), $tableName], $sample);
         file_put_contents($fileName, $template);
         
@@ -302,7 +302,7 @@ class fsmaker {
                 // NO se introdujeron campos
                 // Creamos el .xml con el formato .SAMPLE
                 $path_parts = pathinfo(__FILE__);
-                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Table.SAMPLE");
+                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/table.xml.sample");
                 $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
                 file_put_contents($tableFilename, $template);
             }
@@ -511,7 +511,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName . "\n";
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionModel.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionModel.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         file_put_contents($fileName, $template);
         
@@ -534,7 +534,7 @@ $ fsmaker translations\n";
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
             $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.SAMPLE");
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.xml.sample");
             $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
             file_put_contents($fileName, $template);
         }
@@ -555,7 +555,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName . "\n";
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionController.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionController.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         //$template = str_replace(, $this->getNamespace(), $sample);
         
@@ -577,7 +577,7 @@ $ fsmaker translations\n";
         echo '* ' . $fileName;
         
         $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionXMLView.SAMPLE");
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionXMLView.xml.sample");
         $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
         file_put_contents($fileName, $template);
         
@@ -664,7 +664,7 @@ $ fsmaker translations\n";
                     } elseif ($type === 4) {
                         $array_types[] = 'boolean';
                     } elseif ($type === 5) {
-                        $cantidad = (int) $this->prompt('\nCantidad caracteres');
+                        $cantidad = (int) $this->prompt("\nCantidad caracteres");
                         $array_types[] = "character varying($cantidad)";
                     } elseif ($type === 6) {
                         $array_types[] = 'text';
@@ -730,3 +730,10 @@ $ fsmaker translations\n";
 
 new fsmaker($argv);
 
+
+
+
+/*
+ * if anidados intentar solucionarlos con return sin demás if
+ * nombres de funciones sin _ usar funcionLllamada()
+ */
