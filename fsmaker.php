@@ -298,7 +298,7 @@ class fsmaker {
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
             
-            if ($this->create_xmlTable_byFields($tableFilename) === "") {
+            if ($this->create_xmlTable_byFields($tableFilename, $tableName) === "") {
                 // NO se introdujeron campos
                 // Creamos el .xml con el formato .SAMPLE
                 $path_parts = pathinfo(__FILE__);
@@ -530,7 +530,7 @@ $ fsmaker translations\n";
 
         echo '* ' . $fileName;
         
-        if ($this->create_xmlTable_byFields($fileName) === "") {
+        if ($this->create_xmlTable_byFields($fileName, $name) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
             $path_parts = pathinfo(__FILE__);
@@ -639,7 +639,7 @@ $ fsmaker translations\n";
                         if ($type === 1) {
                             // He mos elegido serial, así que tengo que comprobar que no exista de antes
                             $salir = true;
-                            foreach ($array_fields as $key => $field) {
+                            foreach ($array_fields as $key => $campo) { //si usamos $field en vez de $campo borramos el último nonbre introducido, el que hemos dicho que era serial por última vez
                                 if ($array_types[$key] === 'serial'){
                                     echo "\nYa hay un campo de tipo serial.\n";
                                     $salir = false;
@@ -681,7 +681,7 @@ $ fsmaker translations\n";
         }
     }
 
-    private function create_xmlTable_byFields($tableFilename) : string {
+    private function create_xmlTable_byFields($tableFilename, $tableName) : string {
         $array_fields = array();
         $array_types = array();
         $this->askByFields($array_fields, $array_types);
@@ -704,9 +704,22 @@ $ fsmaker translations\n";
                     . '<table>' . "\n"
                     . $sample;
 
+
+            // Crear primary key
+            foreach ($array_fields as $key => $field) {
+                if ($array_types[$key] === 'serial'){
+                    $sample = $sample 
+                        . "\n"
+                        . "    <constraint>\n"
+                        . '        <name>' . $tableName . "_pkey</name>\n"
+                        . '        <type>PRIMARY KEY (' . $array_fields[$key] . ")</type>\n"
+                        . "    </constraint>\n";
+                }
+            }
+
             $sample = $sample 
                     . '</table>' . "\n";
-
+                            
             file_put_contents($tableFilename, $sample);
         }
         
