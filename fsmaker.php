@@ -2,6 +2,7 @@
 
 /**
  * @author  Carlos García Gómez <carlos@facturascripts.com>
+ * @collaborator Jerónimo Sánchez <socger@gmail.com>
  */
 if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
@@ -52,33 +53,22 @@ class fsmaker {
         }
 
         $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
-        $filename = $this->isCoreFolder() ? 'Core/Controller/' . $name . '.php' : 'Controller/' . $name . '.php';
-        if (file_exists($filename)) {
+        $fileName = $this->isCoreFolder() ? 'Core/Controller/' . $name . '.php' : 'Controller/' . $name . '.php';
+        if (file_exists($fileName)) {
             return "* El controlador " . $name . " YA EXISTE.\n";
         } elseif (empty($name)) {
             return '* No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n';
         }
 
-        echo '* ' . $filename;
+        echo '* ' . $fileName;
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller.SAMPLE");
+        $template = str_replace( ['[[NAME_SPACE]]', '[[NAME]]']
+                               , [$this->getNamespace(), $name]
+                               , $sample );
+        file_put_contents($fileName, $template);
 
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Controller;
-
-class ' . $name . ' extends \\FacturaScripts\\Core\\Base\\Controller
-{
-    public function getPageData() {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "' . $name . '";
-        $pageData["menu"] = "admin";
-        $pageData["icon"] = "fas fa-page";
-        return $pageData;
-    }
-    
-    public function privateCore(&$response, $user, $permissions) {
-        parent::privateCore($response, $user, $permissions);
-        /// tu código aquí
-    }
-}');
         echo self::OK;
 
         // Creamos vista twig
@@ -88,32 +78,28 @@ class ' . $name . ' extends \\FacturaScripts\\Core\\Base\\Controller
         }
 
         echo '* ' . $viewFilename;
-        file_put_contents($viewFilename, '{% extends "Master/MenuTemplate.html.twig" %}
-
-{% block body %}
-    {{ parent() }}
-{% endblock %}
-
-{% block css %}
-    {{ parent() }}
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-{% endblock %}');
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Controller_xml.SAMPLE");
+        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample);
+        file_put_contents($viewFilename, $template);
 
         return self::OK;
     }
 
     private function createCron(string $name = "") {
+        $folder = ".";
         if ($name === "") {
-            $respuesta = $this->preguntarNombrePlugin($name, false);
-            if ($respuesta <> '') {
-                return $respuesta;
+            $hayFallo = $this->searchNamePlugin($name);
+            if ($hayFallo <> '') {
+                return $hayFallo;
             }
+        } else {
+            $folder = $name;
         }
 
-        $fileName = $name . "/Cron.php";
+        // $fileName = $name . "/Cron.php";
+         $fileName = $folder . "/Cron.php";
 
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
@@ -121,51 +107,32 @@ class ' . $name . ' extends \\FacturaScripts\\Core\\Base\\Controller
         }
 
         echo '* ' . $fileName;
-        file_put_contents($fileName, "<?php
-namespace FacturaScripts\\Plugins\\" . $name . ';
-
-class Cron extends \\FacturaScripts\\Core\\Base\\CronClass
-{
-    public function run() {
-        /*
-        if ($this->isTimeForJob("my-job-name", "6 hours")) {
-            /// su código aquí
-            $this->jobDone("my-job-name");
-        }
-        */
-    }
-}');
-
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Cron.SAMPLE");
+        $template = str_replace('[[NAME]]', $name, $sample);
+        file_put_contents($fileName, $template);
+        
         echo self::OK;
         return "";
     }
 
     private function createEditController($modelName): string {
-        $filename = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
-        if (file_exists($filename)) {
-            return "El controlador " . $filename . " YA EXISTE.\n";
+        $fileName = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
+        if (file_exists($fileName)) {
+            return "El controlador " . $fileName . " YA EXISTE.\n";
         } elseif (empty($modelName)) {
             return '';
         }
 
-        echo '* ' . $filename;
-
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Controller;
-
-class Edit' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedController\\EditController
-{
-    public function getModelClassName() {
-        return "' . $modelName . '";
-    }
-
-    public function getPageData() {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "' . $modelName . '";
-        $pageData["icon"] = "fas fa-search";
-        return $pageData;
-    }
-}');
+        echo '* ' . $fileName;
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.SAMPLE");
+        $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]']
+                               , [$this->getNamespace(), $modelName]
+                               , $sample );
+        file_put_contents($fileName, $template);
 
         echo self::OK;
 
@@ -175,38 +142,28 @@ class Edit' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedContro
         }
 
         echo '* ' . $xmlviewFilename;
-
-        file_put_contents($xmlviewFilename, '<?xml version="1.0" encoding="UTF-8"?>
-<view>
-    <columns>
-        <group name="data" numcolumns="12">
-            <column name="code" display="none" order="100">
-                <widget type="text" fieldname="id" />
-            </column>
-            <column name="name" order="110">
-                <widget type="text" fieldname="name" />
-            </column>
-            <column name="creation-date" order="120">
-                <widget type="datetime" fieldname="creationdate" readonly="dinamic" />
-            </column>
-        </group>
-    </columns>
-</view>');
-
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController_xml.SAMPLE");
+        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
+        file_put_contents($xmlviewFilename, $template);
+        
         echo self::OK;
         return "";
     }
 
     private function createGitIgnore(string $name) {
-
+        $folder = ".";
         if ($name === "") {
-            $respuesta = $this->preguntarNombrePlugin($name, false);
+            $respuesta = $this->searchNamePlugin($name);
             if ($respuesta <> '') {
                 return $respuesta;
             }
+        } else {
+            $folder = $name;
         }
 
-        $fileName = $name . '/.gitignore';
+        $fileName = $folder . '/.gitignore';
 
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
@@ -214,21 +171,17 @@ class Edit' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedContro
         }
 
         echo '* ' . $fileName;
-        file_put_contents($fileName, "/.idea/\n/nbproject/\n/node_modules/\n"
-                . "/vendor/\n.DS_Store\n.htaccess\n*.cache\n*.lock\n.vscode\n*.code-workspace");
-
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/gitignore.SAMPLE");
+        $template = str_replace('[[NAME]]', $name, $sample);
+        file_put_contents($fileName, $template);
+        
         echo self::OK;
         return "";
     }
 
     private function createIni(string $name) {
-        if ($name === "") {
-            $respuesta = $this->preguntarNombrePlugin($name, false);
-            if ($respuesta <> '') {
-                return $respuesta;
-            }
-        }
-
         $fileName = $name . "/facturascripts.ini";
 
         if (file_exists($fileName)) {
@@ -237,24 +190,28 @@ class Edit' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedContro
         }
 
         echo '* ' . $fileName;
-        file_put_contents($fileName, "description = '" . $name . "'
-min_version = 2021
-name = " . $name . "
-version = 0.1");
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/facturascripts.SAMPLE");
+        $template = str_replace('[[NAME]]', $name, $sample);
+        file_put_contents($fileName, $template);
 
         echo self::OK;
         return "";
     }
 
-    private function createInit($name) {
+    private function createInit(string $name) {
+        $folder = ".";
         if ($name === "") {
-            $respuesta = $this->preguntarNombrePlugin($name, false);
+            $respuesta = $this->searchNamePlugin($name);
             if ($respuesta <> '') {
                 return $respuesta;
             }
+        } else {
+            $folder = $name;
         }
 
-        $fileName = $name . "/Init.php";
+        $fileName = $folder . "/Init.php";
 
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
@@ -262,19 +219,12 @@ version = 0.1");
         }
 
         echo '* ' . $fileName;
-        file_put_contents($fileName, "<?php
-namespace FacturaScripts\\Plugins\\" . $name . ";
-
-class Init extends \\FacturaScripts\\Core\\Base\\InitClass
-{
-    public function init() {
-        /// se ejecutar cada vez que carga FacturaScripts (si este plugin está activado).
-    }
-
-    public function update() {
-        /// se ejecutar cada vez que se instala o actualiza el plugin
-    }
-}");
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Init.SAMPLE");
+        $template = str_replace('[[NAME]]', $name, $sample);
+        
+        file_put_contents($fileName, $template);
 
         echo self::OK;
         return "";
@@ -283,40 +233,22 @@ class Init extends \\FacturaScripts\\Core\\Base\\InitClass
     private function createListController(string $modelName): string {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
-        $filename = $this->isCoreFolder() ? 'Core/Controller/List' . $modelName . '.php' : 'Controller/List' . $modelName . '.php';
+        $fileName = $this->isCoreFolder() ? 'Core/Controller/List' . $modelName . '.php' : 'Controller/List' . $modelName . '.php';
 
-        if (file_exists($filename)) {
-            return "* El controlador " . $filename . " YA EXISTE.\n";
+        if (file_exists($fileName)) {
+            return "* El controlador " . $fileName . " YA EXISTE.\n";
         } elseif (empty($modelName)) {
             return '* No introdujo el nombre del Controlador';
         }
 
-        echo '* ' . $filename;
-
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Controller;
-
-class List' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedController\\ListController
-{
-    public function getPageData() {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "' . $title . '";
-        $pageData["menu"] = "' . $menu . '";
-        $pageData["icon"] = "fas fa-search";
-        return $pageData;
-    }
-
-    protected function createViews() {
-        $this->createViews' . $modelName . '();
-    }
-
-    protected function createViews' . $modelName . '(string $viewName = "List' . $modelName . '") {
-        $this->addView($viewName, "' . $modelName . '", "' . $title . '");
-        $this->addOrderBy($viewName, ["id"], "id");
-        $this->addOrderBy($viewName, ["name"], "name", 1);
-        $this->addSearchFields($viewName, ["id", "name"]);
-    }
-}');
+        echo '* ' . $fileName;
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.SAMPLE");
+        $template = str_replace( ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]']
+                               , [$this->getNamespace(), $modelName, $title, $menu]
+                               , $sample );
+        file_put_contents($fileName, $template);
 
         echo self::OK;
 
@@ -327,21 +259,11 @@ class List' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedContro
 
         echo '* ' . $xmlviewFilename;
 
-        file_put_contents($xmlviewFilename, '<?xml version="1.0" encoding="UTF-8"?>
-<view>
-    <columns>
-        <column name="code" order="100">
-            <widget type="text" fieldname="id" />
-        </column>
-        <column name="name" order="110">
-            <widget type="text" fieldname="name" />
-        </column>
-        <column name="creation-date" display="right" order="120">
-            <widget type="datetime" fieldname="creationdate" />
-        </column>
-    </columns>
-</view>');
-
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController_xml.SAMPLE");
+        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
+        file_put_contents($xmlviewFilename, $template);
+        
         echo self::OK;
         return "";
     }
@@ -358,62 +280,33 @@ class List' . $modelName . ' extends \\FacturaScripts\\Core\\Lib\\ExtendedContro
             return "* Esta no es la carpeta raíz del plugin.\n";
         }
 
-        $filename = $this->isCoreFolder() ? 'Core/Model/' . $name . '.php' : 'Model/' . $name . '.php';
-        if (file_exists($filename)) {
+        $fileName = $this->isCoreFolder() ? 'Core/Model/' . $name . '.php' : 'Model/' . $name . '.php';
+        if (file_exists($fileName)) {
             return "* El modelo " . $name . " YA EXISTE.\n";
         }
 
-        echo '* ' . $filename;
-
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Model;
-
-class ' . $name . ' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
-{
-    use \\FacturaScripts\\Core\\Model\\Base\\ModelTrait;
-
-    public $creationdate;
-    public $id;
-    public $name;
-
-    public function clear() {
-        parent::clear();
-        $this->creationdate = \date(self::DATETIME_STYLE);
-    }
-
-    public static function primaryColumn() {
-        return "id";
-    }
-
-    public static function tableName() {
-        return "' . $tableName . '";
-    }
-}');
-
+        echo '* ' . $fileName;
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.SAMPLE");
+        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]', '[[TABLE_NAME]]'], [$name, $this->getNamespace(), $tableName], $sample);
+        file_put_contents($fileName, $template);
+        
         echo self::OK;
 
         $tableFilename = $this->isCoreFolder() ? 'Core/Table/' . $tableName . '.xml' : 'Table/' . $tableName . '.xml';
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
-            file_put_contents($tableFilename, '<?xml version="1.0" encoding="UTF-8"?>
-<table>
-    <column>
-        <name>creationdate</name>
-        <type>timestamp</type>
-    </column>
-    <column>
-        <name>id</name>
-        <type>serial</type>
-    </column>
-    <column>
-        <name>name</name>
-        <type>character varying(100)</type>
-    </column>
-    <constraint>
-        <name>' . $tableName . '_pkey</name>
-        <type>PRIMARY KEY (id)</type>
-    </constraint>
-</table>');
+            
+            if ($this->create_xmlTable_byFields($tableFilename) = "") {
+                // NO se introdujeron campos
+                // Creamos el .xml con el formato .SAMPLE
+                $path_parts = pathinfo(__FILE__);
+                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Table.SAMPLE");
+                $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
+                file_put_contents($tableFilename, $template);
+            }
+
             echo self::OK;
         } else {
             echo "\n" . '* ' . $tableFilename . " YA EXISTE";
@@ -433,35 +326,32 @@ class ' . $name . ' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
         return "";
     }
 
-    private function preguntarNombrePlugin(string &$name, bool $CreandoPlugin): string {
-        if ($CreandoPlugin === true) {
-            // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
-            $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/');
-            if (empty($name)) {
-                return '* No introdujo el nombre del plugin.\n';
-            } elseif (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
-                return "* No se puede crear un plugin en esta carpeta.\n";
-            } elseif (file_exists($name)) {
-                return "* El plugin " . $name . " YA EXISTE.\n";
-            }
-
-            return "";
+    private function searchNamePlugin(string &$name): string {
+        // Estamos dentro de la carpeta principal de un plugin, por lo que vamos a ver como se llama (facturascripts.ini)
+        $name = '';
+        if ($this->isPluginFolder()) {
+            $ini = parse_ini_file('facturascripts.ini');
+            $name = $ini['name'] ?? '';
         } else {
-            // Estamos dentro de la carpeta principal de un plugin, por lo que vamos a ver como se llama (facturascripts.ini)
-            $name = '';
-            if ($this->isPluginFolder()) {
-                $ini = parse_ini_file('facturascripts.ini');
-                $name = $ini['name'] ?? '';
-            } else {
-                return "* Esta no es la carpeta raíz del plugin.\n";
-            }
+            return "* Esta no es la carpeta raíz del plugin.\n";
+        }
 
-            if (empty($name)) {
-                return "Proyecto desconocido.\n";
-            }
+        if (empty($name)) {
+            return "* Nombre del plugin desconocido.\n";
+        }
+        
+        return "";
+    }
 
-            $name = "../" . $name;
-            return "";
+    private function askNamePlugin(string &$name): string {
+        // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
+        $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/');
+        if (empty($name)) {
+            return '* No introdujo el nombre del plugin.\n';
+        } elseif (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
+            return "* No se puede crear un plugin en esta carpeta.\n";
+        } elseif (file_exists($name)) {
+            return "* El plugin " . $name . " YA EXISTE.\n";
         }
 
         return "";
@@ -469,7 +359,7 @@ class ' . $name . ' extends \\FacturaScripts\\Core\\Model\\Base\\ModelClass
 
     private function createPluginAction(): string {
         $name = "";
-        $respuesta = $this->preguntarNombrePlugin($name, true);
+        $respuesta = $this->askNamePlugin($name);
         if ($respuesta <> '') {
             return $respuesta;
         }
@@ -590,7 +480,7 @@ $ fsmaker translations\n";
     private function createExtensionAction(): string {
         $option = (int) $this->prompt('Extensión de ... 1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView');
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
-            return "Esta no es la carpeta raíz del plugin.\n";
+            return "* Esta no es la carpeta raíz del plugin.\n";
         } elseif ($option === 1) {
             $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
             return $this->createExtensionTable($name);
@@ -604,7 +494,7 @@ $ fsmaker translations\n";
             $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
             return $this->createExtensionXMLView($name);
         } elseif ($option < 1 || $option > 4) {
-            return "Opción no válida.\n";
+            return "* Opción no válida.\n";
         }
     }
 
@@ -613,98 +503,19 @@ $ fsmaker translations\n";
             return '* No introdujo el nombre del modelo a extender.\n';
         }
 
-        $filename = 'Extension/Model/' . $name . '.php';
-        if (file_exists($filename)) {
+        $fileName = 'Extension/Model/' . $name . '.php';
+        if (file_exists($fileName)) {
             return "* La extensión del modelo " . $name . " YA EXISTE.\n";
         }
 
-        echo '* ' . $filename . "\n";
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Extension\\Model;
-
-class ' . $name . '
-{
-    // Ejemplo para añadir un método ... añadir el método usado()
-    public function usado() {
-        return function() {
-            return $this->usado;
-        };
-    }
-    
-    // ***************************************
-    // ** Métodos disponibles para extender **
-    // ***************************************
-    
-    // clear()
-    public function clear() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // delete() se ejecuta una vez realizado el delete() del modelo.
-    public function delete() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // deleteBefore() se ejecuta antes de hacer el delete() del modelo. Si devolvemos false, impedimos el delete().
-    public function deleteBefore() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-
-    // save() se ejecuta una vez realizado el save() del modelo.
-    public function save() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // saveBefore() se ejecuta antes de hacer el save() del modelo. Si devolvemos false, impedimos el save().
-    public function saveBefore() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-
-    // saveInsert() se ejecuta una vez realizado el saveInsert() del modelo.
-    public function saveInsert() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // saveInsertBefore() se ejecuta antes de hacer el saveInsert() del modelo. Si devolvemos false, impedimos el saveInsert().
-    public function saveInsertBefore() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // saveUpdate() se ejecuta una vez realizado el saveUpdate() del modelo.
-    public function saveUpdate() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-    
-    // saveUpdateBefore() se ejecuta antes de hacer el saveUpdate() del modelo. Si devolvemos false, impedimos el saveUpdate().
-    public function saveUpdateBefore() {
-       return function() {
-            /// tu código aquí
-         };
-    }
-
-}');
-        $aDevolver = "La extensión del modelo fué creada correctamente ... " . $name . "\n\n"
-                . "Las extensiones de archivos xml se integran automáticamente al activar el plugin o reconstruir Dinamic.\n"
-                . "En cambio, las extensiones de archivo php se deben cargar explícitamente, y se deben hacer desde el \n"
-                . "archivo Init.php del plugin, en el método init().\n\n"
-                . "Para más información visite https://facturascripts.com/publicaciones/extensiones-de-modelos";
-        return $aDevolver;
+        echo '* ' . $fileName . "\n";
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionModel.SAMPLE");
+        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
+        file_put_contents($fileName, $template);
+        
+        return $this->modifyInit($name, 0);
     }
 
     private function createExtensionTable(string $name): string {
@@ -712,21 +523,21 @@ class ' . $name . '
             return '* No introdujo el nombre de la tabla a extender.\n';
         }
 
-        $filename = 'Extension/Table/' . $name . '.xml';
-        if (file_exists($filename)) {
+        $fileName = 'Extension/Table/' . $name . '.xml';
+        if (file_exists($fileName)) {
             return "* La extensión de la tabla " . $name . " YA EXISTE.\n";
         }
 
-        echo '* ' . $filename . "\n";
-        file_put_contents($filename, '<?xml version="1.0" encoding="UTF-8"?>
-<table>
-    <column>
-        <name>usado</name>
-        <type>boolean</type>
-    </column>
-</table>
-
-');
+        echo '* ' . $fileName;
+        
+        if ($this->create_xmlTable_byFields($fileName) = "") {
+            // NO se introdujeron campos
+            // Creamos el .xml con el formato .SAMPLE
+            $path_parts = pathinfo(__FILE__);
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.SAMPLE");
+            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
+            file_put_contents($fileName, $template);
+        }
 
         return self::OK;
     }
@@ -736,53 +547,21 @@ class ' . $name . '
             return '* No introdujo el nombre del controlador a extender.\n';
         }
 
-        $filename = 'Extension/Controller/' . $name . '.php';
-        if (file_exists($filename)) {
+        $fileName = 'Extension/Controller/' . $name . '.php';
+        if (file_exists($fileName)) {
             return "* La extensión del controlador " . $name . " YA EXISTE.\n";
         }
 
-        echo '* ' . $filename . "\n";
-        file_put_contents($filename, '<?php
-namespace FacturaScripts\\' . $this->getNamespace() . '\\Extension\\Controller;
-
-class ' . $name . '
-{
-    // createViews() se ejecuta una vez realiado el createViews() del controlador.
-    public function createViews() {
-       return function() {
-          /// tu código aquí
-       };
-    }
-
-    // execAfterAction() se ejecuta tras el execAfterAction() del controlador.
-    public function execAfterAction() {
-       return function($action) {
-          /// tu código aquí
-       };
-    }
-
-    // execPreviousAction() se ejecuta después del execPreviousAction() del controlador. Si devolvemos false detenemos la ejecución del controlador.
-    public function execPreviousAction() {
-       return function($action) {
-          /// tu código aquí
-       };
-    }
-
-    // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
-    public function loadData() {
-       return function($viewName, $view) {
-          /// tu código aquí
-       };
-    }
-
-}');
-
-        $aDevolver = "La extensión del controlador fué creada correctamente ... " . $name . "\n\n"
-                . "Las extensiones de archivos xml se integran automáticamente al activar el plugin o reconstruir Dinamic.\n"
-                . "En cambio, las extensiones de archivo php se deben cargar explícitamente, y se deben hacer desde el \n"
-                . "archivo Init.php del plugin, en el método init().\n\n"
-                . "Para más información visite https://facturascripts.com/publicaciones/extensiones-de-controladores";
-        return $aDevolver;
+        echo '* ' . $fileName . "\n";
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionController.SAMPLE");
+        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
+        //$template = str_replace(, $this->getNamespace(), $sample);
+        
+        file_put_contents($fileName, $template);
+        
+        return $this->modifyInit($name, 1);
     }
 
     private function createExtensionXMLView($name) {
@@ -790,28 +569,125 @@ class ' . $name . '
             return '* No introdujo el nombre del XMLView a extender.\n';
         }
 
-        $filename = 'Extension/XMLView/' . $name . '.xml';
-        if (file_exists($filename)) {
-            return "* El fichero XMLView " . $name . " YA EXISTE.\n";
+        $fileName = 'Extension/XMLView/' . $name . '.xml';
+        if (file_exists($fileName)) {
+            return "* El fichero " . $fileName . " YA EXISTE.\n";
         }
 
-        echo '* ' . $filename . "\n";
-        file_put_contents($filename, '<?xml version="1.0" encoding="UTF-8"?>
-<view>
-    <columns>
-        <group name="options" numcolumns="12" valign="bottom">
-           <column name="usado">
-              <widget type="checkbox" fieldname="usado" />
-           </column>
-        </group>
-    </columns>
-</view>
-
-');
-
+        echo '* ' . $fileName;
+        
+        $path_parts = pathinfo(__FILE__);
+        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionXMLView.SAMPLE");
+        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
+        file_put_contents($fileName, $template);
+        
         return self::OK;
     }
 
+    private function modifyInit(string $name, int $modelOrController): string {
+        $fileName = "./Init.php";
+
+        if (!file_exists($fileName)) {
+            echo $this->createInit("");
+        }
+
+        echo '* ' . $fileName;
+        
+        $fileStr = file_get_contents($fileName);
+        $toSearch = '/// se ejecutara cada vez que carga FacturaScripts (si este plugin está activado).';
+
+        $toChange = $toSearch. "\n";
+        if ($modelOrController === 0) {
+            $toChange = $toChange
+                      . '        $this->loadExtension(new Extension\\Model\\' . $name . "())";
+        } else {
+            $toChange = $toChange
+                      . '        $this->loadExtension(new Extension\\Controller\\' . $name . "())";
+        }
+
+        $newFileStr = str_replace($toSearch, $toChange, $fileStr);
+
+        file_put_contents($fileName, $newFileStr);
+
+        return self::OK;
+    }
+    
+    private function askByFields(&$array_fields, &$array_types) {
+        $end = false;
+        while ( ! $end ) {
+            echo "\n\n";
+            $field = (string) $this->prompt('Nombre del field(vacío salimos del bucle)');
+            if ($field === "") {
+                $end = true;
+            } else {
+                $salir = false;
+                while (! $salir) {
+                    $type = (int) $this->prompt('0=Volver a preguntar el nombre, 1=serial, 2=integer, 3=double precision, 4=boolean, 5=character varying, 6=text, 7=timestamp, 8=date, 9=time');
+                    if ($type > 0 || $option < 10) {
+                        $salir = true;
+                    }
+                }
+                
+                if ($type > 0) {
+                    $array_fields[] = $field;
+                    if ($type === 1) {
+                        $array_types[] = 'serial';
+                    } elseif ($type === 2) {
+                        $array_types[] = 'integer';
+                    } elseif ($type === 3) {
+                        $array_types[] = 'double precision';
+                    } elseif ($type === 4) {
+                        $array_types[] = 'boolean';
+                    } elseif ($type === 5) {
+                        $cantidad = (int) $this->prompt('Cantidad caracteres');
+                        $array_types[] = "character varying($cantidad)";
+                    } elseif ($type === 6) {
+                        $array_types[] = 'text';
+                    } elseif ($type === 7) {
+                        $array_types[] = 'timestamp';
+                    } elseif ($type === 8) {
+                        $array_types[] = 'date';
+                    } else {
+                        $array_types[] = 'time';
+                    }
+                }
+                
+            }
+        }
+    }
+
+    private function create_xmlTable_byFields($tableFilename) : string {
+        $array_fields = array();
+        $array_types = array();
+        $this->askByFields($array_fields, $array_types);
+
+        // var_dump($array_fields, $array_types);
+
+        // Creamos el .xml con los campos introducidos
+        $sample = "";
+        foreach ($array_fields as $key => $field) {
+            $sample = $sample 
+                . "    <column>\n"
+                . "        <name>$array_fields[$key]</name>\n"
+                . "        <type>$array_types[$key]</type>\n"
+                . "    </column>\n";
+        }                
+
+        if ($sample <> "") {
+            // Se introdujeron campos
+            $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+                    . '<table>' . "\n"
+                    . $sample;
+
+            $sample = $sample 
+                    . '</table>' . "\n";
+
+            file_put_contents($tableFilename, $sample);
+        }
+        
+        return $sample;
+    }
+        
 }
 
 new fsmaker($argv);

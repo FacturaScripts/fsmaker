@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <group name="options" numcolumns="12" valign="bottom">
+           <column name="usado">
+              <widget type="checkbox" fieldname="usado" />
+           </column>
+        </group>
+    </columns>
+</view>
