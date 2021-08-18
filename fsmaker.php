@@ -44,10 +44,14 @@ class fsmaker {
             return "Esta no es la carpeta raíz del plugin.\n";
         } elseif ($option === 2) {
             $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
-            return $this->createListController($modelName);
+            $array_fields = array();
+            $array_types = array();
+            return $this->createListController($modelName, $array_fields, $array_types);
         } elseif ($option === 3) {
             $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
-            return $this->createEditController($modelName);
+            $array_fields = array();
+            $array_types = array();
+            return $this->createEditController($modelName, $array_fields, $array_types);
         } elseif ($option < 1 || $option > 3) {
             return "Opción no válida.\n";
         }
@@ -117,7 +121,7 @@ class fsmaker {
         return "";
     }
 
-    private function createEditController($modelName): string {
+    private function createEditController($modelName, array $array_fields, array $array_types): string {
         $fileName = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
         if (file_exists($fileName)) {
             return "El controlador " . $fileName . " YA EXISTE.\n";
@@ -143,10 +147,14 @@ class fsmaker {
 
         echo '* ' . $xmlviewFilename;
         
-        $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.xml.sample");
-        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
-        file_put_contents($xmlviewFilename, $template);
+        if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1) === "") {
+            // NO se introdujeron campos
+            // Creamos el .xml con el formato .SAMPLE
+            $path_parts = pathinfo(__FILE__);
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.xml.sample");
+            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
+            file_put_contents($xmlviewFilename, $template);
+        }
         
         echo self::OK;
         return "";
@@ -230,7 +238,7 @@ class fsmaker {
         return "";
     }
 
-    private function createListController(string $modelName): string {
+    private function createListController(string $modelName, array $array_fields, array $array_types): string {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
         $fileName = $this->isCoreFolder() ? 'Core/Controller/List' . $modelName . '.php' : 'Controller/List' . $modelName . '.php';
@@ -259,11 +267,15 @@ class fsmaker {
 
         echo '* ' . $xmlviewFilename;
 
-        $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.xml.sample");
-        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
-        file_put_contents($xmlviewFilename, $template);
-        
+        if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0) === "") {
+            // NO se introdujeron campos
+            // Creamos el .xml con el formato .SAMPLE
+            $path_parts = pathinfo(__FILE__);
+            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.xml.sample");
+            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
+            file_put_contents($xmlviewFilename, $template);
+        }
+
         echo self::OK;
         return "";
     }
@@ -294,11 +306,14 @@ class fsmaker {
         
         echo self::OK;
 
+        $array_fields = array();
+        $array_types = array();
+        
         $tableFilename = $this->isCoreFolder() ? 'Core/Table/' . $tableName . '.xml' : 'Table/' . $tableName . '.xml';
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
             
-            if ($this->createXMLTableByFields($tableFilename, $tableName) === "") {
+            if ($this->createXMLTableByFields($tableFilename, $tableName, $array_fields, $array_types) === "") {
                 // NO se introdujeron campos
                 // Creamos el .xml con el formato .SAMPLE
                 $path_parts = pathinfo(__FILE__);
@@ -315,12 +330,12 @@ class fsmaker {
         echo "\n";
 
         if ($this->prompt('¿Crear EditController? 1=Si, 0=No') === '1') {
-            $this->createEditController($name);
+            $this->createEditController($name, $array_fields, $array_types);
         }
         echo "\n";
 
         if ($this->prompt('¿Crear ListController? 1=Si, 0=No') === '1') {
-            $this->createListController($name);
+            $this->createListController($name, $array_fields, $array_types);
         }
 
         return "";
@@ -523,6 +538,10 @@ $ fsmaker translations\n";
             return '* No introdujo el nombre de la tabla a extender.\n';
         }
 
+
+        $array_fields = array();
+        $array_types = array();
+        
         $fileName = 'Extension/Table/' . $name . '.xml';
         if (file_exists($fileName)) {
             return "* La extensión de la tabla " . $name . " YA EXISTE.\n";
@@ -530,7 +549,7 @@ $ fsmaker translations\n";
 
         echo '* ' . $fileName;
         
-        if ($this->createXMLTableByFields($fileName, $name) === "") {
+        if ($this->createXMLTableByFields($fileName, $name, $array_fields, $array_types) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
             $path_parts = pathinfo(__FILE__);
@@ -680,10 +699,8 @@ $ fsmaker translations\n";
             }
         }
     }
-
-    private function createXMLTableByFields($tableFilename, $tableName) : string {
-        $array_fields = array();
-        $array_types = array();
+    
+    private function createXMLTableByFields($tableFilename, $tableName, &$array_fields, &$array_types) : string {
         $this->askByFields($array_fields, $array_types);
 
         // var_dump($array_fields, $array_types);
@@ -725,7 +742,128 @@ $ fsmaker translations\n";
         
         return $sample;
     }
+
+    private function createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, $editOrList) : string {
+        // var_dump($array_fields, $array_types);
         
+        if (empty($array_fields)) {
+            $this->askByFields($array_fields, $array_types);
+        }
+        
+        if ($editOrList === 1) {
+            // Es un EditController
+            $spaceA = '            ';
+            $spaceB = '                ';
+        } else {
+            // Es un ListController
+            $spaceA = '        ';
+            $spaceB = '            ';
+        }
+
+        // Creamos el .xml con los campos introducidos
+        $orden = 100;
+        $sample = "";
+        
+        foreach ($array_fields as $key => $field) {
+
+            if ($array_types[$key] === 'serial') {
+                if ($editOrList === 1) {
+                    // Es un EditController
+                    $sample = $sample 
+                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
+                } else {
+                    // Es un ListController
+                    $sample = $sample 
+                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="none' . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
+                }
+            } elseif ($array_types[$key] === 'integer') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'double precision') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="right" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="number" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'boolean') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="center" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="checkbox" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'text') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="textarea" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'timestamp') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="datetime" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'date') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="date" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif ($array_types[$key] === 'time') {
+                $sample = $sample 
+                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="time" fieldname="' . $array_fields[$key] . '" />' . "\n";
+            } elseif (substr($array_types[$key], 0, 4) === 'char') { // char = character varying($cantidad)
+                $cantidad = $this->getInt($array_types[$key]);
+                if ($editOrList === 1) {
+                    // Es un EditController
+                    $sample = $sample 
+                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" maxlength="' . $cantidad . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
+                } else {
+                    // Es un ListController
+                    $sample = $sample 
+                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
+                }
+            }
+
+            $sample = $sample 
+                    . $spaceA . '</column>' . "\n";
+            
+            $orden = $orden + 10;
+        }
+
+        if ($sample <> "") {
+            // Se introdujeron campos
+        
+            if ($editOrList === 1) {
+                // Es un EditController
+                $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+                        . '<view>' . "\n"
+                        . '    <columns>' . "\n"
+                        . '        <group name="data" numcolumns="12">' . "\n"
+                        . $sample;
+
+                $sample = $sample 
+                        . '        </group>' . "\n"
+                        . '    </columns>' . "\n"
+                        . '</view>' . "\n";
+            } else {
+                // Es un ListController
+                $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+                        . '<view>' . "\n"
+                        . '    <columns>' . "\n"
+                        . $sample;
+
+                $sample = $sample 
+                        . '    </columns>' . "\n"
+                        . '</view>' . "\n";
+            }
+            
+            file_put_contents($xmlviewFilename, $sample);
+        }
+        
+        return $sample;
+    }
+    
+    private function getInt($s){
+        return($a = preg_replace('/[^\-\d]*(\-?\d*).*/','$1', $s)) ? $a:'0';
+    }
+    
 }
 
 new fsmaker($argv);
