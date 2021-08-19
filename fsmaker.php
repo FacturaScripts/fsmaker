@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @author  Carlos García Gómez <carlos@facturascripts.com>
- * @collaborator Jerónimo Sánchez <socger@gmail.com>
+ * @author Carlos García Gómez            <carlos@facturascripts.com>
+ * @author Jerónimo Pedro Sánchez Manzano <socger@gmail.com>
  */
 if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
@@ -59,72 +59,135 @@ final class fsmaker {
         }
         
     }
-
+    
     private function askByFields(&$array_fields, &$array_types) {
-        $end = false;
-        while ( ! $end ) {
-            echo "\n\n";
+        $haySerial = false;
+        
+        while (true) {
+            echo "\n";
+
             $field = (string) $this->prompt('Nombre del field(vacío = EXIT de crear fields)');
             if ($field === "") {
-                $end = true;
-            } else {
-                $salir = false;
-                while (! $salir) {
-                    $type = (int) $this->prompt( "\nElija el tipo de campo\n"
-                                               . "0=Volver a preguntar el nombre\n"
-                                               . "1=serial\n"
-                                               . "2=integer\n"
-                                               . "3=double precision\n"
-                                               . "4=boolean\n"
-                                               . "5=character varying\n"
-                                               . "6=text\n"
-                                               . "7=timestamp\n"
-                                               . "8=date\n"
-                                               . "9=time\n" );
-                    
-                    if ($type > 0 || $option < 10) {
-                        
-                        if ($type === 1) {
-                            // He mos elegido serial, así que tengo que comprobar que no exista de antes
-                            $salir = true;
-                            foreach ($array_fields as $key => $campo) { //si usamos $field en vez de $campo borramos el último nonbre introducido, el que hemos dicho que era serial por última vez
-                                if ($array_types[$key] === 'serial'){
-                                    echo "\nYa hay un campo de tipo serial.\n";
-                                    $salir = false;
-                                } else {
-                                    $salir = true;
-                                }
-                            }
-                        } else {
-                            $salir = true;
-                        }
-                    }
-                }
-                
-                if ($type > 0) {
+                return;
+            }
+
+            $type = $this->askByType($array_fields, $haySerial);
+
+            switch ($type) {
+                case 1:
                     $array_fields[] = $field;
-                    if ($type === 1) {
-                        $array_types[] = 'serial';
-                    } elseif ($type === 2) {
-                        $array_types[] = 'integer';
-                    } elseif ($type === 3) {
-                        $array_types[] = 'double precision';
-                    } elseif ($type === 4) {
-                        $array_types[] = 'boolean';
-                    } elseif ($type === 5) {
-                        $cantidad = (int) $this->prompt("\nCantidad caracteres");
-                        $array_types[] = "character varying($cantidad)";
-                    } elseif ($type === 6) {
-                        $array_types[] = 'text';
-                    } elseif ($type === 7) {
-                        $array_types[] = 'timestamp';
-                    } elseif ($type === 8) {
-                        $array_types[] = 'date';
+                    $array_types[] = 'serial';
+                    break;
+
+                case 2:
+                    $array_fields[] = $field;
+                    $array_types[] = 'integer';
+                    break;
+
+                case 3:
+                    $array_fields[] = $field;
+                    $array_types[] = 'double precision';
+                    break;
+
+                case 4:
+                    $array_fields[] = $field;
+                    $array_types[] = 'boolean';
+                    break;
+
+                case 5:
+                    $array_fields[] = $field;
+                    $cantidad = (int) $this->prompt("\nCantidad caracteres");
+                    $array_types[] = "character varying($cantidad)";
+                    break;
+
+                case 6:
+                    $array_fields[] = $field;
+                    $array_types[] = 'text';
+                    break;
+
+                case 7:
+                    $array_fields[] = $field;
+                    $array_types[] = 'timestamp';
+                    break;
+
+                case 8:
+                    $array_fields[] = $field;
+                    $array_types[] = 'date';
+                    break;
+
+                case 9:
+                    $array_fields[] = $field;
+                    $array_types[] = 'time';
+                    break;
+
+                default:
+                    echo "\nEl nombre de field " . $field . " no lo usaremos.\n";
+                    break;
+            }
+        }
+    }
+
+    private function askByType(&$array_fields, &$haySerial) {
+        while (true) {
+            echo "\n";
+            $type = (int) $this->prompt( "Elija el tipo de campo\n"
+                                       . "0 = ** VOLVER A PREGUNTAR EL NOMBRE **\n"
+                                       . "1 = serial\n"
+                                       . "2 = integer\n"
+                                       . "3 = double precision\n"
+                                       . "4 = boolean\n"
+                                       . "5 = character varying\n"
+                                       . "6 = text\n"
+                                       . "7 = timestamp\n"
+                                       . "8 = date\n"
+                                       . "9 = time\n" );
+            switch ($type) {
+                case 0:
+                    return $type;
+
+                case 1:
+                    // Hemos elegido serial, así que tengo que comprobar que no exista de antes
+                    if ($haySerial === true) {
+                        // Ya se creó un serial
+                        echo "\nYa hay un campo de tipo serial.\n";
                     } else {
-                        $array_types[] = 'time';
+                        // No se ha creado todavía un serial
+                        $haySerial = true;
+                        return $type;
                     }
-                }
-                
+                    
+                    break;
+
+                case 2:
+                    return $type;
+
+                case 3:
+                    return $type;
+
+                case 4:
+                    return $type;
+
+                case 5:
+                    return $type;
+
+                case 6:
+                    return $type;
+
+                case 7:
+                    return $type;
+
+                case 8:
+                    return $type;
+
+                case 9:
+                    return $type;
+
+                case 10:
+                    return $type;
+
+                default:
+                    echo "\nOpción incorrecta.\n";
+                    break;
             }
         }
     }
@@ -146,7 +209,6 @@ final class fsmaker {
     }
 
     private function createController(): string {
-
         $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
         
         $fileName = $this->isCoreFolder() ? 'Core/Controller/' . $name . '.php' : 'Controller/' . $name . '.php';
@@ -214,6 +276,8 @@ final class fsmaker {
     }
 
     private function createControllerEdit($modelName, array $array_fields, array $array_types): string {
+        $this->fillFields($array_fields, $array_types);
+        
         $fileName = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
         
         if (file_exists($fileName)) {
@@ -241,7 +305,6 @@ final class fsmaker {
 
         echo '* ' . $xmlviewFilename;
         
-        $this->fillFields($array_fields, $array_types);
         $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1);
 
         echo self::OK;
@@ -249,6 +312,8 @@ final class fsmaker {
     }
 
     private function createControllerList(string $modelName, array $array_fields, array $array_types): string {
+        $this->fillFields($array_fields, $array_types);
+
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
         
@@ -279,7 +344,6 @@ final class fsmaker {
 
         echo '* ' . $xmlviewFilename;
         
-        $this->fillFields($array_fields, $array_types);
         $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0);
         
         echo self::OK;
@@ -392,25 +456,20 @@ final class fsmaker {
             return '* No introdujo el nombre de la tabla a extender.\n';
         }
 
-
-        $array_fields = array();
-        $array_types = array();
-        
         $fileName = 'Extension/Table/' . $name . '.xml';
         if (file_exists($fileName)) {
             return "* La extensión de la tabla " . $name . " YA EXISTE.\n";
         }
 
+        $array_fields = array();
+        $array_types = array();
+        
+        $this->askByFields($array_fields, $array_types);
+        $this->fillFields($array_fields, $array_types);
+        
         echo '* ' . $fileName;
         
-        if ($this->createXMLTableByFields($fileName, $name, $array_fields, $array_types) === "") {
-            // NO se introdujeron campos
-            // Creamos el .xml con el formato .SAMPLE
-            $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/extensionTable.xml.sample");
-            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
-            file_put_contents($fileName, $template);
-        }
+        $this->createXMLTableByFields($fileName, $name, $array_fields, $array_types);
 
         return self::OK;
     }
@@ -534,30 +593,23 @@ final class fsmaker {
             return "* El modelo " . $name . " YA EXISTE.\n";
         }
 
+        $array_fields = array();
+        $array_types = array();
+            
+        $this->askByFields($array_fields, $array_types);
+        $this->fillFields($array_fields, $array_types);
+        
         echo '* ' . $fileName;
         
-        $path_parts = pathinfo(__FILE__);
-        $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/Model.php.sample");
-        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]', '[[TABLE_NAME]]'], [$name, $this->getNamespace(), $tableName], $sample);
-        file_put_contents($fileName, $template);
+        $this->createModelByFields($fileName, $tableName, $array_fields, $name);
         
         echo self::OK;
 
-        $array_fields = array();
-        $array_types = array();
-        
         $tableFilename = $this->isCoreFolder() ? 'Core/Table/' . $tableName . '.xml' : 'Table/' . $tableName . '.xml';
         if (false === file_exists($tableFilename)) {
             echo '* ' . $tableFilename;
-            
-            if ($this->createXMLTableByFields($tableFilename, $tableName, $array_fields, $array_types) === "") {
-                // NO se introdujeron campos
-                // Creamos el .xml con el formato .SAMPLE
-                $path_parts = pathinfo(__FILE__);
-                $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/table.xml.sample");
-                $template = str_replace('[[TABLE_NAME]]', $tableName, $sample);
-                file_put_contents($tableFilename, $template);
-            }
+
+            $this->createXMLTableByFields($tableFilename, $tableName, $array_fields, $array_types);
 
             echo self::OK;
         } else {
@@ -577,7 +629,49 @@ final class fsmaker {
 
         return "";
     }
+    
+    private function createModelByFields($fileName, $tableName, $array_fields, $name) : string {
+        $sample = "";
+        
+        foreach ($array_fields as $key => $field) {
+            $sample = $sample 
+                . "    public $" . $array_fields[$key] . ";\n";
+        }                
 
+        if ($sample <> "") {
+            // Se introdujeron campos
+            $sample = '<?php' . "\n"
+                    . 'namespace FacturaScripts\[[NAME_SPACE]]\Model;' . "\n"
+                    . ' ' . "\n"
+                    . 'class [[NAME]] extends \FacturaScripts\Core\Model\Base\ModelClass' . "\n"
+                    . '{' . "\n"
+                    . '    use \FacturaScripts\Core\Model\Base\ModelTrait;' . "\n"
+                    . ' ' . "\n"
+                    . $sample
+                    . ' ' . "\n"
+                    . '    public function clear() {' . "\n"
+                    . '        parent::clear();' . "\n"
+                    . '        $this->creationdate = \date(self::DATETIME_STYLE);' . "\n"
+                    . '    }' . "\n"
+                    . ' ' . "\n"
+                    . '    public static function primaryColumn() {' . "\n"
+                    . '        return "id";' . "\n"
+                    . '    }' . "\n"
+                    . ' ' . "\n"
+                    . '    public static function tableName() {' . "\n"
+                    . '        return "[[TABLE_NAME]]";' . "\n"
+                    . '    }' . "\n"
+                    . ' ' . "\n"
+                    . '}' . "\n"
+                    . ' ' . "\n";
+            
+            $sample = str_replace(['[[NAME]]', '[[NAME_SPACE]]', '[[TABLE_NAME]]'], [$name, $this->getNamespace(), $tableName], $sample);
+            file_put_contents($fileName, $sample);
+        }
+        
+        return $sample;
+    }
+    
     private function createPluginAction(): string {
         $name = "";
         
@@ -677,12 +771,8 @@ final class fsmaker {
         
         return $sample;
     }
-    
+
     private function createXMLTableByFields($tableFilename, $tableName, &$array_fields, &$array_types) : string {
-        $this->askByFields($array_fields, $array_types);
-
-        // var_dump($array_fields, $array_types);
-
         // Creamos el .xml con los campos introducidos
         $sample = "";
         foreach ($array_fields as $key => $field) {
@@ -794,14 +884,14 @@ final class fsmaker {
 
     private function fillFields(&$array_fields, &$array_types) {
         if (empty($array_fields)) {
-            $array_fields[] = 'creationdate';
-            $array_types[] = 'timestamp';
+            $array_fields[] = 'id';
+            $array_types[] = 'serial';
             
             $array_fields[] = 'name';
             $array_types[] = "character varying(150)";
             
-            $array_fields[] = 'id';
-            $array_types[] = 'serial';
+            $array_fields[] = 'creationdate';
+            $array_types[] = 'timestamp';
         }
     }
         
