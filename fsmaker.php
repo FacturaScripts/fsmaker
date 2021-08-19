@@ -241,6 +241,9 @@ final class fsmaker {
 
         echo '* ' . $xmlviewFilename;
         
+        $this->fillFields($array_fields, $array_types);
+        $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1);
+/*        
         if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
@@ -249,7 +252,7 @@ final class fsmaker {
             $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
             file_put_contents($xmlviewFilename, $template);
         }
-        
+*/        
         echo self::OK;
         return "";
     }
@@ -284,7 +287,10 @@ final class fsmaker {
         }
 
         echo '* ' . $xmlviewFilename;
-
+        
+        $this->fillFields($array_fields, $array_types);
+        $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0);
+/*        
         if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0) === "") {
             // NO se introdujeron campos
             // Creamos el .xml con el formato .SAMPLE
@@ -293,7 +299,8 @@ final class fsmaker {
             $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
             file_put_contents($xmlviewFilename, $template);
         }
-
+*/
+        
         echo self::OK;
         return "";
     }
@@ -631,79 +638,6 @@ final class fsmaker {
         return "";
     }
 
-    private function devuelveWidget(&$sample, $nombreCampo, $tipo, $orden, $spaceA, $spaceB, $editOrList) {
-        switch ($tipo) {
-            case 'serial':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'integer':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'double precision':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" display="right" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="number" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'boolean':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" display="center" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="checkbox" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'text':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="textarea" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'timestamp':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="datetime" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'date':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="date" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-
-            case 'time':
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="time" fieldname="' . $nombreCampo . '" />' . "\n";
-                break;
-        }
-
-
-
-        if (substr($tipo, 0, 4) === 'char') { // char = character varying($cantidad)
-            $cantidad = $this->getInt($tipo);
-            if ($editOrList === 1) {
-                // Es un EditController
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" maxlength="' . $cantidad . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-            } else {
-                // Es un ListController
-                $sample = $sample 
-                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-            }
-        }
-
-        $sample = $sample 
-                . $spaceA . '</column>' . "\n";
-
-    }
-
     private function createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, $editOrList) : string {
         // var_dump($array_fields, $array_types);
         
@@ -806,6 +740,90 @@ final class fsmaker {
         return $sample;
     }
 
+    private function devuelveWidget(&$sample, $nombreCampo, $tipo, $orden, $spaceA, $spaceB, $editOrList) {
+        switch ($tipo) {
+            case 'serial':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'integer':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'double precision':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" display="right" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="number" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'boolean':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" display="center" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="checkbox" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'text':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="textarea" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'timestamp':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="datetime" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'date':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="date" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'time':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="time" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+        }
+
+        if (substr($tipo, 0, 4) === 'char') { // char = character varying($cantidad)
+            $cantidad = $this->getInt($tipo);
+            if ($editOrList === 1) {
+                // Es un EditController
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" maxlength="' . $cantidad . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+            } else {
+                // Es un ListController
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+            }
+        }
+
+        $sample = $sample 
+                . $spaceA . '</column>' . "\n";
+
+    }
+
+    private function fillFields(&$array_fields, &$array_types) {
+        if (empty($array_fields)) {
+            $array_fields[] = 'creationdate';
+            $array_types[] = 'timestamp';
+            
+            $array_fields[] = 'name';
+            $array_types[] = "character varying(150)";
+            
+            $array_fields[] = 'id';
+            $array_types[] = 'serial';
+        }
+    }
+        
     private function getInt($s){
         return($a = preg_replace('/[^\-\d]*(\-?\d*).*/','$1', $s)) ? $a:'0';
     }
