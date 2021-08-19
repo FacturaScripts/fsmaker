@@ -71,7 +71,7 @@ final class fsmaker {
                 return;
             }
 
-            $type = $this->askByType($array_fields, $haySerial);
+            $type = $this->askByType($haySerial);
 
             switch ($type) {
                 case 1:
@@ -127,7 +127,7 @@ final class fsmaker {
         }
     }
 
-    private function askByType(&$array_fields, &$haySerial) {
+    private function askByType(&$haySerial) {
         while (true) {
             echo "\n";
             $type = (int) $this->prompt( "Elija el tipo de campo\n"
@@ -601,7 +601,7 @@ final class fsmaker {
         
         echo '* ' . $fileName;
         
-        $this->createModelByFields($fileName, $tableName, $array_fields, $name);
+        $this->createModelByFields($fileName, $tableName, $array_fields, $array_types, $name);
         
         echo self::OK;
 
@@ -630,12 +630,16 @@ final class fsmaker {
         return "";
     }
     
-    private function createModelByFields($fileName, $tableName, $array_fields, $name) : string {
+    private function createModelByFields($fileName, $tableName, $array_fields, $array_types, $name) : string {
         $sample = "";
         
         foreach ($array_fields as $key => $field) {
             $sample = $sample 
                 . "    public $" . $array_fields[$key] . ";\n";
+            
+            if ($array_types[$key] === 'serial' ) {
+                $primaryColumn = $array_fields[$key];
+            }
         }                
 
         if ($sample <> "") {
@@ -655,7 +659,7 @@ final class fsmaker {
                     . '    }' . "\n"
                     . ' ' . "\n"
                     . '    public static function primaryColumn() {' . "\n"
-                    . '        return "id";' . "\n"
+                    . '        return "' . $primaryColumn . '";' . "\n"
                     . '    }' . "\n"
                     . ' ' . "\n"
                     . '    public static function tableName() {' . "\n"
