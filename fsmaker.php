@@ -8,7 +8,7 @@ if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
-class fsmaker {
+final class fsmaker {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const VERSION = 0.4;
@@ -528,6 +528,10 @@ class fsmaker {
     }
 
     private function createModelAction(): string {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            return "* Esta no es la carpeta raíz del plugin.\n";
+        }
+
         $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
         $tableName = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
 
@@ -535,8 +539,6 @@ class fsmaker {
 
         if (empty($name) || empty($tableName)) {
             return '* No introdujo ni el modelo ni la tabla.\n';
-        } elseif (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
-            return "* Esta no es la carpeta raíz del plugin.\n";
         }
 
         $fileName = $this->isCoreFolder() ? 'Core/Model/' . $name . '.php' : 'Model/' . $name . '.php';
