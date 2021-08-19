@@ -243,16 +243,7 @@ final class fsmaker {
         
         $this->fillFields($array_fields, $array_types);
         $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1);
-/*        
-        if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 1) === "") {
-            // NO se introdujeron campos
-            // Creamos el .xml con el formato .SAMPLE
-            $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/EditController.xml.sample");
-            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
-            file_put_contents($xmlviewFilename, $template);
-        }
-*/        
+
         echo self::OK;
         return "";
     }
@@ -290,16 +281,6 @@ final class fsmaker {
         
         $this->fillFields($array_fields, $array_types);
         $this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0);
-/*        
-        if ($this->createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, 0) === "") {
-            // NO se introdujeron campos
-            // Creamos el .xml con el formato .SAMPLE
-            $path_parts = pathinfo(__FILE__);
-            $sample = file_get_contents($path_parts['dirname']. "/SAMPLES/ListController.xml.sample");
-            $template = str_replace('[[NADA_A_REEMPLAZAR]]', $modelName, $sample);
-            file_put_contents($xmlviewFilename, $template);
-        }
-*/
         
         echo self::OK;
         return "";
