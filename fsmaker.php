@@ -17,25 +17,47 @@ class fsmaker {
     public function __construct($argv) {
         if (count($argv) < 2) {
             echo $this->help();
-        } elseif ($argv[1] === 'plugin') {
-            echo $this->createPluginAction();
-        } elseif ($argv[1] === 'model') {
-            echo $this->createModelAction();
-        } elseif ($argv[1] === 'controller') {
-            echo $this->createControllerAction();
-        } elseif ($argv[1] === 'translations') {
-            echo $this->updateTranslationsAction();
-        } elseif ($argv[1] === 'extension') {
-            echo $this->createExtensionAction();
-        } elseif ($argv[1] === 'gitignore') {
-            echo $this->createGitIgnore("");
-        } elseif ($argv[1] === 'cron') {
-            echo $this->createCron("");
-        } elseif ($argv[1] === 'init') {
-            echo $this->createInit("");
-        } else {
-            echo $this->help();
+            return;
         }
+
+        switch ($argv[1]) {
+            case 'plugin':
+                echo $this->createPluginAction();
+                return;
+            
+            case 'model':
+                echo $this->createModelAction();
+                return;
+            
+            case 'controller':
+                echo $this->createControllerAction();
+                return;
+            
+            case 'translations':
+                echo $this->updateTranslationsAction();
+                return;
+            
+            case 'extension':
+                echo $this->createExtensionAction();
+                return;
+            
+            case 'gitignore':
+                echo $this->createGitIgnore("");
+                return;
+            
+            case 'cron':
+                echo $this->createCron("");
+                return;
+            
+            case 'init':
+                echo $this->createInit("");
+                return;
+            
+            default:
+                echo $this->help();
+                return;
+        }
+        
     }
 
     private function createControllerAction(): string {
