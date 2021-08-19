@@ -629,6 +629,87 @@ class fsmaker {
         return "";
     }
 
+    private function devuelveWidget(&$sample, $nombreCampo, $tipo, $orden, $spaceA, $spaceB, $editOrList) {
+        switch ($tipo) {
+            case 'serial':
+                if ($editOrList === 1) {
+                    // Es un EditController
+                    $sample = $sample 
+                            . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+                } else {
+                    // Es un ListController
+                    $sample = $sample 
+                            . $spaceA . '<column name="' . $nombreCampo . '" display="none' . '" order="' . $orden . '">' . "\n"
+                            . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+                }
+                break;
+
+            case 'integer':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'double precision':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" display="right" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="number" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'boolean':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" display="center" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="checkbox" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'text':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="textarea" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'timestamp':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="datetime" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'date':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="date" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+
+            case 'time':
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="time" fieldname="' . $nombreCampo . '" />' . "\n";
+                break;
+        }
+
+
+
+        if (substr($tipo, 0, 4) === 'char') { // char = character varying($cantidad)
+            $cantidad = $this->getInt($tipo);
+            if ($editOrList === 1) {
+                // Es un EditController
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" maxlength="' . $cantidad . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+            } else {
+                // Es un ListController
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
+            }
+        }
+
+        $sample = $sample 
+                . $spaceA . '</column>' . "\n";
+
+    }
+
     private function createXMLControllerByFields($xmlviewFilename, $array_fields, $array_types, $editOrList) : string {
         // var_dump($array_fields, $array_types);
         
@@ -651,65 +732,7 @@ class fsmaker {
         $sample = "";
         
         foreach ($array_fields as $key => $field) {
-
-            if ($array_types[$key] === 'serial') {
-                if ($editOrList === 1) {
-                    // Es un EditController
-                    $sample = $sample 
-                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
-                } else {
-                    // Es un ListController
-                    $sample = $sample 
-                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="none' . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
-                }
-            } elseif ($array_types[$key] === 'integer') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'double precision') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="right" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="number" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'boolean') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" display="center" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="checkbox" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'text') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="textarea" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'timestamp') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="datetime" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'date') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="date" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif ($array_types[$key] === 'time') {
-                $sample = $sample 
-                        . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                        . $spaceB . '<widget type="time" fieldname="' . $array_fields[$key] . '" />' . "\n";
-            } elseif (substr($array_types[$key], 0, 4) === 'char') { // char = character varying($cantidad)
-                $cantidad = $this->getInt($array_types[$key]);
-                if ($editOrList === 1) {
-                    // Es un EditController
-                    $sample = $sample 
-                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" maxlength="' . $cantidad . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
-                } else {
-                    // Es un ListController
-                    $sample = $sample 
-                            . $spaceA . '<column name="column-' . $array_fields[$key] . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $array_fields[$key] . '" />' . "\n";
-                }
-            }
-
-            $sample = $sample 
-                    . $spaceA . '</column>' . "\n";
-            
+            $this->devuelveWidget($sample, $array_fields[$key], $array_types[$key], $orden, $spaceA, $spaceB, $editOrList);
             $orden = $orden + 10;
         }
 
