@@ -634,17 +634,9 @@ final class fsmaker {
     private function devuelveWidget(&$sample, $nombreCampo, $tipo, $orden, $spaceA, $spaceB, $editOrList) {
         switch ($tipo) {
             case 'serial':
-                if ($editOrList === 1) {
-                    // Es un EditController
-                    $sample = $sample 
-                            . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-                } else {
-                    // Es un ListController
-                    $sample = $sample 
-                            . $spaceA . '<column name="' . $nombreCampo . '" display="none' . '" order="' . $orden . '">' . "\n"
-                            . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
-                }
+                $sample = $sample 
+                        . $spaceA . '<column name="' . $nombreCampo . '" order="' . $orden . '">' . "\n"
+                        . $spaceB . '<widget type="text" fieldname="' . $nombreCampo . '" />' . "\n";
                 break;
 
             case 'integer':
