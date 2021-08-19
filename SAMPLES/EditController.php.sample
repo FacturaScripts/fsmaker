@@ -13,4 +13,4 @@ class Edit[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\Edi
         $pageData["icon"] = "fas fa-search";
         return $pageData;
     }
-}');
+}
