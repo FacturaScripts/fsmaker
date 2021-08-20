@@ -17,8 +17,12 @@ class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\Lis
 
     protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]") {
         $this->addView($viewName, "[[MODEL_NAME]]", "[[TITLE]]");
+        
+        // Esto es un ejemplo ... debe de cambiarlo según los nombres de campos del modelo
         $this->addOrderBy($viewName, ["id"], "id");
         $this->addOrderBy($viewName, ["name"], "name", 1);
+        
+        // Esto es un ejemplo ... debe de cambiarlo según los nombres de campos del modelo
         $this->addSearchFields($viewName, ["id", "name"]);
     }
 }
