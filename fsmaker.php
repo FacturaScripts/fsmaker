@@ -494,45 +494,45 @@ final class fsmaker
     {
         $properties = '';
         $primaryColumn = '';
-        $partsOfClear = '';
+        $clear = '';
         
         foreach ($fields as $property => $type) {
-            $saltoLinea = "\n" ;
-            $properties .= "    public $" . $property . ";" . $saltoLinea . $saltoLinea;
+            // Para la creación de properties
+            $properties .= "    public $" . $property . ";" . "\n\n";
             
+            // Para la creación de la primaryColumn
             if ($type === 'serial') {
                 $primaryColumn = $property;
             }
             
-            $partsOfClearA = '        $this->' . $property;
-            
+            // Para el método clear()
             switch ($type) {
                 case 'serial':
                     $primaryColumn = $property;
                     break;
 
                 case 'integer':
-                    $partsOfClear .= $partsOfClearA . ' = 0;' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
                     break;
 
                 case 'float':
-                    $partsOfClear .= $partsOfClearA . ' = 0;' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
                     break;
 
                 case 'boolean':
-                    $partsOfClear .= $partsOfClearA . ' = false;' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = false;' . "\n";
                     break;
 
                 case 'timestamp':
-                    $partsOfClear .= $partsOfClearA . ' = date("Y-m-d H:i:s");' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = date("d-m-Y H:i:s");' . "\n";
                     break;
 
                 case 'date':
-                    $partsOfClear .= $partsOfClearA . ' = date("Y-m-d");' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = date("d-m-Y");' . "\n";
                     break;
 
                 case 'time':
-                    $partsOfClear .= $partsOfClearA . ' = date("H:i:s");' . $saltoLinea;
+                    $clear .= '        $this->' . $property . ' = date("H:i:s");' . "\n";
                     break;
             }
             
@@ -546,7 +546,7 @@ final class fsmaker
             . $properties
             . '    public function clear() {' . "\n"
             . '        parent::clear();' . "\n"
-            . $partsOfClear
+            . $clear
             . '    }' . "\n\n"
             . '    public static function primaryColumn() {' . "\n"
             . '        return "' . $primaryColumn . '";' . "\n"
