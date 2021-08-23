@@ -85,7 +85,7 @@ final class fsmaker
                     break;
 
                 case 3:
-                    $fields[$name] = 'float';
+                    $fields[$name] = 'double precision';
                     break;
 
                 case 4:
@@ -515,7 +515,7 @@ final class fsmaker
                     $clear .= '        $this->' . $property . ' = 0;' . "\n";
                     break;
 
-                case 'float':
+                case 'double precision':
                     $clear .= '        $this->' . $property . ' = 0;' . "\n";
                     break;
 
@@ -684,7 +684,7 @@ final class fsmaker
                     . '                <widget type="text" fieldname="' . $name . '" />' . "\n";
                 break;
 
-            case 'float':
+            case 'double precision':
                 $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
                     . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
                 break;
