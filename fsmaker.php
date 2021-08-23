@@ -590,7 +590,7 @@ final class fsmaker
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
             file_put_contents(
                 $name . '/Translation/' . $filename . '.json',
-                '{"' . $name . '": "' . $name . '"}'
+                '{"' . strtolower($name) . '": "' . $name . '"}'
             );
             echo '* ' . $name . '/Translation/' . $filename . ".json" . self::OK;
         }
