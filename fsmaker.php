@@ -85,7 +85,7 @@ final class fsmaker
                     break;
 
                 case 3:
-                    $fields[$name] = 'double precision';
+                    $fields[$name] = 'float';
                     break;
 
                 case 4:
@@ -494,11 +494,48 @@ final class fsmaker
     {
         $properties = '';
         $primaryColumn = '';
+        $partsOfClear = '';
+        
         foreach ($fields as $property => $type) {
-            $properties .= "    public $" . $property . ";\n\n";
+            $saltoLinea = "\n" ;
+            $properties .= "    public $" . $property . ";" . $saltoLinea . $saltoLinea;
+            
             if ($type === 'serial') {
                 $primaryColumn = $property;
             }
+            
+            $partsOfClearA = '        $this->' . $property;
+            
+            switch ($type) {
+                case 'serial':
+                    $primaryColumn = $property;
+                    break;
+
+                case 'integer':
+                    $partsOfClear .= $partsOfClearA . ' = 0;' . $saltoLinea;
+                    break;
+
+                case 'float':
+                    $partsOfClear .= $partsOfClearA . ' = 0;' . $saltoLinea;
+                    break;
+
+                case 'boolean':
+                    $partsOfClear .= $partsOfClearA . ' = false;' . $saltoLinea;
+                    break;
+
+                case 'timestamp':
+                    $partsOfClear .= $partsOfClearA . ' = date("Y-m-d H:i:s");' . $saltoLinea;
+                    break;
+
+                case 'date':
+                    $partsOfClear .= $partsOfClearA . ' = date("Y-m-d");' . $saltoLinea;
+                    break;
+
+                case 'time':
+                    $partsOfClear .= $partsOfClearA . ' = date("H:i:s");' . $saltoLinea;
+                    break;
+            }
+            
         }
 
         $sample = '<?php' . "\n"
@@ -509,6 +546,7 @@ final class fsmaker
             . $properties
             . '    public function clear() {' . "\n"
             . '        parent::clear();' . "\n"
+            . $partsOfClear
             . '    }' . "\n\n"
             . '    public static function primaryColumn() {' . "\n"
             . '        return "' . $primaryColumn . '";' . "\n"
@@ -646,7 +684,11 @@ final class fsmaker
                     . '                <widget type="text" fieldname="' . $name . '" />' . "\n";
                 break;
 
-            case 'double precision':
+            case 'float':
+                $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
+                    . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
+                break;
+            
             case 'int':
                 $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
                     . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
