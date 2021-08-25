@@ -6,7 +6,8 @@ https://facturascripts.com/publicaciones/fsmaker-y-el-nuevo-curso-de-programacio
 # Instalar en Linux o macOS
 ```
 git clone https://github.com/FacturaScripts/fsmaker.git
-sudo ln -s fsmaker/fsmaker.sh /usr/local/bin/fsmaker
+pwd
+sudo ln -s /full-path/fsmaker/fsmaker.sh /usr/local/bin/fsmaker
 sudo chmod +x /usr/local/bin/fsmaker
 ```
 
