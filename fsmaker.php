@@ -530,7 +530,7 @@ final class fsmaker
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
         $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/');
         if (empty($name)) {
-            echo '* El plugin debe tener un nombre.\n';
+            echo "* El plugin debe tener un nombre.\n";
             return;
         } elseif (file_exists($name)) {
             echo "* El plugin " . $name . " YA EXISTE.\n";

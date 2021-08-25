@@ -1,2 +1,7 @@
 #!/usr/bin/env sh
-php /usr/local/bin/fsmaker.php $@
+
+# gets the current file folder
+folder=$(dirname "$(realpath "$0")")
+
+# run the php script
+php "$folder"/fsmaker.php $@
