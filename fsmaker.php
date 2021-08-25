@@ -685,10 +685,6 @@ final class fsmaker
                 break;
 
             case 'double precision':
-                $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
-                    . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
-                break;
-            
             case 'int':
                 $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
                     . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
