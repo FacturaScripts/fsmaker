@@ -12,7 +12,7 @@ final class fsmaker
 {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const VERSION = 1.0;
+    const VERSION = 0.9;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
