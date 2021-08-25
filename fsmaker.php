@@ -12,7 +12,7 @@ final class fsmaker
 {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const VERSION = 0.7;
+    const VERSION = 1.0;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -494,11 +494,48 @@ final class fsmaker
     {
         $properties = '';
         $primaryColumn = '';
+        $clear = '';
+        
         foreach ($fields as $property => $type) {
-            $properties .= "    public $" . $property . ";\n\n";
+            // Para la creación de properties
+            $properties .= "    public $" . $property . ";" . "\n\n";
+            
+            // Para la creación de la primaryColumn
             if ($type === 'serial') {
                 $primaryColumn = $property;
             }
+            
+            // Para el método clear()
+            switch ($type) {
+                case 'serial':
+                    $primaryColumn = $property;
+                    break;
+
+                case 'integer':
+                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    break;
+
+                case 'double precision':
+                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    break;
+
+                case 'boolean':
+                    $clear .= '        $this->' . $property . ' = false;' . "\n";
+                    break;
+
+                case 'timestamp':
+                    $clear .= '        $this->' . $property . ' = date("d-m-Y H:i:s");' . "\n";
+                    break;
+
+                case 'date':
+                    $clear .= '        $this->' . $property . ' = date("d-m-Y");' . "\n";
+                    break;
+
+                case 'time':
+                    $clear .= '        $this->' . $property . ' = date("H:i:s");' . "\n";
+                    break;
+            }
+            
         }
 
         $sample = '<?php' . "\n"
@@ -509,6 +546,7 @@ final class fsmaker
             . $properties
             . '    public function clear() {' . "\n"
             . '        parent::clear();' . "\n"
+            . $clear
             . '    }' . "\n\n"
             . '    public static function primaryColumn() {' . "\n"
             . '        return "' . $primaryColumn . '";' . "\n"
@@ -552,7 +590,7 @@ final class fsmaker
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
             file_put_contents(
                 $name . '/Translation/' . $filename . '.json',
-                '{"' . $name . '": "' . $name . '"}'
+                '{"' . strtolower($name) . '": "' . $name . '"}'
             );
             echo '* ' . $name . '/Translation/' . $filename . ".json" . self::OK;
         }
