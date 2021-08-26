@@ -1,14 +1,24 @@
-composer.phar
-/vendor/
-/nbproject/
 /node_modules/
-/.idea/
+/vendor/
+package-lock.json
 .DS_Store
-.vscode
+.htaccess
+composer.phar
+package-lock.json
 *.cache
 *.lock
-package-lock.json
 
-# Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control
-# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
-# composer.lock
+# eclipse
+.buildpath
+.project
+.settings
+
+# netbeans
+/nbproject/
+
+# phpstorm
+/.idea/
+
+# sscode
+.vscode
+*.code-workspace
