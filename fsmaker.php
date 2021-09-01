@@ -29,7 +29,7 @@ final class fsmaker
                 break;
 
             case 'cron':
-                $this->createCron($name);
+                $this->createCron('../' . $name, true);
                 break;
 
             case 'extension':
@@ -37,11 +37,11 @@ final class fsmaker
                 break;
 
             case 'gitignore':
-                $this->createGitIgnore($name);
+                $this->createGitIgnore('../' . $name, true);
                 break;
 
             case 'init':
-                $this->createInit($name);
+                $this->createInit('../' . $name, true);
                 break;
 
             case 'model':
@@ -260,11 +260,14 @@ final class fsmaker
         echo '* ' . $xmlFilename . self::OK;
     }
 
-    private function createCron(string $name)
+    private function createCron(string $name, bool $comprobarCarpetaRaiz = false)
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
+        if ($comprobarCarpetaRaiz === true) {
+            if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            // if (false === $this->isCoreFolder() && false === $this->isPluginFolder() && $comprobarCarpetaRaiz === true) {
+                echo "* Esta no es la carpeta raíz del plugin.\n";
+                return;
+            }
         }
 
         $fileName = $name . "/Cron.php";
@@ -391,11 +394,13 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createGitIgnore(string $name)
+    private function createGitIgnore(string $name, bool $comprobarCarpetaRaiz = false)
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
+        if ($comprobarCarpetaRaiz === true) {
+            if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+                echo "* Esta no es la carpeta raíz del plugin.\n";
+                return;
+            }
         }
 
         $fileName = $name . '/.gitignore';
@@ -405,15 +410,18 @@ final class fsmaker
         }
 
         $template = file_get_contents(__DIR__ . "/SAMPLES/gitignore.sample");
+        
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createIni(string $name)
+    private function createIni(string $name, bool $comprobarCarpetaRaiz = false)
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
+        if ($comprobarCarpetaRaiz === true) {
+            if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+                echo "* Esta no es la carpeta raíz del plugin.\n";
+                return;
+            }
         }
 
         $fileName = $name . "/facturascripts.ini";
@@ -428,11 +436,13 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createInit(string $name)
+    private function createInit(string $name, bool $comprobarCarpetaRaiz = false)
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
+        if ($comprobarCarpetaRaiz === true) {
+            if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+                echo "* Esta no es la carpeta raíz del plugin.\n";
+                return;
+            }
         }
 
         $fileName = $name . "/Init.php";
@@ -594,7 +604,7 @@ final class fsmaker
             );
             echo '* ' . $name . '/Translation/' . $filename . ".json" . self::OK;
         }
-
+        
         $this->createGitIgnore($name);
         $this->createCron($name);
         $this->createIni($name);
@@ -759,7 +769,7 @@ final class fsmaker
     {
         $fileName = "Init.php";
         if (!file_exists($fileName)) {
-            $this->createInit($name);
+            $this->createInit('../' . $name);
         }
 
         $fileStr = file_get_contents($fileName);
