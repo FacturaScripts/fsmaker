@@ -12,7 +12,7 @@ final class fsmaker
 {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const VERSION = 0.9;
+    const VERSION = 0.91;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -37,7 +37,7 @@ final class fsmaker
                 break;
 
             case 'gitignore':
-                $this->createGitIgnore($name);
+                $this->createGitIgnore();
                 break;
 
             case 'init':
@@ -262,12 +262,12 @@ final class fsmaker
 
     private function createCron(string $name)
     {
-        if (empty($name)) {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $fileName = $name . "/Cron.php";
+        $fileName = "Cron.php";
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
             return;
@@ -391,14 +391,9 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createGitIgnore(string $name)
+    private function createGitIgnore()
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
-        }
-
-        $fileName = $name . '/.gitignore';
+        $fileName = '.gitignore';
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
             return;
@@ -411,12 +406,7 @@ final class fsmaker
 
     private function createIni(string $name)
     {
-        if (empty($name)) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
-        }
-
-        $fileName = $name . "/facturascripts.ini";
+        $fileName = "facturascripts.ini";
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
             return;
@@ -430,12 +420,12 @@ final class fsmaker
 
     private function createInit(string $name)
     {
-        if (empty($name)) {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $fileName = $name . "/Init.php";
+        $fileName = "Init.php";
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
             return;
@@ -495,16 +485,16 @@ final class fsmaker
         $properties = '';
         $primaryColumn = '';
         $clear = '';
-        
+
         foreach ($fields as $property => $type) {
             // Para la creación de properties
             $properties .= "    public $" . $property . ";" . "\n\n";
-            
+
             // Para la creación de la primaryColumn
             if ($type === 'serial') {
                 $primaryColumn = $property;
             }
-            
+
             // Para el método clear()
             switch ($type) {
                 case 'serial':
@@ -516,7 +506,7 @@ final class fsmaker
                     break;
 
                 case 'double precision':
-                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    $clear .= '        $this->' . $property . ' = 0.0;' . "\n";
                     break;
 
                 case 'boolean':
@@ -535,7 +525,7 @@ final class fsmaker
                     $clear .= '        $this->' . $property . ' = date("H:i:s");' . "\n";
                     break;
             }
-            
+
         }
 
         $sample = '<?php' . "\n"
@@ -595,9 +585,10 @@ final class fsmaker
             echo '* ' . $name . '/Translation/' . $filename . ".json" . self::OK;
         }
 
-        $this->createGitIgnore($name);
-        $this->createCron($name);
+        chdir($name);
         $this->createIni($name);
+        $this->createGitIgnore();
+        $this->createCron($name);
         $this->createInit($name);
     }
 
