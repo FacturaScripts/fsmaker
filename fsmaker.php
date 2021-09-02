@@ -757,7 +757,7 @@ final class fsmaker
         $toSearch = '/// se ejecutara cada vez que carga FacturaScripts (si este plugin está activado).';
         $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Controller\\' . $name . '());';
         if ($modelOrController === 0) {
-            $toChange = "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
+            $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
         }
 
         $newFileStr = str_replace($toSearch, $toChange, $fileStr);
