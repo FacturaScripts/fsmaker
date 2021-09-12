@@ -12,6 +12,7 @@ final class fsmaker
 {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
+    const NOMBRES_NO_PERMITIDOS = 'code,activetab,action';
     const VERSION = 0.91;
     const OK = " -> OK.\n";
 
@@ -72,6 +73,11 @@ final class fsmaker
             $name = $this->prompt('Nombre del campo (vacío para terminar)');
             if (empty($name)) {
                 break;
+            }
+            
+            if (in_array(strtolower($name), explode(',', self::NOMBRES_NO_PERMITIDOS))) {
+                echo "\n" . 'Como nombre de campo no puede usarse ' . self::NOMBRES_NO_PERMITIDOS ."\n";
+                continue;
             }
 
             $type = $this->askType($serial);
