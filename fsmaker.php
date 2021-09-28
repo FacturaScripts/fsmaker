@@ -394,12 +394,6 @@ final class fsmaker
         $fields = $this->askFields();
         $this->createXMLViewByFields($fileName, $fields, 2);
 
-        
-//        $sample = file_get_contents(__DIR__ . "/SAMPLES/extensionXMLView.xml.sample");
-//        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
-//        file_put_contents($fileName, $template);
-        
-        
         echo '* ' . $fileName . self::OK;
     }
 
