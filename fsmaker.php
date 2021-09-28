@@ -232,7 +232,7 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLControllerByFields($xmlFilename, $fields, 1);
+        $this->createXMLViewByFields($xmlFilename, $fields, 1);
         echo '* ' . $xmlFilename . self::OK;
     }
 
@@ -262,7 +262,7 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLControllerByFields($xmlFilename, $fields, 0);
+        $this->createXMLViewByFields($xmlFilename, $fields, 0);
         echo '* ' . $xmlFilename . self::OK;
     }
 
@@ -391,9 +391,15 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/extensionXMLView.xml.sample");
-        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
-        file_put_contents($fileName, $template);
+        $fields = $this->askFields();
+        $this->createXMLViewByFields($fileName, $fields, 2);
+
+        
+//        $sample = file_get_contents(__DIR__ . "/SAMPLES/extensionXMLView.xml.sample");
+//        $template = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample); // Por si el día de mañana hubiera que reemplazar algo
+//        file_put_contents($fileName, $template);
+        
+        
         echo '* ' . $fileName . self::OK;
     }
 
@@ -598,44 +604,6 @@ final class fsmaker
         $this->createInit($name);
     }
 
-    private function createXMLControllerByFields(string $xmlFilename, array $fields, int $editOrList)
-    {
-        if (empty($fields)) {
-            $fields = $this->askFields();
-        }
-
-        // Creamos el xml con los campos introducidos
-        $order = 100;
-        $columns = '';
-        foreach ($fields as $key => $type) {
-            $columns .= $this->getWidget($key, $type, $order);
-            $order += 10;
-        }
-
-        if ($editOrList === 1) {
-            // Es un EditController
-            $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-                . '<view>' . "\n"
-                . '    <columns>' . "\n"
-                . '        <group name="data" numcolumns="12">' . "\n"
-                . $columns
-                . '        </group>' . "\n"
-                . '    </columns>' . "\n"
-                . '</view>' . "\n";
-            file_put_contents($xmlFilename, $sample);
-            return;
-        }
-
-        // Es un ListController
-        $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-            . '<view>' . "\n"
-            . '    <columns>' . "\n"
-            . $columns
-            . '    </columns>' . "\n"
-            . '</view>' . "\n";
-        file_put_contents($xmlFilename, $sample);
-    }
-
     private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields)
     {
         $columns = '';
@@ -662,6 +630,60 @@ final class fsmaker
         file_put_contents($tableFilename, $sample);
     }
 
+    private function createXMLViewByFields(string $xmlFilename, array $fields, int $editOrList)
+    {
+        if (empty($fields)) {
+            $fields = $this->askFields();
+        }
+
+        // Creamos el xml con los campos introducidos
+        $groupName = 'data';
+        if ($editOrList === 2) 
+        { // Es una extension
+            $groupName = 'data_extension';
+        }
+
+        $tabForColums = 12;
+        if ($editOrList === 0) 
+        { // Es un ListController
+            $tabForColums = 8;
+        }
+
+        $order = 100;
+        $columns = '';
+        
+        foreach ($fields as $key => $type) {
+            $columns .= $this->getWidget($key, $type, $order, $tabForColums);
+            $order += 10;
+        }
+        
+        $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+            . '<view>' . "\n"
+            . '    <columns>' . "\n";
+        
+        switch ($editOrList) {
+            case 0: // Es un ListController
+                $sample .= $columns;
+                break;
+                
+            case 1: // Es un EditController
+            case 2: // Es una extensión
+                $sample .= '        <group name="' . $groupName . '" numcolumns="12">' . "\n"
+                         . $columns
+                         . '        </group>' . "\n";
+                break;
+                
+            default: // No es ninguna de las opciones de antes
+                return;
+        }
+        
+        $sample .= '    </columns>' . "\n"
+                 . '</view>' . "\n";
+                
+        file_put_contents($xmlFilename, $sample);
+        return;
+    }
+
     private function findPluginName(): string
     {
         if ($this->isPluginFolder()) {
@@ -672,48 +694,50 @@ final class fsmaker
         return '';
     }
 
-    private function getWidget(string $name, string $type, string $order): string
+    private function getWidget(string $name, string $type, string $order, int $tabForColums): string
     {
+        $spaces = str_repeat(" ", $tabForColums);
         $sample = '';
+        
         switch ($type) {
             default:
-                $sample .= '            <column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . '                <widget type="text" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'double precision':
             case 'int':
-                $sample .= '            <column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
-                    . '                <widget type="number" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="number" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'boolean':
-                $sample .= '            <column name="' . $name . '" display="center" order="' . $order . '">' . "\n"
-                    . '                <widget type="checkbox" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" display="center" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="checkbox" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'text':
-                $sample .= '            <column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . '                <widget type="textarea" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="textarea" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'timestamp':
-                $sample .= '            <column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . '                <widget type="datetime" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="datetime" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'date':
-                $sample .= '            <column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . '                <widget type="date" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="date" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'time':
-                $sample .= '            <column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . '                <widget type="time" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                         . $spaces . '    <widget type="time" fieldname="' . $name . '" />' . "\n";
                 break;
         }
 
-        $sample .= "            </column>\n";
+        $sample .= $spaces . "</column>\n";
         return $sample;
     }
 
