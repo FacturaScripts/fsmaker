@@ -12,8 +12,8 @@ final class fsmaker
 {
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const NOMBRES_NO_PERMITIDOS = 'code,activetab,action';
-    const VERSION = 0.91;
+    const FORBIDDEN_WORDS = 'action,activetab,code';
+    const VERSION = 0.92;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -70,13 +70,13 @@ final class fsmaker
 
         while (true) {
             echo "\n";
-            $name = $this->prompt('Nombre del campo (vacío para terminar)');
+            $name = strtolower($this->prompt('Nombre del campo (vacío para terminar)'));
             if (empty($name)) {
                 break;
             }
-            
-            if (in_array(strtolower($name), explode(',', self::NOMBRES_NO_PERMITIDOS))) {
-                echo "\n" . 'Como nombre de campo no puede usarse ' . self::NOMBRES_NO_PERMITIDOS ."\n";
+
+            if (in_array($name, explode(',', self::FORBIDDEN_WORDS))) {
+                echo "\n" . self::FORBIDDEN_WORDS . " son nombres no permitidos.\n";
                 continue;
             }
 
