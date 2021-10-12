@@ -11,9 +11,9 @@ if (php_sapi_name() !== 'cli') {
 final class fsmaker
 {
 
-    const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
+    const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 0.92;
+    const VERSION = 0.93;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
