@@ -8,14 +8,16 @@ if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
-final class fsmaker {
+final class fsmaker
+{
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 0.93;
+    const VERSION = 1.0;
     const OK = " -> OK.\n";
 
-    public function __construct($argv) {
+    public function __construct($argv)
+    {
         if (count($argv) < 2) {
             $this->help();
             return;
@@ -61,7 +63,8 @@ final class fsmaker {
         }
     }
 
-    private function askFields(): array {
+    private function askFields(): array
+    {
         $fields = [];
         $serial = false;
 
@@ -96,7 +99,7 @@ final class fsmaker {
                     break;
 
                 case 5:
-                    $long = (int) $this->prompt("\nLongitud caracteres");
+                    $long = (int)$this->prompt("\nLongitud caracteres");
                     $fields[$name] = "character varying($long)";
                     break;
 
@@ -121,19 +124,20 @@ final class fsmaker {
         return $fields;
     }
 
-    private function askType(bool $serial): int {
+    private function askType(bool $serial): int
+    {
         while (true) {
             echo "\n";
-            $type = (int) $this->prompt("Elija el tipo de campo\n"
-                            . "1 = serial (autonumérico, ideal para ids)\n"
-                            . "2 = integer\n"
-                            . "3 = float\n"
-                            . "4 = boolean\n"
-                            . "5 = character varying\n"
-                            . "6 = text\n"
-                            . "7 = timestamp\n"
-                            . "8 = date\n"
-                            . "9 = time\n");
+            $type = (int)$this->prompt("Elija el tipo de campo\n"
+                . "1 = serial (autonumérico, ideal para ids)\n"
+                . "2 = integer\n"
+                . "3 = float\n"
+                . "4 = boolean\n"
+                . "5 = character varying\n"
+                . "6 = text\n"
+                . "7 = timestamp\n"
+                . "8 = date\n"
+                . "9 = time\n");
             if ($type === 1 && $serial) {
                 echo "\nYa hay un campo de tipo serial.\n";
                 continue;
@@ -147,7 +151,8 @@ final class fsmaker {
         }
     }
 
-    private function createController() {
+    private function createController()
+    {
         $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
         $fileName = $this->isCoreFolder() ? 'Core/Controller/' . $name . '.php' : 'Controller/' . $name . '.php';
         if (file_exists($fileName)) {
@@ -159,9 +164,7 @@ final class fsmaker {
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]']
-                , [$this->getNamespace(), $name]
-                , $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
@@ -177,13 +180,14 @@ final class fsmaker {
         echo '* ' . $viewFilename . self::OK;
     }
 
-    private function createControllerAction() {
+    private function createControllerAction()
+    {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $option = (int) $this->prompt("Elija el tipo de controlador a crear\n1=Controller, 2=ListController, 3=EditController");
+        $option = (int)$this->prompt("Elija el tipo de controlador a crear\n1=Controller, 2=ListController, 3=EditController");
         switch ($option) {
             case 1:
                 $this->createController();
@@ -205,7 +209,8 @@ final class fsmaker {
         echo "Opción no válida.\n";
     }
 
-    private function createControllerEdit(string $modelName, array $fields) {
+    private function createControllerEdit(string $modelName, array $fields)
+    {
         $fileName = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
         if (file_exists($fileName)) {
             echo "El controlador " . $fileName . " YA EXISTE.\n";
@@ -229,7 +234,8 @@ final class fsmaker {
         echo '* ' . $xmlFilename . self::OK;
     }
 
-    private function createControllerList(string $modelName, array $fields) {
+    private function createControllerList(string $modelName, array $fields)
+    {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
         $fileName = $this->isCoreFolder() ? 'Core/Controller/List' . $modelName . '.php' : 'Controller/List' . $modelName . '.php';
@@ -242,9 +248,9 @@ final class fsmaker {
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/ListController.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]']
-                , [$this->getNamespace(), $modelName, $title, $menu]
-                , $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]'],
+            [$this->getNamespace(), $modelName, $title, $menu],
+            $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
@@ -258,7 +264,8 @@ final class fsmaker {
         echo '* ' . $xmlFilename . self::OK;
     }
 
-    private function createCron(string $name) {
+    private function createCron(string $name)
+    {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
@@ -276,13 +283,14 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createExtensionAction() {
+    private function createExtensionAction()
+    {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $option = (int) $this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView");
+        $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView");
         switch ($option) {
             case 1:
                 $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
@@ -308,7 +316,8 @@ final class fsmaker {
         echo "* Opción no válida.\n";
     }
 
-    private function createExtensionController(string $name) {
+    private function createExtensionController(string $name)
+    {
         if (empty($name)) {
             echo '* No introdujo el nombre del controlador a extender.\n';
             return;
@@ -320,7 +329,7 @@ final class fsmaker {
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/extensionController.php.sample");
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionController.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
@@ -328,7 +337,8 @@ final class fsmaker {
         $this->modifyInit($name, 1);
     }
 
-    private function createExtensionModel(string $name) {
+    private function createExtensionModel(string $name)
+    {
         if (empty($name)) {
             echo '* No introdujo el nombre del modelo a extender.\n';
             return;
@@ -340,7 +350,7 @@ final class fsmaker {
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/extensionModel.php.sample");
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionModel.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
@@ -348,7 +358,8 @@ final class fsmaker {
         $this->modifyInit($name, 0);
     }
 
-    private function createExtensionTable(string $name) {
+    private function createExtensionTable(string $name)
+    {
         if (empty($name)) {
             echo '* No introdujo el nombre de la tabla a extender.\n';
             return;
@@ -365,7 +376,8 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createExtensionXMLView(string $name) {
+    private function createExtensionXMLView(string $name)
+    {
         if (empty($name)) {
             echo '* No introdujo el nombre del XMLView a extender.\n';
             return;
@@ -379,11 +391,11 @@ final class fsmaker {
 
         $fields = $this->askFields();
         $this->createXMLViewByFields($fileName, $fields, 2);
-
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createGitIgnore() {
+    private function createGitIgnore()
+    {
         $fileName = '.gitignore';
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
@@ -395,7 +407,8 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createIni(string $name) {
+    private function createIni(string $name)
+    {
         $fileName = "facturascripts.ini";
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
@@ -408,7 +421,8 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createInit(string $name) {
+    private function createInit(string $name)
+    {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
@@ -426,7 +440,8 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createModelAction() {
+    private function createModelAction()
+    {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
@@ -468,7 +483,8 @@ final class fsmaker {
         }
     }
 
-    private function createModelByFields(string $fileName, string $tableName, array $fields, string $name) {
+    private function createModelByFields(string $fileName, string $tableName, array $fields, string $name)
+    {
         $properties = '';
         $primaryColumn = '';
         $clear = '';
@@ -501,40 +517,41 @@ final class fsmaker {
                     break;
 
                 case 'timestamp':
-                    $clear .= '        $this->' . $property . ' = date("d-m-Y H:i:s");' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(ModelClass::DATETIME_STYLE);' . "\n";
                     break;
 
                 case 'date':
-                    $clear .= '        $this->' . $property . ' = date("d-m-Y");' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(ModelClass::DATE_STYLE);' . "\n";
                     break;
 
                 case 'time':
-                    $clear .= '        $this->' . $property . ' = date("H:i:s");' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(ModelClass::HOUR_STYLE);' . "\n";
                     break;
             }
         }
 
         $sample = '<?php' . "\n"
-                . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
-                . 'class ' . $name . ' extends \FacturaScripts\Core\Model\Base\ModelClass' . "\n"
-                . '{' . "\n"
-                . '    use \FacturaScripts\Core\Model\Base\ModelTrait;' . "\n\n"
-                . $properties
-                . '    public function clear() {' . "\n"
-                . '        parent::clear();' . "\n"
-                . $clear
-                . '    }' . "\n\n"
-                . '    public static function primaryColumn() {' . "\n"
-                . '        return "' . $primaryColumn . '";' . "\n"
-                . '    }' . "\n\n"
-                . '    public static function tableName() {' . "\n"
-                . '        return "' . $tableName . '";' . "\n"
-                . '    }' . "\n"
-                . '}' . "\n";
+            . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
+            . 'class ' . $name . ' extends \FacturaScripts\Core\Model\Base\ModelClass' . "\n"
+            . '{' . "\n"
+            . '    use \FacturaScripts\Core\Model\Base\ModelTrait;' . "\n\n"
+            . $properties
+            . '    public function clear() {' . "\n"
+            . '        parent::clear();' . "\n"
+            . $clear
+            . '    }' . "\n\n"
+            . '    public static function primaryColumn() {' . "\n"
+            . '        return "' . $primaryColumn . '";' . "\n"
+            . '    }' . "\n\n"
+            . '    public static function tableName() {' . "\n"
+            . '        return "' . $tableName . '";' . "\n"
+            . '    }' . "\n"
+            . '}' . "\n";
         file_put_contents($fileName, $sample);
     }
 
-    private function createPluginAction() {
+    private function createPluginAction()
+    {
         if (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
             echo "* No se puede crear un plugin en esta carpeta.\n";
             return;
@@ -564,8 +581,8 @@ final class fsmaker {
 
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
             file_put_contents(
-                    $name . '/Translation/' . $filename . '.json',
-                    '{"' . strtolower($name) . '": "' . $name . '"}'
+                $name . '/Translation/' . $filename . '.json',
+                '{"' . strtolower($name) . '": "' . $name . '"}'
             );
             echo '* ' . $name . '/Translation/' . $filename . ".json" . self::OK;
         }
@@ -577,32 +594,34 @@ final class fsmaker {
         $this->createInit($name);
     }
 
-    private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields) {
+    private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields)
+    {
         $columns = '';
         $constraints = '';
         foreach ($fields as $key => $type) {
             $columns .= "    <column>\n"
-                    . "        <name>$key</name>\n"
-                    . "        <type>$type</type>\n"
-                    . "    </column>\n";
+                . "        <name>$key</name>\n"
+                . "        <type>$type</type>\n"
+                . "    </column>\n";
 
             if ($type === 'serial') {
                 $constraints .= "    <constraint>\n"
-                        . '        <name>' . $tableName . "_pkey</name>\n"
-                        . '        <type>PRIMARY KEY (' . $key . ")</type>\n"
-                        . "    </constraint>\n";
+                    . '        <name>' . $tableName . "_pkey</name>\n"
+                    . '        <type>PRIMARY KEY (' . $key . ")</type>\n"
+                    . "    </constraint>\n";
             }
         }
 
         $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-                . '<table>' . "\n"
-                . $columns
-                . $constraints
-                . '</table>' . "\n";
+            . '<table>' . "\n"
+            . $columns
+            . $constraints
+            . '</table>' . "\n";
         file_put_contents($tableFilename, $sample);
     }
 
-    private function createXMLViewByFields(string $xmlFilename, array $fields, int $editOrList) {
+    private function createXMLViewByFields(string $xmlFilename, array $fields, int $editOrList)
+    {
         if (empty($fields)) {
             $fields = $this->askFields();
         }
@@ -627,8 +646,8 @@ final class fsmaker {
         }
 
         $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-                . '<view>' . "\n"
-                . '    <columns>' . "\n";
+            . '<view>' . "\n"
+            . '    <columns>' . "\n";
 
         switch ($editOrList) {
             case 0: // Es un ListController
@@ -638,8 +657,8 @@ final class fsmaker {
             case 1: // Es un EditController
             case 2: // Es una extensión
                 $sample .= '        <group name="' . $groupName . '" numcolumns="12">' . "\n"
-                        . $columns
-                        . '        </group>' . "\n";
+                    . $columns
+                    . '        </group>' . "\n";
                 break;
 
             default: // No es ninguna de las opciones de antes
@@ -647,13 +666,13 @@ final class fsmaker {
         }
 
         $sample .= '    </columns>' . "\n"
-                . '</view>' . "\n";
+            . '</view>' . "\n";
 
         file_put_contents($xmlFilename, $sample);
-        return;
     }
 
-    private function findPluginName(): string {
+    private function findPluginName(): string
+    {
         if ($this->isPluginFolder()) {
             $ini = parse_ini_file('facturascripts.ini');
             return $ini['name'] ?? '';
@@ -662,45 +681,46 @@ final class fsmaker {
         return '';
     }
 
-    private function getWidget(string $name, string $type, string $order, int $tabForColums): string {
+    private function getWidget(string $name, string $type, string $order, int $tabForColums): string
+    {
         $spaces = str_repeat(" ", $tabForColums);
         $sample = '';
 
         switch ($type) {
             default:
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'double precision':
             case 'int':
                 $sample .= $spaces . '<column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="number" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="number" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'boolean':
                 $sample .= $spaces . '<column name="' . $name . '" display="center" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="checkbox" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="checkbox" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'text':
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="textarea" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="textarea" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'timestamp':
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="datetime" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="datetime" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'date':
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="date" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="date" fieldname="' . $name . '" />' . "\n";
                 break;
 
             case 'time':
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                        . $spaces . '    <widget type="time" fieldname="' . $name . '" />' . "\n";
+                    . $spaces . '    <widget type="time" fieldname="' . $name . '" />' . "\n";
                 break;
         }
 
@@ -708,7 +728,8 @@ final class fsmaker {
         return $sample;
     }
 
-    private function getNamespace(): string {
+    private function getNamespace(): string
+    {
         if ($this->isCoreFolder()) {
             return 'Core';
         }
@@ -717,36 +738,40 @@ final class fsmaker {
         return 'Plugins\\' . $ini['name'];
     }
 
-    private function help() {
+    private function help()
+    {
         echo 'FacturaScripts Maker v' . self::VERSION . "\n\n"
-        . "crear:\n"
-        . "$ fsmaker plugin\n"
-        . "$ fsmaker model\n"
-        . "$ fsmaker controller\n"
-        . "$ fsmaker extension\n"
-        . "$ fsmaker gitignore\n"
-        . "$ fsmaker cron\n"
-        . "$ fsmaker init\n\n"
-        . "descargar:\n"
-        . "$ fsmaker translations\n";
+            . "crear:\n"
+            . "$ fsmaker plugin\n"
+            . "$ fsmaker model\n"
+            . "$ fsmaker controller\n"
+            . "$ fsmaker extension\n"
+            . "$ fsmaker gitignore\n"
+            . "$ fsmaker cron\n"
+            . "$ fsmaker init\n\n"
+            . "descargar:\n"
+            . "$ fsmaker translations\n";
     }
 
-    private function isCoreFolder(): bool {
+    private function isCoreFolder(): bool
+    {
         return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
     }
 
-    private function isPluginFolder(): bool {
+    private function isPluginFolder(): bool
+    {
         return file_exists('facturascripts.ini');
     }
 
-    private function modifyInit(string $name, int $modelOrController) {
+    private function modifyInit(string $name, int $modelOrController)
+    {
         $fileName = "Init.php";
         if (!file_exists($fileName)) {
             $this->createInit($name);
         }
 
         $fileStr = file_get_contents($fileName);
-        $toSearch = '/// se ejecutara cada vez que carga FacturaScripts (si este plugin está activado).';
+        $toSearch = '// se ejecutara cada vez que carga FacturaScripts (si este plugin está activado).';
         $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Controller\\' . $name . '());';
         if ($modelOrController === 0) {
             $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
@@ -757,7 +782,8 @@ final class fsmaker {
         echo '* ' . $fileName . self::OK;
     }
 
-    private function prompt($label, $pattern = ''): string {
+    private function prompt($label, $pattern = ''): string
+    {
         echo $label . ': ';
         $matches = [];
         $value = trim(fgets(STDIN));
@@ -769,7 +795,8 @@ final class fsmaker {
         return $value;
     }
 
-    private function updateTranslationsAction() {
+    private function updateTranslationsAction()
+    {
         if ($this->isPluginFolder()) {
             $folder = 'Translation/';
             $ini = parse_ini_file('facturascripts.ini');
@@ -787,7 +814,7 @@ final class fsmaker {
             return;
         }
 
-        /// download json from facturascripts.com
+        // download json from facturascripts.com
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
             echo "D " . $folder . $filename . ".json";
             $url = "https://facturascripts.com/EditLanguage?action=json&project=" . $project . "&code=" . $filename;
