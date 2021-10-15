@@ -532,9 +532,11 @@ final class fsmaker
 
         $sample = '<?php' . "\n"
             . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
-            . 'class ' . $name . ' extends \FacturaScripts\Core\Model\Base\ModelClass' . "\n"
+            . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
+            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n\n"
+            . 'class ' . $name . ' extends ModelClass' . "\n"
             . '{' . "\n"
-            . '    use \FacturaScripts\Core\Model\Base\ModelTrait;' . "\n\n"
+            . '    use ModelTrait;' . "\n\n"
             . $properties
             . '    public function clear() {' . "\n"
             . '        parent::clear();' . "\n"
@@ -689,6 +691,11 @@ final class fsmaker
         switch ($type) {
             default:
                 $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
+                break;
+
+            case 'serial':
+                $sample .= $spaces . '<column name="' . $name . '" display="none" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
                 break;
 
