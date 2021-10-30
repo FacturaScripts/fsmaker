@@ -13,7 +13,7 @@ final class fsmaker
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 1.0;
+    const VERSION = 1.1;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -323,7 +323,12 @@ final class fsmaker
             return;
         }
 
-        $fileName = 'Extension/Controller/' . $name . '.php';
+        $folder = 'Extension/Controller';
+        if (false === file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = $folder . '/' . $name . '.php';
         if (file_exists($fileName)) {
             echo "* La extensión del controlador " . $name . " YA EXISTE.\n";
             return;
@@ -344,7 +349,12 @@ final class fsmaker
             return;
         }
 
-        $fileName = 'Extension/Model/' . $name . '.php';
+        $folder = 'Extension/Model';
+        if (false === file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = $folder . '/' . $name . '.php';
         if (file_exists($fileName)) {
             echo "* La extensión del modelo " . $name . " YA EXISTE.\n";
             return;
@@ -365,7 +375,12 @@ final class fsmaker
             return;
         }
 
-        $fileName = 'Extension/Table/' . $name . '.xml';
+        $folder = 'Extension/Table';
+        if (false === file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = $folder . '/' . $name . '.xml';
         if (file_exists($fileName)) {
             echo "* La extensión de la tabla " . $name . " YA EXISTE.\n";
             return;
@@ -383,7 +398,12 @@ final class fsmaker
             return;
         }
 
-        $fileName = 'Extension/XMLView/' . $name . '.xml';
+        $folder = 'Extension/XMLView';
+        if (false === file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $fileName = $folder . '/' . $name . '.xml';
         if (file_exists($fileName)) {
             echo "* El fichero " . $fileName . " YA EXISTE.\n";
             return;
@@ -773,7 +793,7 @@ final class fsmaker
     private function modifyInit(string $name, int $modelOrController)
     {
         $fileName = "Init.php";
-        if (!file_exists($fileName)) {
+        if (false === file_exists($fileName)) {
             $this->createInit($name);
         }
 
