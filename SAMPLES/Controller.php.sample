@@ -8,7 +8,7 @@ class [[NAME]] extends \FacturaScripts\Core\Base\Controller
         $data["menu"] = "admin";
         $data["title"] = "[[NAME]]";
         $data["icon"] = "fas fa-page";
-        return $pageData;
+        return $data;
     }
     
     public function privateCore(&$response, $user, $permissions) {

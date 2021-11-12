@@ -8,9 +8,9 @@ class Edit[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\Edi
     }
 
     public function getPageData() {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "[[MODEL_NAME]]";
-        $pageData["icon"] = "fas fa-search";
-        return $pageData;
+        $data = parent::getPageData();
+        $data["title"] = "[[MODEL_NAME]]";
+        $data["icon"] = "fas fa-search";
+        return $data;
     }
 }

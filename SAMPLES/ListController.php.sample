@@ -4,11 +4,11 @@ namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\ListController
 {
     public function getPageData() {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "[[TITLE]]";
-        $pageData["menu"] = "[[MENU]]";
-        $pageData["icon"] = "fas fa-search";
-        return $pageData;
+        $data = parent::getPageData();
+        $data["title"] = "[[TITLE]]";
+        $data["menu"] = "[[MENU]]";
+        $data["icon"] = "fas fa-search";
+        return $data;
     }
 
     protected function createViews() {
