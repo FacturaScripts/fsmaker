@@ -3,11 +3,11 @@ namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 class [[NAME]] extends \FacturaScripts\Core\Base\Controller
 {
-    public function getPageData() {
+    public function getPageData(): array {
         $data = parent::getPageData();
         $data["menu"] = "admin";
         $data["title"] = "[[NAME]]";
-        $data["icon"] = "fas fa-page";
+        $data["icon"] = "fas fa-file";
         return $data;
     }
     

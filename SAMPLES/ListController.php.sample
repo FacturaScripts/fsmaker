@@ -3,7 +3,8 @@ namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\ListController
 {
-    public function getPageData() {
+    public function getPageData(): array
+    {
         $data = parent::getPageData();
         $data["title"] = "[[TITLE]]";
         $data["menu"] = "[[MENU]]";
@@ -11,11 +12,13 @@ class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\Lis
         return $data;
     }
 
-    protected function createViews() {
+    protected function createViews()
+    {
         $this->createViews[[MODEL_NAME]]();
     }
 
-    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]") {
+    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]")
+    {
         $this->addView($viewName, "[[MODEL_NAME]]", "[[TITLE]]");
         
         // Esto es un ejemplo ... debe de cambiarlo según los nombres de campos del modelo

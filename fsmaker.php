@@ -13,7 +13,7 @@ final class fsmaker
 
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 1.1;
+    const VERSION = 1.2;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -66,7 +66,6 @@ final class fsmaker
     private function askFields(): array
     {
         $fields = [];
-        $serial = false;
 
         while (true) {
             echo "\n";
@@ -80,7 +79,7 @@ final class fsmaker
                 continue;
             }
 
-            $type = $this->askType($serial);
+            $type = $this->askType(false);
             switch ($type) {
                 case 1:
                     $fields[$name] = 'serial';
@@ -562,10 +561,10 @@ final class fsmaker
             . '        parent::clear();' . "\n"
             . $clear
             . '    }' . "\n\n"
-            . '    public static function primaryColumn() {' . "\n"
+            . '    public static function primaryColumn(): string {' . "\n"
             . '        return "' . $primaryColumn . '";' . "\n"
             . '    }' . "\n\n"
-            . '    public static function tableName() {' . "\n"
+            . '    public static function tableName(): string {' . "\n"
             . '        return "' . $tableName . '";' . "\n"
             . '    }' . "\n"
             . '}' . "\n";
@@ -798,7 +797,7 @@ final class fsmaker
         }
 
         $fileStr = file_get_contents($fileName);
-        $toSearch = '// se ejecutara cada vez que carga FacturaScripts (si este plugin está activado).';
+        $toSearch = '// se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).';
         $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Controller\\' . $name . '());';
         if ($modelOrController === 0) {
             $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
@@ -830,7 +829,7 @@ final class fsmaker
             $project = $ini['name'] ?? '';
         } elseif ($this->isCoreFolder()) {
             $folder = 'Core/Translation/';
-            $project = 'CORE-2018';
+            $project = 'CORE';
         } else {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;

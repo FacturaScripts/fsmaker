@@ -1,10 +1,13 @@
 <?php
 namespace FacturaScripts\[[NAME_SPACE]]\Extension\Model;
 
+use Closure;
+
 class [[NAME]]
 {
     // Ejemplo para añadir un método ... añadir el método usado()
-    public function usado() {
+    public function usado(): Closure
+    {
         return function() {
             return $this->usado;
         };
@@ -13,67 +16,84 @@ class [[NAME]]
     // ***************************************
     // ** Métodos disponibles para extender **
     // ***************************************
-    
-    // clear()
-    public function clear() {
+
+    public function clear(): Closure
+    {
        return function() {
             // tu código aquí
-         };
-    }
-    
-    // delete() se ejecuta una vez realizado el delete() del modelo.
-    public function delete() {
-       return function() {
-            // tu código aquí
-         };
-    }
-    
-    // deleteBefore() se ejecuta antes de hacer el delete() del modelo. Si devolvemos false, impedimos el delete().
-    public function deleteBefore() {
-       return function() {
-            // tu código aquí
+            // se ejecuta cada vez que se instancia un objeto de este modelo. Asigna valores predeterminados.
          };
     }
 
-    // save() se ejecuta una vez realizado el save() del modelo.
-    public function save() {
+    public function delete(): Closure
+    {
        return function() {
             // tu código aquí
-         };
-    }
-    
-    // saveBefore() se ejecuta antes de hacer el save() del modelo. Si devolvemos false, impedimos el save().
-    public function saveBefore() {
-       return function() {
-            // tu código aquí
+            // delete() se ejecuta una vez realizado el delete() del modelo,
+            // cuando ya se ha eliminado el registro de la base de datos
          };
     }
 
-    // saveInsert() se ejecuta una vez realizado el saveInsert() del modelo.
-    public function saveInsert() {
+    public function deleteBefore(): Closure
+    {
        return function() {
             // tu código aquí
+            // deleteBefore() se ejecuta antes de ejecutar el delete() del modelo.
+            // Si devolvemos false, impedimos el delete().
          };
     }
-    
-    // saveInsertBefore() se ejecuta antes de hacer el saveInsert() del modelo. Si devolvemos false, impedimos el saveInsert().
-    public function saveInsertBefore() {
+
+    public function save(): Closure
+    {
        return function() {
             // tu código aquí
+            // save() se ejecuta una vez realizado el save() del modelo,
+            // cuando ya se ha guardado el registro en la base de datos
          };
     }
-    
-    // saveUpdate() se ejecuta una vez realizado el saveUpdate() del modelo.
-    public function saveUpdate() {
+
+    public function saveBefore(): Closure
+    {
        return function() {
             // tu código aquí
+            // saveBefore() se ejecuta antes de hacer el save() del modelo.
+            // Si devolvemos false, impedimos el save().
          };
     }
-    
-    // saveUpdateBefore() se ejecuta antes de hacer el saveUpdate() del modelo. Si devolvemos false, impedimos el saveUpdate().
-    public function saveUpdateBefore() {
+
+    public function saveInsert(): Closure
+    {
        return function() {
             // tu código aquí
+            // saveInsert() se ejecuta una vez realizado el saveInsert() del modelo,
+            // cuando ya se ha guardado el registro en la base de datos
+         };
+    }
+
+    public function saveInsertBefore(): Closure
+    {
+       return function() {
+            // tu código aquí
+            // saveInsertBefore() se ejecuta antes de hacer el saveInsert() del modelo.
+            // Si devolvemos false, impedimos el saveInsert().
+         };
+    }
+
+    public function saveUpdate(): Closure
+    {
+       return function() {
+            // tu código aquí
+            // saveUpdate() se ejecuta una vez realizado el saveUpdate() del modelo,
+            // cuando ya se ha guardado el registro en la base de datos
+         };
+    }
+
+    public function saveUpdateBefore(): Closure
+    {
+       return function() {
+            // tu código aquí
+            // saveUpdateBefore() se ejecuta antes de hacer el saveUpdate() del modelo.
+            // Si devolvemos false, impedimos el saveUpdate().
          };
     }
 

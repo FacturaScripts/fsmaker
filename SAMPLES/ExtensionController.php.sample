@@ -1,33 +1,40 @@
 <?php
 namespace FacturaScripts\[[NAME_SPACE]]\Extension\Controller;
 
+use Closure;
+
 class [[NAME]]
 {
-    // createViews() se ejecuta una vez realizado el createViews() del controlador.
-    public function createViews() {
+    public function createViews(): Closure
+    {
        return function() {
           // tu código aquí
+          // createViews() se ejecuta una vez realizado el createViews() del controlador.
        };
     }
 
-    // execAfterAction() se ejecuta tras el execAfterAction() del controlador.
-    public function execAfterAction() {
+    public function execAfterAction(): Closure
+    {
        return function($action) {
           // tu código aquí
+          // execAfterAction() se ejecuta tras el execAfterAction() del controlador.
        };
     }
 
-    // execPreviousAction() se ejecuta después del execPreviousAction() del controlador. Si devolvemos false detenemos la ejecución del controlador.
-    public function execPreviousAction() {
+    public function execPreviousAction(): Closure
+    {
        return function($action) {
           // tu código aquí
+          // execPreviousAction() se ejecuta después del execPreviousAction() del controlador.
+          // Si devolvemos false detenemos la ejecución del controlador.
        };
     }
 
-    // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
-    public function loadData() {
+    public function loadData(): Closure
+    {
        return function($viewName, $view) {
           // tu código aquí
+          // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
        };
     }
 }
