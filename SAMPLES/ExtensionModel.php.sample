@@ -97,4 +97,22 @@ class [[NAME]]
          };
     }
 
+    public function test(): Closure
+    {
+       return function() {
+            // tu código aquí
+            // test se ejecuta justo después del método test del modelo.
+            // Si devolvemos false, impedimos el save().
+         };
+    }
+
+    public function testBefore(): Closure
+    {
+       return function() {
+            // tu código aquí
+            // test se ejecuta justo antes del método test del modelo.
+            // Si devolvemos false, impedimos el save() y el resto de test().
+         };
+    }
+
 }
