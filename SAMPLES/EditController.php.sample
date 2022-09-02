@@ -3,11 +3,13 @@ namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 class Edit[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\EditController
 {
-    public function getModelClassName(): string {
+    public function getModelClassName(): string
+    {
         return "[[MODEL_NAME]]";
     }
 
-    public function getPageData(): array {
+    public function getPageData(): array
+    {
         $data = parent::getPageData();
         $data["title"] = "[[MODEL_NAME]]";
         $data["icon"] = "fas fa-search";

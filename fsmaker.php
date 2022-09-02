@@ -65,10 +65,19 @@ final class fsmaker
 
     private function askFields(): array
     {
-        $fields = [];
+        $fields = [
+            'id' => 'serial',
+            'creationdate' => 'timestamp',
+            'lastupdate' => 'timestamp',
+            'nick' => 'character varying(50)',
+            'lastnick' => 'character varying(50)',
+            'name' => 'character varying(100)'
+        ];
+
+        echo "\n";
+        echo "Los campos (id, creationdate, lastupdate, nick, lastnick, name) se crean por defecto.\n";
 
         while (true) {
-            echo "\n";
             $name = strtolower($this->prompt('Nombre del campo (vacío para terminar)'));
             if (empty($name)) {
                 break;
@@ -82,6 +91,10 @@ final class fsmaker
             $type = $this->askType(false);
             switch ($type) {
                 case 1:
+                    $clave = array_search('serial', $fields);
+                    if ($clave !== false) {
+                        unset($fields[$clave]);
+                    }
                     $fields[$name] = 'serial';
                     break;
 
@@ -118,6 +131,8 @@ final class fsmaker
                     $fields[$name] = 'time';
                     break;
             }
+
+            echo "\n";
         }
 
         return $fields;
@@ -509,44 +524,63 @@ final class fsmaker
         $clear = '';
 
         foreach ($fields as $property => $type) {
-            // Para la creación de properties
-            $properties .= "    public $" . $property . ";" . "\n\n";
-
             // Para la creación de la primaryColumn
             if ($type === 'serial') {
                 $primaryColumn = $property;
             }
 
+            // para el especificar el tipo de propiedad
+            $typeProperty = '';
+
             // Para el método clear()
             switch ($type) {
                 case 'serial':
+                    $typeProperty = 'int';
                     $primaryColumn = $property;
                     break;
 
                 case 'integer':
+                    $typeProperty = 'int';
                     $clear .= '        $this->' . $property . ' = 0;' . "\n";
                     break;
 
                 case 'double precision':
+                    $typeProperty = 'float';
                     $clear .= '        $this->' . $property . ' = 0.0;' . "\n";
                     break;
 
                 case 'boolean':
+                    $typeProperty = 'bool';
                     $clear .= '        $this->' . $property . ' = false;' . "\n";
                     break;
 
                 case 'timestamp':
+                    $typeProperty = 'string';
                     $clear .= '        $this->' . $property . ' = date(ModelClass::DATETIME_STYLE);' . "\n";
                     break;
 
                 case 'date':
+                    $typeProperty = 'string';
                     $clear .= '        $this->' . $property . ' = date(ModelClass::DATE_STYLE);' . "\n";
                     break;
 
                 case 'time':
+                    $typeProperty = 'string';
                     $clear .= '        $this->' . $property . ' = date(ModelClass::HOUR_STYLE);' . "\n";
                     break;
+
+                case 'text':
+                    $typeProperty = 'string';
+                    break;
             }
+
+            if (strpos($type, 'character varying') !== false) {
+                $typeProperty = 'string';
+            }
+
+            // Para la creación de properties
+            $properties .= "    /** @var " . $typeProperty . " */\n";
+            $properties .= "    public $" . $property . ";" . "\n\n";
         }
 
         $sample = '<?php' . "\n"
@@ -557,14 +591,17 @@ final class fsmaker
             . '{' . "\n"
             . '    use ModelTrait;' . "\n\n"
             . $properties
-            . '    public function clear() {' . "\n"
+            . "    public function clear() \n{"
+            . "    {\n"
             . '        parent::clear();' . "\n"
             . $clear
             . '    }' . "\n\n"
-            . '    public static function primaryColumn(): string {' . "\n"
+            . "    public static function primaryColumn(): string\n"
+            . "    {\n"
             . '        return "' . $primaryColumn . '";' . "\n"
             . '    }' . "\n\n"
-            . '    public static function tableName(): string {' . "\n"
+            . "    public static function tableName(): string\n"
+            . "    {\n"
             . '        return "' . $tableName . '";' . "\n"
             . '    }' . "\n"
             . '}' . "\n";
@@ -622,13 +659,25 @@ final class fsmaker
         foreach ($fields as $key => $type) {
             $columns .= "    <column>\n"
                 . "        <name>$key</name>\n"
-                . "        <type>$type</type>\n"
-                . "    </column>\n";
+                . "        <type>$type</type>\n";
+
+            if ($type === 'serial') {
+                $columns .= "        <null>NO</null>\n";
+            }
+
+            $columns .= "    </column>\n";
 
             if ($type === 'serial') {
                 $constraints .= "    <constraint>\n"
                     . '        <name>' . $tableName . "_pkey</name>\n"
                     . '        <type>PRIMARY KEY (' . $key . ")</type>\n"
+                    . "    </constraint>\n";
+            }
+
+            if ($key === 'nick' || $key === 'lastnick') {
+                $constraints .= "    <constraint>\n"
+                    . "        <name>ca_" . $tableName . "_users_" . $key . "</name>\n"
+                    . "        <type>FOREIGN KEY (" . $key . ") REFERENCES users (nick) ON DELETE SET NULL ON UPDATE CASCADE</type>\n"
                     . "    </constraint>\n";
             }
         }
