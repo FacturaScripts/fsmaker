@@ -591,7 +591,7 @@ final class fsmaker
             . '{' . "\n"
             . '    use ModelTrait;' . "\n\n"
             . $properties
-            . "    public function clear() \n{"
+            . "    public function clear() \n"
             . "    {\n"
             . '        parent::clear();' . "\n"
             . $clear
