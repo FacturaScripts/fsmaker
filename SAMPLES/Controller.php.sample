@@ -3,7 +3,8 @@ namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 class [[NAME]] extends \FacturaScripts\Core\Base\Controller
 {
-    public function getPageData(): array {
+    public function getPageData(): array
+    {
         $data = parent::getPageData();
         $data["menu"] = "admin";
         $data["title"] = "[[NAME]]";
@@ -11,7 +12,8 @@ class [[NAME]] extends \FacturaScripts\Core\Base\Controller
         return $data;
     }
     
-    public function privateCore(&$response, $user, $permissions) {
+    public function privateCore(&$response, $user, $permissions)
+    {
         parent::privateCore($response, $user, $permissions);
         // tu código aquí
     }
