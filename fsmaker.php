@@ -168,7 +168,8 @@ final class fsmaker
     private function createController()
     {
         $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
-        $fileName = $this->isCoreFolder() ? 'Core/Controller/' . $name . '.php' : 'Controller/' . $name . '.php';
+        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $fileName = $filePath . $name . '.php';
         if (file_exists($fileName)) {
             echo "* El controlador " . $name . " YA EXISTE.\n";
             return;
@@ -179,10 +180,13 @@ final class fsmaker
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        $this->createFolder($filePath);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $viewFilename = $this->isCoreFolder() ? 'Core/View/' . $name . '.html.twig' : 'View/' . $name . '.html.twig';
+        $viewPath = $this->isCoreFolder() ? 'Core/View/' : 'View/';
+        $viewFilename = $viewPath . $name . '.html.twig';
+        $this->createFolder($viewPath);
         if (file_exists($viewFilename)) {
             echo '* ' . $viewFilename . " YA EXISTE.\n";
             return;
@@ -225,7 +229,9 @@ final class fsmaker
 
     private function createControllerEdit(string $modelName, array $fields)
     {
-        $fileName = $this->isCoreFolder() ? 'Core/Controller/Edit' . $modelName . '.php' : 'Controller/Edit' . $modelName . '.php';
+        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $fileName = $filePath . 'Edit' . $modelName . '.php';
+        $this->createFolder($filePath);
         if (file_exists($fileName)) {
             echo "El controlador " . $fileName . " YA EXISTE.\n";
             return;
@@ -238,7 +244,9 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $xmlFilename = $this->isCoreFolder() ? 'Core/XMLView/Edit' . $modelName . '.xml' : 'XMLView/Edit' . $modelName . '.xml';
+        $xmlPath = $this->isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
+        $xmlFilename = $xmlPath . 'Edit' . $modelName . '.xml';
+        $this->createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
             echo '* ' . $xmlFilename . " YA EXISTE\n";
             return;
@@ -252,7 +260,9 @@ final class fsmaker
     {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
-        $fileName = $this->isCoreFolder() ? 'Core/Controller/List' . $modelName . '.php' : 'Controller/List' . $modelName . '.php';
+        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $fileName = $filePath . 'List' . $modelName . '.php';
+        $this->createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El controlador " . $fileName . " YA EXISTE.\n";
             return;
@@ -268,7 +278,9 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $xmlFilename = $this->isCoreFolder() ? 'Core/XMLView/List' . $modelName . '.xml' : 'XMLView/List' . $modelName . '.xml';
+        $xmlPath = $this->isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
+        $xmlFilename = $xmlPath . 'List' . $modelName . '.xml';
+        $this->createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
             echo '* ' . $xmlFilename . " YA EXISTE\n";
             return;
@@ -338,9 +350,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Controller';
-        if (false === file_exists($folder)) {
-            mkdir($folder, 0777, true);
-        }
+        $this->createFolder($folder);
 
         $fileName = $folder . '/' . $name . '.php';
         if (file_exists($fileName)) {
@@ -364,9 +374,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Model';
-        if (false === file_exists($folder)) {
-            mkdir($folder, 0777, true);
-        }
+        $this->createFolder($folder);
 
         $fileName = $folder . '/' . $name . '.php';
         if (file_exists($fileName)) {
@@ -390,9 +398,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Table';
-        if (false === file_exists($folder)) {
-            mkdir($folder, 0777, true);
-        }
+        $this->createFolder($folder);
 
         $fileName = $folder . '/' . $name . '.xml';
         if (file_exists($fileName)) {
@@ -413,9 +419,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/XMLView';
-        if (false === file_exists($folder)) {
-            mkdir($folder, 0777, true);
-        }
+        $this->createFolder($folder);
 
         $fileName = $folder . '/' . $name . '.xml';
         if (file_exists($fileName)) {
@@ -488,7 +492,9 @@ final class fsmaker
             return;
         }
 
-        $fileName = $this->isCoreFolder() ? 'Core/Model/' . $name . '.php' : 'Model/' . $name . '.php';
+        $filePath = $this->isCoreFolder() ? 'Core/Model' : 'Model/';
+        $fileName = $filePath . $name . '.php';
+        $this->createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El modelo " . $name . " YA EXISTE.\n";
             return;
@@ -498,7 +504,9 @@ final class fsmaker
         $this->createModelByFields($fileName, $tableName, $fields, $name);
         echo '* ' . $fileName . self::OK;
 
-        $tableFilename = $this->isCoreFolder() ? 'Core/Table/' . $tableName . '.xml' : 'Table/' . $tableName . '.xml';
+        $tablePath = $this->isCoreFolder() ? 'Core/Table' : 'Table/';
+        $tableFilename = $tablePath . $tableName . '.xml';
+        $this->createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
             $this->createXMLTableByFields($tableFilename, $tableName, $fields);
             echo '* ' . $tableFilename . self::OK;
@@ -608,6 +616,17 @@ final class fsmaker
         file_put_contents($fileName, $sample);
     }
 
+    private function createFolder(string $path)
+    {
+        if (file_exists($path)) {
+            return;
+        }
+
+        if (mkdir($path, 0755, true)) {
+            echo '* ' . $path . self::OK;
+        }
+    }
+
     private function createPluginAction()
     {
         if (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
@@ -633,8 +652,7 @@ final class fsmaker
             'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView'
         ];
         foreach ($folders as $folder) {
-            mkdir($name . '/' . $folder, 0755, true);
-            echo '* ' . $name . '/' . $folder . self::OK;
+            $this->createFolder($name . '/' . $folder);
         }
 
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
@@ -874,10 +892,12 @@ final class fsmaker
     {
         if ($this->isPluginFolder()) {
             $folder = 'Translation/';
+            $this->createFolder($folder);
             $ini = parse_ini_file('facturascripts.ini');
             $project = $ini['name'] ?? '';
         } elseif ($this->isCoreFolder()) {
             $folder = 'Core/Translation/';
+            $this->createFolder($folder);
             $project = 'CORE';
         } else {
             echo "* Esta no es la carpeta raíz del plugin.\n";
