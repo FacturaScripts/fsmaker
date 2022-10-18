@@ -65,17 +65,20 @@ final class fsmaker
 
     private function askFields(): array
     {
-        $fields = [
-            'id' => 'serial',
-            'creationdate' => 'timestamp',
-            'lastupdate' => 'timestamp',
-            'nick' => 'character varying(50)',
-            'lastnick' => 'character varying(50)',
-            'name' => 'character varying(100)'
-        ];
+        $fields = [];
 
         echo "\n";
-        echo "Los campos (id, creationdate, lastupdate, nick, lastnick, name) se crean por defecto.\n";
+        if ($this->prompt("¿Desea crear los campos (id, creationdate, lastupdate, nick, lastnick, name) por defecto? 1=Si, 0=No\n") === '1') {
+            $fields = [
+                'id' => 'serial',
+                'creationdate' => 'timestamp',
+                'lastupdate' => 'timestamp',
+                'nick' => 'character varying(50)',
+                'lastnick' => 'character varying(50)',
+                'name' => 'character varying(100)'
+            ];
+        }
+        echo "\n";
 
         while (true) {
             $name = strtolower($this->prompt('Nombre del campo (vacío para terminar)'));
@@ -575,17 +578,17 @@ final class fsmaker
 
                 case 'timestamp':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(ModelClass::DATETIME_STYLE);' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(self::DATETIME_STYLE);' . "\n";
                     break;
 
                 case 'date':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(ModelClass::DATE_STYLE);' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(self::DATE_STYLE);' . "\n";
                     break;
 
                 case 'time':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(ModelClass::HOUR_STYLE);' . "\n";
+                    $clear .= '        $this->' . $property . ' = date(self::HOUR_STYLE);' . "\n";
                     break;
 
                 case 'text':
