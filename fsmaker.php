@@ -432,6 +432,17 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
+    private function createFolder(string $path)
+    {
+        if (file_exists($path)) {
+            return;
+        }
+
+        if (mkdir($path, 0755, true)) {
+            echo '* ' . $path . self::OK;
+        }
+    }
+
     private function createGitIgnore()
     {
         $fileName = '.gitignore';
@@ -614,17 +625,6 @@ final class fsmaker
             . '    }' . "\n"
             . '}' . "\n";
         file_put_contents($fileName, $sample);
-    }
-
-    private function createFolder(string $path)
-    {
-        if (file_exists($path)) {
-            return;
-        }
-
-        if (mkdir($path, 0755, true)) {
-            echo '* ' . $path . self::OK;
-        }
     }
 
     private function createPluginAction()
