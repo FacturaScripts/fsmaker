@@ -1,7 +1,9 @@
 <?php
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
-class [[NAME]] extends \FacturaScripts\Core\Base\Controller
+use FacturaScripts\Core\Base\Controller;
+
+class [[NAME]] extends Controller
 {
     public function getPageData(): array
     {

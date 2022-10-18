@@ -1,7 +1,9 @@
 <?php
 namespace FacturaScripts\Plugins\[[NAME]];
 
-class Init extends \FacturaScripts\Core\Base\InitClass
+use FacturaScripts\Core\Base\InitClass;
+
+class Init extends InitClass
 {
     public function init()
     {

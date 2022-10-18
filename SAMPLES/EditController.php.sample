@@ -1,7 +1,9 @@
 <?php
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
-class Edit[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\EditController
+use FacturaScripts\Core\Lib\ExtendedController\EditController;
+
+class Edit[[MODEL_NAME]] extends EditController
 {
     public function getModelClassName(): string
     {
