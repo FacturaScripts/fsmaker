@@ -61,6 +61,10 @@ final class fsmaker
                 $this->updateTranslationsAction();
                 break;
 
+            case 'zip':
+                $this->zipAction();
+                break;
+
             default:
                 $this->help();
                 break;
@@ -894,7 +898,9 @@ final class fsmaker
             . "$ fsmaker init\n"
             . "$ fsmaker test\n\n"
             . "descargar:\n"
-            . "$ fsmaker translations\n";
+            . "$ fsmaker translations\n\n"
+            . "comprimir:\n"
+            . "$ fsmaker zip\n";
     }
 
     private function isCoreFolder(): bool
@@ -975,6 +981,54 @@ final class fsmaker
         }
     }
 
+    private function zipAction()
+    {
+
+        if (false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $ini = parse_ini_file('facturascripts.ini');
+        $pluginName = $ini['name'] ?? '';
+        if (empty($pluginName)) {
+            echo "* No se ha encontrado el nombre del plugin.\n";
+            return;
+        }
+
+        $customName = $this->prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
+        if (empty($customName)) {
+            $zipName = $pluginName . '.zip';
+        } else {
+            $zipName = $customName . '.zip';
+        }
+
+        $zip = new ZipArchive();
+        if (true !== $zip->open($zipName, ZipArchive::CREATE)) {
+            echo "* Error al crear el archivo zip.\n";
+            return;
+        }
+
+        $zip->addEmptyDir($pluginName);
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator('.'),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $name => $file) {
+            if ($file->getFilename() === '.'
+                || $file->getFilename() === '..'
+                || $file->getFilename()[0] === '.'
+                || substr($name, 0, 3) === './.') {
+                continue;
+            }
+            $path = str_replace('./', $pluginName . '/', $name);
+            $zip->addFile($name, $path);
+        }
+
+        $zip->close();
+        echo "* " . $zipName . self::OK;
+    }
 }
 
 new fsmaker($argv);
