@@ -53,6 +53,10 @@ final class fsmaker
                 $this->createPluginAction();
                 break;
 
+            case 'test':
+                $this->createTestAction();
+                break;
+
             case 'translations':
                 $this->updateTranslationsAction();
                 break;
@@ -177,7 +181,7 @@ final class fsmaker
             echo "* El controlador " . $name . " YA EXISTE.\n";
             return;
         } elseif (empty($name)) {
-            echo '* No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n';
+            echo "* No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n";
             return;
         }
 
@@ -348,14 +352,14 @@ final class fsmaker
     private function createExtensionController(string $name)
     {
         if (empty($name)) {
-            echo '* No introdujo el nombre del controlador a extender.\n';
+            echo "* No introdujo el nombre del controlador a extender.\n";
             return;
         }
 
-        $folder = 'Extension/Controller';
+        $folder = 'Extension/Controller/';
         $this->createFolder($folder);
 
-        $fileName = $folder . '/' . $name . '.php';
+        $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
             echo "* La extensión del controlador " . $name . " YA EXISTE.\n";
             return;
@@ -372,14 +376,14 @@ final class fsmaker
     private function createExtensionModel(string $name)
     {
         if (empty($name)) {
-            echo '* No introdujo el nombre del modelo a extender.\n';
+            echo "* No introdujo el nombre del modelo a extender.\n";
             return;
         }
 
-        $folder = 'Extension/Model';
+        $folder = 'Extension/Model/';
         $this->createFolder($folder);
 
-        $fileName = $folder . '/' . $name . '.php';
+        $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
             echo "* La extensión del modelo " . $name . " YA EXISTE.\n";
             return;
@@ -396,14 +400,14 @@ final class fsmaker
     private function createExtensionTable(string $name)
     {
         if (empty($name)) {
-            echo '* No introdujo el nombre de la tabla a extender.\n';
+            echo "* No introdujo el nombre de la tabla a extender.\n";
             return;
         }
 
-        $folder = 'Extension/Table';
+        $folder = 'Extension/Table/';
         $this->createFolder($folder);
 
-        $fileName = $folder . '/' . $name . '.xml';
+        $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
             echo "* La extensión de la tabla " . $name . " YA EXISTE.\n";
             return;
@@ -417,14 +421,14 @@ final class fsmaker
     private function createExtensionXMLView(string $name)
     {
         if (empty($name)) {
-            echo '* No introdujo el nombre del XMLView a extender.\n';
+            echo "* No introdujo el nombre del XMLView a extender.\n";
             return;
         }
 
-        $folder = 'Extension/XMLView';
+        $folder = 'Extension/XMLView/';
         $this->createFolder($folder);
 
-        $fileName = $folder . '/' . $name . '.xml';
+        $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
             echo "* El fichero " . $fileName . " YA EXISTE.\n";
             return;
@@ -502,11 +506,11 @@ final class fsmaker
         $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
         $tableName = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
         if (empty($name) || empty($tableName)) {
-            echo '* No introdujo ni el modelo ni la tabla.\n';
+            echo "* No introdujo ni el modelo ni la tabla.\n";
             return;
         }
 
-        $filePath = $this->isCoreFolder() ? 'Core/Model' : 'Model/';
+        $filePath = $this->isCoreFolder() ? 'Core/Model/' : 'Model/';
         $fileName = $filePath . $name . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
@@ -518,7 +522,7 @@ final class fsmaker
         $this->createModelByFields($fileName, $tableName, $fields, $name);
         echo '* ' . $fileName . self::OK;
 
-        $tablePath = $this->isCoreFolder() ? 'Core/Table' : 'Table/';
+        $tablePath = $this->isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         $this->createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
@@ -652,7 +656,8 @@ final class fsmaker
 
         $folders = [
             'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES', 'Extension/Controller',
-            'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView'
+            'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
+            'Test/main'
         ];
         foreach ($folders as $folder) {
             $this->createFolder($name . '/' . $folder);
@@ -671,6 +676,48 @@ final class fsmaker
         $this->createGitIgnore();
         $this->createCron($name);
         $this->createInit($name);
+    }
+
+    private function createTestAction()
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $name = $this->prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/');
+        if (empty($name)) {
+            echo "* No introdujo el nombre del test o está mal escrito.\n";
+            return;
+        }
+
+        $dirCore = 'Test/Core/';
+        if ($this->isCoreFolder()) {
+            $dirCore .= $this->prompt('¿En que carpeta de Test/Core desea añadir el nuevo Test?, dejar en blanco para usar la raíz.');
+        }
+
+        $filePath = $this->isCoreFolder() ? $dirCore : 'Test/main/';
+        $fileName = $filePath . $name . '.php';
+        $this->createFolder($filePath);
+        if (file_exists($fileName)) {
+            echo "* El test " . $name . " YA EXISTE.\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/Test.php.sample");
+        $nameSpace = $this->getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
+        file_put_contents($fileName, $template);
+        echo '* ' . $fileName . self::OK;
+
+        if ($this->isCoreFolder()) {
+            return;
+        }
+
+        $txtFile = $filePath . 'install-plugins.txt';
+        $ini = parse_ini_file('facturascripts.ini');
+        file_put_contents($txtFile, $ini['name']);
+        echo '* ' . $txtFile . self::OK;
     }
 
     private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields)
@@ -844,7 +891,8 @@ final class fsmaker
             . "$ fsmaker extension\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
-            . "$ fsmaker init\n\n"
+            . "$ fsmaker init\n"
+            . "$ fsmaker test\n\n"
             . "descargar:\n"
             . "$ fsmaker translations\n";
     }
