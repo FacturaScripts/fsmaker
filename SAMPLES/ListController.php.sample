@@ -1,7 +1,9 @@
 <?php
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
-class List[[MODEL_NAME]] extends \FacturaScripts\Core\Lib\ExtendedController\ListController
+use FacturaScripts\Core\Lib\ExtendedController\ListController;
+
+class List[[MODEL_NAME]] extends ListController
 {
     public function getPageData(): array
     {

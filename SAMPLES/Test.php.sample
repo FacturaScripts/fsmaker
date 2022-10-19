@@ -1,0 +1,15 @@
+<?php
+namespace FacturaScripts\[[NAME_SPACE]];
+
+use FacturaScripts\Test\Traits\LogErrorsTrait;
+use PHPUnit\Framework\TestCase;
+
+final class [[NAME]] extends TestCase
+{
+    use LogErrorsTrait;
+
+    protected function tearDown(): void
+    {
+        $this->logErrors();
+    }
+}
