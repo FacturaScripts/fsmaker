@@ -684,7 +684,7 @@ final class fsmaker
 
     private function createTestAction()
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if ($this->isCoreFolder() || false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -695,12 +695,7 @@ final class fsmaker
             return;
         }
 
-        $dirCore = 'Test/Core/';
-        if ($this->isCoreFolder()) {
-            $dirCore .= $this->prompt('¿En que carpeta de Test/Core desea añadir el nuevo Test?, dejar en blanco para usar la raíz.');
-        }
-
-        $filePath = $this->isCoreFolder() ? $dirCore : 'Test/main/';
+        $filePath = 'Test/main/';
         $fileName = $filePath . $name . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
@@ -708,20 +703,16 @@ final class fsmaker
             return;
         }
 
+        $txtFile = $filePath . 'install-plugins.txt';
+        $ini = parse_ini_file('facturascripts.ini');
+        file_put_contents($txtFile, $ini['name']);
+        echo '* ' . $txtFile . self::OK;
+
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Test.php.sample");
         $nameSpace = $this->getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
-
-        if ($this->isCoreFolder()) {
-            return;
-        }
-
-        $txtFile = $filePath . 'install-plugins.txt';
-        $ini = parse_ini_file('facturascripts.ini');
-        file_put_contents($txtFile, $ini['name']);
-        echo '* ' . $txtFile . self::OK;
     }
 
     private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields)

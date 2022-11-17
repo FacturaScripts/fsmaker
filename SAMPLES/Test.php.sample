@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\[[NAME_SPACE]];
+namespace FacturaScripts\Test\Plugins;
 
 use FacturaScripts\Test\Traits\LogErrorsTrait;
 use PHPUnit\Framework\TestCase;
