@@ -328,7 +328,7 @@ final class fsmaker
             return;
         }
 
-        $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView");
+        $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
         switch ($option) {
             case 1:
                 $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
@@ -348,6 +348,10 @@ final class fsmaker
             case 4:
                 $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $this->createExtensionXMLView($name);
+
+            case 5:
+                $name = $this->prompt('Nombre de la vista html.twig', '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/');
+                $this->createExtensionView($name);
                 return;
         }
 
@@ -441,6 +445,26 @@ final class fsmaker
 
         $fields = $this->askFields();
         $this->createXMLViewByFields($fileName, $fields, 2);
+        echo '* ' . $fileName . self::OK;
+    }
+
+    private function createExtensionView(string $name)
+    {
+        if (empty($name)) {
+            echo "* No introdujo el nombre de la vista a extender.\n";
+            return;
+        }
+
+        $folder = 'Extension/View/';
+        $this->createFolder($folder);
+
+        $fileName = $folder . $name . '.html.twig';
+        if (file_exists($fileName)) {
+            echo "* El fichero " . $fileName . " YA EXISTE.\n";
+            return;
+        }
+
+        file_put_contents($fileName, '');
         echo '* ' . $fileName . self::OK;
     }
 
@@ -661,7 +685,7 @@ final class fsmaker
 
         $folders = [
             'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES', 'Extension/Controller',
-            'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
+            'Extension/Model', 'Extension/Table', 'Extension/XMLView','Extension/View', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
             'Test/main'
         ];
         foreach ($folders as $folder) {
