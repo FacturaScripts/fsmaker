@@ -146,6 +146,7 @@ final class fsmaker
             echo "\n";
         }
 
+        ksort($fields);
         return $fields;
     }
 
