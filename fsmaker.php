@@ -552,6 +552,13 @@ final class fsmaker
         $properties = '';
         $primaryColumn = '';
         $clear = '';
+        $clearExclude = ['lastupdate', 'lastnick'];
+        $test = '';
+
+        $creationdate = array_key_exists('creationdate', $fields);
+        $lastupdate = array_key_exists('lastupdate', $fields);
+        $nick = array_key_exists('nick', $fields);
+        $lastnick = array_key_exists('lastnick', $fields);
 
         foreach ($fields as $property => $type) {
             // Para la creación de la primaryColumn
@@ -571,41 +578,59 @@ final class fsmaker
 
                 case 'integer':
                     $typeProperty = 'int';
-                    $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    }
                     break;
 
                 case 'double precision':
                     $typeProperty = 'float';
-                    $clear .= '        $this->' . $property . ' = 0.0;' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = 0.0;' . "\n";
+                    }
                     break;
 
                 case 'boolean':
                     $typeProperty = 'bool';
-                    $clear .= '        $this->' . $property . ' = false;' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = false;' . "\n";
+                    }
                     break;
 
                 case 'timestamp':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(self::DATETIME_STYLE);' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = date(self::DATETIME_STYLE);' . "\n";
+                    }
                     break;
 
                 case 'date':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(self::DATE_STYLE);' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = date(self::DATE_STYLE);' . "\n";
+                    }
                     break;
 
                 case 'time':
                     $typeProperty = 'string';
-                    $clear .= '        $this->' . $property . ' = date(self::HOUR_STYLE);' . "\n";
+                    if (false === in_array($property, $clearExclude)) {
+                        $clear .= '        $this->' . $property . ' = date(self::TIME_STYLE);' . "\n";
+                    }
                     break;
 
                 case 'text':
                     $typeProperty = 'string';
+                    $test .= '        $this->' . $property . ' = $this->toolBox()->utils()->noHtml($this->' . $property . ');' . "\n";
                     break;
+            }
+
+            if ($property === 'nick') {
+                $clear .= '        $this->nick = Session::get(\'user\')->nick ?? null;' . "\n";
             }
 
             if (strpos($type, 'character varying') !== false) {
                 $typeProperty = 'string';
+                $test .= '        $this->' . $property . ' = $this->toolBox()->utils()->noHtml($this->' . $property . ');' . "\n";
             }
 
             // Para la creación de properties
@@ -616,8 +641,13 @@ final class fsmaker
         $sample = '<?php' . "\n"
             . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
             . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
-            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n\n"
-            . 'class ' . $name . ' extends ModelClass' . "\n"
+            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n";
+
+        if ($creationdate || $lastupdate || $nick || $lastnick) {
+            $sample .= "use FacturaScripts\Core\Session;\n\n";
+        }
+
+        $sample .= 'class ' . $name . ' extends ModelClass' . "\n"
             . '{' . "\n"
             . '    use ModelTrait;' . "\n\n"
             . $properties
@@ -633,8 +663,50 @@ final class fsmaker
             . "    public static function tableName(): string\n"
             . "    {\n"
             . '        return "' . $tableName . '";' . "\n"
-            . '    }' . "\n"
-            . '}' . "\n";
+            . '    }' . "\n\n"
+            . "    public function test(): bool\n"
+            . "    {\n"
+            . $test
+            . '        return parent::test();' . "\n"
+            . '    }' . "\n\n";
+
+        if ($lastupdate || $lastnick) {
+            $sample .= '    protected function saveInsert(array $values = []): bool' . "\n"
+                . "    {\n";
+        }
+
+        if ($lastupdate) {
+            $sample .= '        $this->lastupdate = null;' . "\n";
+        }
+
+        if ($lastnick) {
+            $sample .= '        $this->lastnick = null;' . "\n";
+        }
+
+        if ($lastupdate || $lastnick) {
+            $sample .= '        return parent::saveInsert($values);' . "\n"
+                . '    }' . "\n\n";
+        }
+
+        if ($lastupdate || $lastnick) {
+            $sample .= '    protected function saveUpdate(array $values = []): bool' . "\n"
+                . "    {\n";
+        }
+
+        if ($lastupdate) {
+            $sample .= '        $this->lastupdate = date(self::DATETIME_STYLE);' . "\n";
+        }
+
+        if ($lastnick) {
+            $sample .= '        $this->lastnick = Session::get(\'user\')->nick ?? null;' . "\n";
+        }
+
+        if ($lastupdate || $lastnick) {
+            $sample .= '        return parent::saveUpdate($values);' . "\n"
+                . '    }' . "\n";
+        }
+
+        $sample .=  '}' . "\n";
         file_put_contents($fileName, $sample);
     }
 
