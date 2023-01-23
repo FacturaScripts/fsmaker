@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
@@ -9,14 +8,13 @@ if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
-include Columna::class . '.php';
+include __DIR__ . '/Columna.php';
 
 final class fsmaker
 {
-
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
     const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 1.21;
+    const VERSION = 1.29;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -123,71 +121,10 @@ final class fsmaker
                 continue;
             }
 
-            $data = ['nombre' => $name];
-            $type = $this->askType($fields);
-            switch ($type) {
-                case 1:
-                    $data['tipo'] = 'serial';
-                    break;
+            $column = new Columna(['nombre' => $name]);
+            $column->ask($fields);
 
-                case 2:
-                    $max = (float)$this->prompt("\n¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
-                    $max = empty($max) || false === is_numeric($max) ? null : $max;
-                    $min = (float)$this->prompt("\n¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
-                    $min = empty($min) || false === is_numeric($min) ? null : $min;
-                    $step = (float)$this->prompt("\n¿Valor de incremento?, dejar en blanco para no establecer valor.");
-                    $step = empty($step) || false === is_numeric($step) ? null : $step;
-                    $data['tipo'] = 'integer';
-                    $data['maximo'] = $max;
-                    $data['minimo'] = $min;
-                    $data['step'] = $step;
-                    break;
-
-                case 3:
-                    $max = (float)$this->prompt("\n¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
-                    $max = empty($max) || false === is_numeric($max) ? null : $max;
-                    $min = (float)$this->prompt("\n¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
-                    $min = empty($min) || false === is_numeric($min) ? null : $min;
-                    $step = (float)$this->prompt("\n¿Valor de incremento?, dejar en blanco para no establecer valor.");
-                    $step = empty($step) || false === is_numeric($step) ? null : $step;
-                    $data['tipo'] = 'double precision';
-                    $data['maximo'] = $max;
-                    $data['minimo'] = $min;
-                    $data['step'] = $step;
-                    break;
-
-                case 4:
-                    $data['tipo'] = 'boolean';
-                    break;
-
-                case 5:
-                    $long = (int)$this->prompt("\nLongitud caracteres") ?? 30;
-                    $data['tipo'] = 'character varying';
-                    $data['longitud'] = $long;
-                    break;
-
-                case 6:
-                    $data['tipo'] = 'text';
-                    break;
-
-                case 7:
-                    $data['tipo'] = 'timestamp';
-                    break;
-
-                case 8:
-                    $data['tipo'] = 'date';
-                    break;
-
-                case 9:
-                    $data['tipo'] = 'time';
-                    break;
-            }
-
-            if ($type > 1 && $this->prompt("\n¿El campo $name es obligatorio? 1=Si, 0=No") === '1') {
-                $data['requerido'] = true;
-            }
-
-            $fields[] = new Columna($data);
+            $fields[] = $column;
             echo "\n";
         }
 
@@ -197,38 +134,6 @@ final class fsmaker
         });
 
         return $fields;
-    }
-
-    private function askType(array $fields): int
-    {
-        while (true) {
-            echo "\n";
-            $type = (int)$this->prompt("Elija el tipo de campo\n"
-                . "1 = serial (autonumérico, ideal para ids)\n"
-                . "2 = integer\n"
-                . "3 = float\n"
-                . "4 = boolean\n"
-                . "5 = character varying\n"
-                . "6 = text\n"
-                . "7 = timestamp\n"
-                . "8 = date\n"
-                . "9 = time\n");
-
-            if ($type === 1) {
-                foreach ($fields as $field) {
-                    if ($field->type === 'serial') {
-                        echo "\nYa hay un campo de tipo serial.\n";
-                        continue 2;
-                    }
-                }
-            }
-
-            if ($type >= 1 && $type <= 9) {
-                return $type;
-            }
-
-            echo "\nOpción incorrecta.\n";
-        }
     }
 
     private function createController()
@@ -402,6 +307,7 @@ final class fsmaker
             case 4:
                 $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $this->createExtensionXMLView($name);
+                return;
 
             case 5:
                 $name = $this->prompt('Nombre de la vista html.twig', '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/');
@@ -787,7 +693,7 @@ final class fsmaker
                 . '    }' . "\n";
         }
 
-        $sample .=  '}' . "\n";
+        $sample .= '}' . "\n";
         file_put_contents($fileName, $sample);
     }
 
@@ -813,7 +719,7 @@ final class fsmaker
 
         $folders = [
             'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES', 'Extension/Controller',
-            'Extension/Model', 'Extension/Table', 'Extension/XMLView','Extension/View', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
+            'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Extension/View', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
             'Test/main'
         ];
         foreach ($folders as $folder) {
