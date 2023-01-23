@@ -2,11 +2,14 @@
 
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
+ * @author Daniel Fernández Giménez       <hola@danielfg.es>
  * @author Jerónimo Pedro Sánchez Manzano <socger@gmail.com>
  */
 if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
+
+include Columna::class . '.php';
 
 final class fsmaker
 {
@@ -77,14 +80,35 @@ final class fsmaker
 
         echo "\n";
         if ($this->prompt("¿Desea crear los campos (id, creationdate, lastupdate, nick, lastnick, name) por defecto? 1=Si, 0=No\n") === '1') {
-            $fields = [
-                'id' => 'serial',
-                'creationdate' => 'timestamp',
-                'lastupdate' => 'timestamp',
-                'nick' => 'character varying(50)',
-                'lastnick' => 'character varying(50)',
-                'name' => 'character varying(100)'
-            ];
+            $fields[] = new Columna([
+                'nombre' => 'id',
+                'requerido' => true,
+                'tipo' => 'serial'
+            ]);
+            $fields[] = new Columna([
+                'nombre' => 'creationdate',
+                'requerido' => true,
+                'tipo' => 'timestamp'
+            ]);
+            $fields[] = new Columna([
+                'nombre' => 'lastupdate',
+                'tipo' => 'timestamp'
+            ]);
+            $fields[] = new Columna([
+                'nombre' => 'nick',
+                'tipo' => 'character varying',
+                'longitud' => 50
+            ]);
+            $fields[] = new Columna([
+                'nombre' => 'lastnick',
+                'tipo' => 'character varying',
+                'longitud' => 50
+            ]);
+            $fields[] = new Columna([
+                'nombre' => 'name',
+                'tipo' => 'character varying',
+                'longitud' => 100
+            ]);
         }
         echo "\n";
 
@@ -99,58 +123,83 @@ final class fsmaker
                 continue;
             }
 
-            $type = $this->askType(false);
+            $data = ['nombre' => $name];
+            $type = $this->askType($fields);
             switch ($type) {
                 case 1:
-                    $clave = array_search('serial', $fields);
-                    if ($clave !== false) {
-                        unset($fields[$clave]);
-                    }
-                    $fields[$name] = 'serial';
+                    $data['tipo'] = 'serial';
                     break;
 
                 case 2:
-                    $fields[$name] = 'integer';
+                    $max = (float)$this->prompt("\n¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
+                    $max = empty($max) || false === is_numeric($max) ? null : $max;
+                    $min = (float)$this->prompt("\n¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
+                    $min = empty($min) || false === is_numeric($min) ? null : $min;
+                    $step = (float)$this->prompt("\n¿Valor de incremento?, dejar en blanco para no establecer valor.");
+                    $step = empty($step) || false === is_numeric($step) ? null : $step;
+                    $data['tipo'] = 'integer';
+                    $data['maximo'] = $max;
+                    $data['minimo'] = $min;
+                    $data['step'] = $step;
                     break;
 
                 case 3:
-                    $fields[$name] = 'double precision';
+                    $max = (float)$this->prompt("\n¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
+                    $max = empty($max) || false === is_numeric($max) ? null : $max;
+                    $min = (float)$this->prompt("\n¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
+                    $min = empty($min) || false === is_numeric($min) ? null : $min;
+                    $step = (float)$this->prompt("\n¿Valor de incremento?, dejar en blanco para no establecer valor.");
+                    $step = empty($step) || false === is_numeric($step) ? null : $step;
+                    $data['tipo'] = 'double precision';
+                    $data['maximo'] = $max;
+                    $data['minimo'] = $min;
+                    $data['step'] = $step;
                     break;
 
                 case 4:
-                    $fields[$name] = 'boolean';
+                    $data['tipo'] = 'boolean';
                     break;
 
                 case 5:
-                    $long = (int)$this->prompt("\nLongitud caracteres");
-                    $fields[$name] = "character varying($long)";
+                    $long = (int)$this->prompt("\nLongitud caracteres") ?? 30;
+                    $data['tipo'] = 'character varying';
+                    $data['longitud'] = $long;
                     break;
 
                 case 6:
-                    $fields[$name] = 'text';
+                    $data['tipo'] = 'text';
                     break;
 
                 case 7:
-                    $fields[$name] = 'timestamp';
+                    $data['tipo'] = 'timestamp';
                     break;
 
                 case 8:
-                    $fields[$name] = 'date';
+                    $data['tipo'] = 'date';
                     break;
 
                 case 9:
-                    $fields[$name] = 'time';
+                    $data['tipo'] = 'time';
                     break;
             }
 
+            if ($type > 1 && $this->prompt("\n¿El campo $name es obligatorio? 1=Si, 0=No") === '1') {
+                $data['requerido'] = true;
+            }
+
+            $fields[] = new Columna($data);
             echo "\n";
         }
 
-        ksort($fields);
+        // ordenamos el array por la propiedad nombre
+        usort($fields, function ($a, $b) {
+            return strcmp($a->nombre, $b->nombre);
+        });
+
         return $fields;
     }
 
-    private function askType(bool $serial): int
+    private function askType(array $fields): int
     {
         while (true) {
             echo "\n";
@@ -164,9 +213,14 @@ final class fsmaker
                 . "7 = timestamp\n"
                 . "8 = date\n"
                 . "9 = time\n");
-            if ($type === 1 && $serial) {
-                echo "\nYa hay un campo de tipo serial.\n";
-                continue;
+
+            if ($type === 1) {
+                foreach ($fields as $field) {
+                    if ($field->type === 'serial') {
+                        echo "\nYa hay un campo de tipo serial.\n";
+                        continue 2;
+                    }
+                }
             }
 
             if ($type >= 1 && $type <= 9) {
@@ -580,87 +634,89 @@ final class fsmaker
         $clearExclude = ['lastupdate', 'lastnick'];
         $test = '';
 
-        $creationdate = array_key_exists('creationdate', $fields);
-        $lastupdate = array_key_exists('lastupdate', $fields);
-        $nick = array_key_exists('nick', $fields);
-        $lastnick = array_key_exists('lastnick', $fields);
+        // buscamos de forma abreviada en el array de columnas si existe la columna por el nombre
+        $nombres = array_column($fields, 'nombre');
+        $creationdate = array_search('creationdate', $nombres);
+        $lastupdate = array_search('lastupdate', $nombres);
+        $lastnick = array_search('lastnick', $nombres);
+        $nick = array_search('nick', $nombres);
 
-        foreach ($fields as $property => $type) {
+        foreach ($fields as $field) {
             // Para la creación de la primaryColumn
-            if ($type === 'serial') {
-                $primaryColumn = $property;
+            if ($field->tipo === 'serial') {
+                $primaryColumn = $field->nombre;
             }
 
             // para el especificar el tipo de propiedad
             $typeProperty = '';
 
             // Para el método clear()
-            switch ($type) {
+            switch ($field->tipo) {
                 case 'serial':
                     $typeProperty = 'int';
-                    $primaryColumn = $property;
+                    $primaryColumn = $field->nombre;
                     break;
 
                 case 'integer':
                     $typeProperty = 'int';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = 0;' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = 0;' . "\n";
                     }
                     break;
 
                 case 'double precision':
                     $typeProperty = 'float';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = 0.0;' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = 0.0;' . "\n";
                     }
                     break;
 
                 case 'boolean':
                     $typeProperty = 'bool';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = false;' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = false;' . "\n";
                     }
                     break;
 
                 case 'timestamp':
                     $typeProperty = 'string';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = date(self::DATETIME_STYLE);' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = date(self::DATETIME_STYLE);' . "\n";
                     }
                     break;
 
                 case 'date':
                     $typeProperty = 'string';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = date(self::DATE_STYLE);' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = date(self::DATE_STYLE);' . "\n";
                     }
                     break;
 
                 case 'time':
                     $typeProperty = 'string';
-                    if (false === in_array($property, $clearExclude)) {
-                        $clear .= '        $this->' . $property . ' = date(self::TIME_STYLE);' . "\n";
+                    if (false === in_array($field->nombre, $clearExclude)) {
+                        $clear .= '        $this->' . $field->nombre . ' = date(self::TIME_STYLE);' . "\n";
                     }
                     break;
 
                 case 'text':
                     $typeProperty = 'string';
-                    $test .= '        $this->' . $property . ' = $this->toolBox()->utils()->noHtml($this->' . $property . ');' . "\n";
+                    $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
                     break;
             }
 
-            if ($property === 'nick') {
+            if ($field->nombre === 'nick') {
                 $clear .= '        $this->nick = Session::get(\'user\')->nick ?? null;' . "\n";
             }
 
-            if (strpos($type, 'character varying') !== false) {
+            if (strpos($field->tipo, 'character varying') !== false) {
                 $typeProperty = 'string';
-                $test .= '        $this->' . $property . ' = $this->toolBox()->utils()->noHtml($this->' . $property . ');' . "\n";
+                $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
             }
 
             // Para la creación de properties
             $properties .= "    /** @var " . $typeProperty . " */\n";
-            $properties .= "    public $" . $property . ";" . "\n\n";
+            $properties .= "    public $" . $field->nombre . ";" . "\n\n";
         }
 
         $sample = '<?php' . "\n"
@@ -816,28 +872,32 @@ final class fsmaker
     {
         $columns = '';
         $constraints = '';
-        foreach ($fields as $key => $type) {
-            $columns .= "    <column>\n"
-                . "        <name>$key</name>\n"
-                . "        <type>$type</type>\n";
+        foreach ($fields as $field) {
+            if ($field->tipo === 'character varying') {
+                $field->tipo .= '(' . $field->longitud . ')';
+            }
 
-            if ($type === 'serial') {
+            $columns .= "    <column>\n"
+                . "        <name>$field->nombre</name>\n"
+                . "        <type>$field->tipo</type>\n";
+
+            if ($field->tipo === 'serial' || $field->requerido) {
                 $columns .= "        <null>NO</null>\n";
             }
 
             $columns .= "    </column>\n";
 
-            if ($type === 'serial') {
+            if ($field->tipo === 'serial') {
                 $constraints .= "    <constraint>\n"
                     . '        <name>' . $tableName . "_pkey</name>\n"
-                    . '        <type>PRIMARY KEY (' . $key . ")</type>\n"
+                    . '        <type>PRIMARY KEY (' . $field->nombre . ")</type>\n"
                     . "    </constraint>\n";
             }
 
-            if ($key === 'nick' || $key === 'lastnick') {
+            if ($field->nombre === 'nick' || $field->nombre === 'lastnick') {
                 $constraints .= "    <constraint>\n"
-                    . "        <name>ca_" . $tableName . "_users_" . $key . "</name>\n"
-                    . "        <type>FOREIGN KEY (" . $key . ") REFERENCES users (nick) ON DELETE SET NULL ON UPDATE CASCADE</type>\n"
+                    . "        <name>ca_" . $tableName . "_users_" . $field->nombre . "</name>\n"
+                    . "        <type>FOREIGN KEY (" . $field->nombre . ") REFERENCES users (nick) ON DELETE SET NULL ON UPDATE CASCADE</type>\n"
                     . "    </constraint>\n";
             }
         }
@@ -870,8 +930,8 @@ final class fsmaker
         $order = 100;
         $columns = '';
 
-        foreach ($fields as $key => $type) {
-            $columns .= $this->getWidget($key, $type, $order, $tabForColums);
+        foreach ($fields as $field) {
+            $columns .= $this->getWidget($field, $order, $tabForColums);
             $order += 10;
         }
 
@@ -911,51 +971,77 @@ final class fsmaker
         return '';
     }
 
-    private function getWidget(string $name, string $type, string $order, int $tabForColums): string
+    private function getWidget(Columna $column, string $order, int $tabForColums): string
     {
         $spaces = str_repeat(" ", $tabForColums);
         $sample = '';
 
-        switch ($type) {
+        $max = is_null($column->maximo) ? '' : ' max="' . $column->maximo . '"';
+        $maxlength = is_null($column->longitud) ? '' : ' maxlength="' . $column->longitud . '"';
+        $min = is_null($column->minimo) ? '' : ' min="' . $column->minimo . '"';
+        $nombreColumn = $column->nombre;
+        $nombreWidget = $column->nombre;
+        $step = is_null($column->step) ? '' : ' step="' . $column->step . '"';
+        $requerido = $column->requerido ? ' required="true"' : '';
+
+        switch ($nombreWidget) {
+            case 'creationdate':
+                $nombreColumn = 'creation-date';
+                break;
+
+            case 'lastnick':
+                $nombreColumn = 'last-user';
+                break;
+
+            case 'lastupdate':
+                $nombreColumn = 'last-update';
+                break;
+
+            case 'nick':
+                $nombreColumn = 'user';
+                break;
+        }
+
+        switch ($column->tipo) {
             default:
-                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '"' . $maxlength . $requerido . '/>' . "\n";
                 break;
 
             case 'serial':
-                $sample .= $spaces . '<column name="' . $name . '" display="none" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="text" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="none" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '" readonly="true"/>' . "\n";
                 break;
 
             case 'double precision':
-            case 'int':
-                $sample .= $spaces . '<column name="' . $name . '" display="right" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="number" fieldname="' . $name . '" />' . "\n";
+            case 'integer':
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="right" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="number" fieldname="' . $nombreWidget . '"' . $max . $min . $step . $requerido . '/>' . "\n";
                 break;
 
             case 'boolean':
-                $sample .= $spaces . '<column name="' . $name . '" display="center" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="checkbox" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="center" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="checkbox" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'text':
-                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="textarea" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="textarea" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'timestamp':
-                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="datetime" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="datetime" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'date':
-                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="date" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="date" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'time':
-                $sample .= $spaces . '<column name="' . $name . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="time" fieldname="' . $name . '" />' . "\n";
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="time" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
         }
 
