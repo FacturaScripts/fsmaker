@@ -601,7 +601,7 @@ final class fsmaker
                 case 'time':
                     $typeProperty = 'string';
                     if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = date(self::TIME_STYLE);' . "\n";
+                        $clear .= '        $this->' . $field->nombre . ' = date(self::HOUR_STYLE);' . "\n";
                     }
                     break;
 

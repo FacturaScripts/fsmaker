@@ -69,24 +69,24 @@ final class Columna
 
     public function askLongitud(): void
     {
-        $this->longitud = (int)$this->prompt("\nLongitud caracteres") ?? 30;
+        $this->longitud = (int)$this->prompt("Longitud caracteres") ?? 30;
     }
 
     public function askMaximo(): void
     {
-        $max = (float)$this->prompt("\n¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
+        $max = (float)$this->prompt("¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
         $this->maximo = empty($max) || false === is_numeric($max) ? null : $max;
     }
 
     public function askMinimo(): void
     {
-        $min = (float)$this->prompt("\n¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
+        $min = (float)$this->prompt("¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
         $this->minimo = empty($min) || false === is_numeric($min) ? null : $min;
     }
 
     public function askStep(): void
     {
-        $step = (float)$this->prompt("\n¿Valor de incremento?, dejar en blanco para no establecer valor.");
+        $step = (float)$this->prompt("¿Valor de incremento?, dejar en blanco para no establecer valor.");
         $this->step = empty($step) || false === is_numeric($step) ? null : $step;
     }
 
@@ -144,7 +144,7 @@ final class Columna
         }
 
         do {
-            $requerido = $this->prompt("\n¿El campo {$this->nombre} es obligatorio? 1=Si, 0=No");
+            $requerido = $this->prompt("¿El campo {$this->nombre} es obligatorio? 1=Si, 0=No");
             $this->requerido = $requerido === '1';
         } while ($requerido !== '1' && $requerido !== '0');
     }
