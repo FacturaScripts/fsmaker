@@ -43,7 +43,7 @@ final class fsmaker
                 break;
 
             case 'init':
-                $this->createInit($name);
+                $this->createInit();
                 break;
 
             case 'model':
@@ -466,7 +466,7 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createInit(string $name)
+    private function createInit()
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
@@ -480,7 +480,7 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Init.php.sample");
-        $template = str_replace('[[NAME]]', $name, $sample);
+        $template = str_replace('[[NAME]]', $this->findPluginName(), $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
@@ -738,7 +738,7 @@ final class fsmaker
         $this->createIni($name);
         $this->createGitIgnore();
         $this->createCron($name);
-        $this->createInit($name);
+        $this->createInit();
     }
 
     private function createTestAction()
@@ -997,7 +997,7 @@ final class fsmaker
     {
         $fileName = "Init.php";
         if (false === file_exists($fileName)) {
-            $this->createInit($name);
+            $this->createInit();
         }
 
         $fileStr = file_get_contents($fileName);
