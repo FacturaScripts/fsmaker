@@ -17,6 +17,8 @@ final class fsmaker
     const VERSION = 1.29;
     const OK = " -> OK.\n";
 
+    public $globalFields = false;
+
     public function __construct($argv)
     {
         if (count($argv) < 2) {
@@ -75,29 +77,36 @@ final class fsmaker
     private function askFields(): array
     {
         $fields = [];
+        $this->globalFields = false;
 
         echo "\n";
         if ($this->prompt("¿Desea crear los campos (id, creationdate, lastupdate, nick, lastnick, name) por defecto? 1=Si, 0=No\n") === '1') {
+            $this->globalFields = true;
             $fields[] = new Columna([
+                'display' => 'none',
                 'nombre' => 'id',
                 'requerido' => true,
                 'tipo' => 'serial'
             ]);
             $fields[] = new Columna([
+                'display' => 'none',
                 'nombre' => 'creationdate',
                 'requerido' => true,
                 'tipo' => 'timestamp'
             ]);
             $fields[] = new Columna([
+                'display' => 'none',
                 'nombre' => 'lastupdate',
                 'tipo' => 'timestamp'
             ]);
             $fields[] = new Columna([
+                'display' => 'none',
                 'nombre' => 'nick',
                 'tipo' => 'character varying',
                 'longitud' => 50
             ]);
             $fields[] = new Columna([
+                'display' => 'none',
                 'nombre' => 'lastnick',
                 'tipo' => 'character varying',
                 'longitud' => 50
@@ -537,23 +546,12 @@ final class fsmaker
         $properties = '';
         $primaryColumn = '';
         $clear = '';
-        $clearExclude = ['lastupdate', 'lastnick'];
+        $clearExclude = ['creationdate', 'nick', 'lastnick', 'lastupdate'];
         $test = '';
-
-        // buscamos de forma abreviada en el array de columnas si existe la columna por el nombre
-        $nombres = array_column($fields, 'nombre');
-        $creationdate = array_search('creationdate', $nombres);
-        $lastupdate = array_search('lastupdate', $nombres);
-        $lastnick = array_search('lastnick', $nombres);
-        $nick = array_search('nick', $nombres);
+        $testExclude = ['creationdate', 'nick', 'lastnick', 'lastupdate'];
 
         foreach ($fields as $field) {
-            // Para la creación de la primaryColumn
-            if ($field->tipo === 'serial') {
-                $primaryColumn = $field->nombre;
-            }
-
-            // para el especificar el tipo de propiedad
+            // para especificar el tipo de propiedad
             $typeProperty = '';
 
             // Para el método clear()
@@ -607,17 +605,17 @@ final class fsmaker
 
                 case 'text':
                     $typeProperty = 'string';
-                    $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                    if (false === in_array($field->nombre, $testExclude)) {
+                        $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                    }
                     break;
-            }
-
-            if ($field->nombre === 'nick') {
-                $clear .= '        $this->nick = Session::get(\'user\')->nick ?? null;' . "\n";
             }
 
             if (strpos($field->tipo, 'character varying') !== false) {
                 $typeProperty = 'string';
-                $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                if (false === in_array($field->nombre, $testExclude)) {
+                    $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                }
             }
 
             // Para la creación de properties
@@ -630,7 +628,7 @@ final class fsmaker
             . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
             . "use FacturaScripts\Core\Model\Base\ModelTrait;\n";
 
-        if ($creationdate || $lastupdate || $nick || $lastnick) {
+        if ($this->globalFields) {
             $sample .= "use FacturaScripts\Core\Session;\n\n";
         }
 
@@ -652,48 +650,23 @@ final class fsmaker
             . '        return "' . $tableName . '";' . "\n"
             . '    }' . "\n\n"
             . "    public function test(): bool\n"
-            . "    {\n"
-            . $test
-            . '        return parent::test();' . "\n"
-            . '    }' . "\n\n";
+            . "    {\n";
 
-        if ($lastupdate || $lastnick) {
-            $sample .= '    protected function saveInsert(array $values = []): bool' . "\n"
-                . "    {\n";
+        if ($this->globalFields) {
+            $sample .= '        if ($this->exists()) {' . "\n"
+                . '            $this->lastnick = Session::get(\'user\')->nick ?? null;' . "\n"
+                . '            $this->lastupdate = date(self::DATETIME_STYLE);' . "\n"
+                . '        } else {' . "\n"
+                . '            $this->creationdate = date(self::DATETIME_STYLE);' . "\n"
+                . '            $this->lastnick = null;' . "\n"
+                . '            $this->lastupdate = null;' . "\n"
+                . '            $this->nick = Session::get(\'user\')->nick ?? null;' . "\n"
+                . '        }' . "\n\n";
         }
 
-        if ($lastupdate) {
-            $sample .= '        $this->lastupdate = null;' . "\n";
-        }
-
-        if ($lastnick) {
-            $sample .= '        $this->lastnick = null;' . "\n";
-        }
-
-        if ($lastupdate || $lastnick) {
-            $sample .= '        return parent::saveInsert($values);' . "\n"
-                . '    }' . "\n\n";
-        }
-
-        if ($lastupdate || $lastnick) {
-            $sample .= '    protected function saveUpdate(array $values = []): bool' . "\n"
-                . "    {\n";
-        }
-
-        if ($lastupdate) {
-            $sample .= '        $this->lastupdate = date(self::DATETIME_STYLE);' . "\n";
-        }
-
-        if ($lastnick) {
-            $sample .= '        $this->lastnick = Session::get(\'user\')->nick ?? null;' . "\n";
-        }
-
-        if ($lastupdate || $lastnick) {
-            $sample .= '        return parent::saveUpdate($values);' . "\n"
-                . '    }' . "\n";
-        }
-
-        $sample .= '}' . "\n";
+        $sample .= $test
+            . '    }' . "\n"
+            . '}' . "\n";
         file_put_contents($fileName, $sample);
     }
 
@@ -836,9 +809,31 @@ final class fsmaker
         $order = 100;
         $columns = '';
 
+        $fieldDefault = [];
         foreach ($fields as $field) {
+            // guardamos las columnas por defecto aparte
+            if ($this->globalFields && in_array($field->nombre, ['creationdate', 'lastnick', 'lastupdate', 'nick'])) {
+                $fieldDefault[] = $field;
+                continue;
+            }
+
+            // si la columna es de tipo serial, la ponemos al principio
+            if ($field->tipo === 'serial') {
+                $columns = $this->getWidget($field, $order, $tabForColums) . $columns;
+                $order += 10;
+                continue;
+            }
+
             $columns .= $this->getWidget($field, $order, $tabForColums);
             $order += 10;
+        }
+
+        if (count($fieldDefault) > 0) {
+            // ordenamos el array de columnas poniendo este orden: creationdate, nick, lastupdate, lastnick
+            usort($fieldDefault, function ($a, $b) {
+                $order = ['creationdate' => 1, 'nick' => 2, 'lastupdate' => 3, 'lastnick' => 4];
+                return $order[$a->nombre] <=> $order[$b->nombre];
+            });
         }
 
         $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
@@ -848,6 +843,14 @@ final class fsmaker
         switch ($editOrList) {
             case 0: // Es un ListController
                 $sample .= $columns;
+
+                // añadimos las columnas por defecto al final
+                if ($this->globalFields) {
+                    foreach ($fieldDefault as $field) {
+                        $sample .= $this->getWidget($field, $order, $tabForColums);
+                        $order += 10;
+                    }
+                }
                 break;
 
             case 1: // Es un EditController
@@ -855,6 +858,17 @@ final class fsmaker
                 $sample .= '        <group name="' . $groupName . '" numcolumns="12">' . "\n"
                     . $columns
                     . '        </group>' . "\n";
+
+                // añadimos el grupo de logs
+                if ($this->globalFields) {
+                    $order = 100;
+                    $sample .= '        <group name="logs" numcolumns="12">' . "\n";
+                    foreach ($fieldDefault as $field) {
+                        $sample .= $this->getWidget($field, $order, $tabForColums);
+                        $order += 10;
+                    }
+                    $sample .= '        </group>' . "\n";
+                }
                 break;
 
             default: // No es ninguna de las opciones de antes
@@ -910,43 +924,43 @@ final class fsmaker
 
         switch ($column->tipo) {
             default:
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '"' . $maxlength . $requerido . '/>' . "\n";
                 break;
 
             case 'serial':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="none" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '" readonly="true"/>' . "\n";
                 break;
 
             case 'double precision':
             case 'integer':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="right" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="number" fieldname="' . $nombreWidget . '"' . $max . $min . $step . $requerido . '/>' . "\n";
                 break;
 
             case 'boolean':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="center" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="checkbox" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'text':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="textarea" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'timestamp':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="datetime" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'date':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="date" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
 
             case 'time':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="time" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
                 break;
         }

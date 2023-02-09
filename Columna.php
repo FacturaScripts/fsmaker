@@ -5,6 +5,9 @@
 
 final class Columna
 {
+    /** @var string */
+    public $display = '';
+
     /** @var int */
     public $longitud = 0;
 
@@ -75,19 +78,19 @@ final class Columna
     public function askMaximo(): void
     {
         $max = (float)$this->prompt("¿Valor máximo permitido?, dejar en blanco para no establecer valor.");
-        $this->maximo = empty($max) || false === is_numeric($max) ? null : $max;
+        $this->maximo = empty($max) && $max != 0 || false === is_numeric($max) ? null : $max;
     }
 
     public function askMinimo(): void
     {
         $min = (float)$this->prompt("¿Valor mínimo permitido?, dejar en blanco para no establecer valor.");
-        $this->minimo = empty($min) || false === is_numeric($min) ? null : $min;
+        $this->minimo = empty($min) && $min != 0 || false === is_numeric($min) ? null : $min;
     }
 
     public function askStep(): void
     {
         $step = (float)$this->prompt("¿Valor de incremento?, dejar en blanco para no establecer valor.");
-        $this->step = empty($step) || false === is_numeric($step) ? null : $step;
+        $this->step = empty($step) && $step != 0 || false === is_numeric($step) ? null : $step;
     }
 
     private function prompt(string $label): string
@@ -142,6 +145,29 @@ final class Columna
                 $this->tipo = 'time';
                 break;
         }
+
+        do {
+            $display = (int)$this->prompt("¿Cual es la alineación del campo {$this->nombre}? 0=Izquierda, 1=Derecha, 2=Centro, 3=Ocultar");
+        } while ($display < 0 || $display > 3);
+
+        switch ($display) {
+            case 0:
+                $this->display = 'left';
+                break;
+
+            case 1:
+                $this->display = 'right';
+                break;
+
+            case 2:
+                $this->display = 'center';
+                break;
+
+            case 3:
+                $this->display = 'none';
+                break;
+        }
+
 
         do {
             $requerido = $this->prompt("¿El campo {$this->nombre} es obligatorio? 1=Si, 0=No");
