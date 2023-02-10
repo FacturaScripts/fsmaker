@@ -654,13 +654,13 @@ final class fsmaker
 
         if ($this->globalFields) {
             $sample .= '        if ($this->exists()) {' . "\n"
-                . '            $this->lastnick = Session::get(\'user\')->nick ?? null;' . "\n"
+                . '            $this->lastnick = Session::get(\'user\') ? Session::get(\'user\')->nick : null;' . "\n"
                 . '            $this->lastupdate = date(self::DATETIME_STYLE);' . "\n"
                 . '        } else {' . "\n"
                 . '            $this->creationdate = date(self::DATETIME_STYLE);' . "\n"
                 . '            $this->lastnick = null;' . "\n"
                 . '            $this->lastupdate = null;' . "\n"
-                . '            $this->nick = Session::get(\'user\')->nick ?? null;' . "\n"
+                . '            $this->nick = Session::get(\'user\') ? Session::get(\'user\')->nick : null;' . "\n"
                 . '        }' . "\n\n";
         }
 
