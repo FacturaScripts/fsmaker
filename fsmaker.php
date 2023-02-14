@@ -665,6 +665,7 @@ final class fsmaker
         }
 
         $sample .= $test
+            . '        return parent::test();' . "\n"
             . '    }' . "\n"
             . '}' . "\n";
         file_put_contents($fileName, $sample);
