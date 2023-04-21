@@ -908,6 +908,17 @@ final class fsmaker
                 break;
         }
 
+        switch ($nombreWidget) {
+            case 'lastnick':
+            case 'nick':
+                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
+                    . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '" ' . $requerido . '>' . "\n"
+                    . $spaces . '        <values source="users" fieldcode="nick" filedtile="nick"/>' . "\n"
+                    . $spaces . '    </widget>' . "\n"
+                    . $spaces . "</column>\n";
+                return $sample;
+        }
+
         switch ($column->tipo) {
             default:
                 $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
