@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
@@ -5,7 +6,7 @@
  * @author Jerónimo Pedro Sánchez Manzano <socger@gmail.com>
  */
 if (php_sapi_name() !== 'cli') {
-    die("Usar: php fsmaker.php");
+    die("Usar: php fsmaker");
 }
 
 include __DIR__ . '/Columna.php';
