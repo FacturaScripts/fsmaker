@@ -180,7 +180,7 @@ final class fsmaker
 
     private function createControllerAction()
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (!$this->isCoreFolder() && !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -272,7 +272,7 @@ final class fsmaker
 
     private function createCron(string $name)
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (!$this->isCoreFolder() && !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -291,7 +291,7 @@ final class fsmaker
 
     private function createExtensionAction()
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (!$this->isCoreFolder() && !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -477,7 +477,7 @@ final class fsmaker
 
     private function createInit()
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (!$this->isCoreFolder() && !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -496,7 +496,7 @@ final class fsmaker
 
     private function createModelAction()
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (!$this->isCoreFolder() && !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -523,7 +523,7 @@ final class fsmaker
         $tablePath = $this->isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         $this->createFolder($tablePath);
-        if (false === file_exists($tableFilename)) {
+        if (!file_exists($tableFilename)) {
             $this->createXMLTableByFields($tableFilename, $tableName, $fields);
             echo '* ' . $tableFilename . self::OK;
         } else {
@@ -563,49 +563,49 @@ final class fsmaker
 
                 case 'integer':
                     $typeProperty = 'int';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = 0;' . "\n";
                     }
                     break;
 
                 case 'double precision':
                     $typeProperty = 'float';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = 0.0;' . "\n";
                     }
                     break;
 
                 case 'boolean':
                     $typeProperty = 'bool';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = false;' . "\n";
                     }
                     break;
 
                 case 'timestamp':
                     $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = date(self::DATETIME_STYLE);' . "\n";
                     }
                     break;
 
                 case 'date':
                     $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = date(self::DATE_STYLE);' . "\n";
                     }
                     break;
 
                 case 'time':
                     $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
+                    if (!in_array($field->nombre, $clearExclude)) {
                         $clear .= '        $this->' . $field->nombre . ' = date(self::HOUR_STYLE);' . "\n";
                     }
                     break;
 
                 case 'text':
                     $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $testExclude)) {
+                    if (!in_array($field->nombre, $testExclude)) {
                         $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
                     }
                     break;
@@ -613,7 +613,7 @@ final class fsmaker
 
             if (strpos($field->tipo, 'character varying') !== false) {
                 $typeProperty = 'string';
-                if (false === in_array($field->nombre, $testExclude)) {
+                if (!in_array($field->nombre, $testExclude)) {
                     $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
                 }
             }
@@ -718,7 +718,7 @@ final class fsmaker
 
     private function createTestAction()
     {
-        if ($this->isCoreFolder() || false === $this->isPluginFolder()) {
+        if ($this->isCoreFolder() || !$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -1012,7 +1012,7 @@ final class fsmaker
 
     private function isCoreFolder(): bool
     {
-        return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
+        return file_exists('Core/Translation') && !file_exists('facturascripts.ini');
     }
 
     private function isPluginFolder(): bool
@@ -1023,7 +1023,7 @@ final class fsmaker
     private function modifyInit(string $name, int $modelOrController)
     {
         $fileName = "Init.php";
-        if (false === file_exists($fileName)) {
+        if (!file_exists($fileName)) {
             $this->createInit();
         }
 
@@ -1091,7 +1091,7 @@ final class fsmaker
     private function zipAction()
     {
 
-        if (false === $this->isPluginFolder()) {
+        if (!$this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
