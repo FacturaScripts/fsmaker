@@ -104,12 +104,12 @@ final class Columna
         $tiposList = ['serial', 'integer', 'double precision', 'boolean', 'character varying', 'text', 'timestamp', 'date', 'time'];
 
         $this->tipo = tiposList[$type + 1];
-        if($type == 2 || $type == 3){
+        if($type === 2 || $type === 3){
             $this->askMaximo();
             $this->askMinimo();
             $this->askStep();
         }
-        else if($type == 5){
+        else if($type === 5){
             $this->askLongitud();
         }
 
