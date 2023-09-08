@@ -151,7 +151,7 @@ final class Columna
         } while ($display < 0 || $display > 3);
         
         $displayList = ['left', 'right', 'center', 'none'];
-        $this->display = $displayList[$display]
+        $this->display = $displayList[$display];
 
         do {
             $requerido = $this->prompt("¿El campo {$this->nombre} es obligatorio? 1=Si, 0=No");
