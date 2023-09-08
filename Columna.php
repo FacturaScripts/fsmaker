@@ -101,49 +101,16 @@ final class Columna
 
     private function setType(int $type): void
     {
-        switch ($type) {
-            case 1:
-                $this->tipo = 'serial';
-                return;
+        $tiposList = ['serial', 'integer', 'double precision', 'boolean', 'character varying', 'text', 'timestamp', 'date', 'time'];
 
-            case 2:
-                $this->tipo = 'integer';
-                $this->askMaximo();
-                $this->askMinimo();
-                $this->askStep();
-                break;
-
-            case 3:
-                $this->tipo = 'double precision';
-                $this->askMaximo();
-                $this->askMinimo();
-                $this->askStep();
-                break;
-
-            case 4:
-                $this->tipo = 'boolean';
-                break;
-
-            case 5:
-                $this->tipo = 'character varying';
-                $this->askLongitud();
-                break;
-
-            case 6:
-                $this->tipo = 'text';
-                break;
-
-            case 7:
-                $this->tipo = 'timestamp';
-                break;
-
-            case 8:
-                $this->tipo = 'date';
-                break;
-
-            case 9:
-                $this->tipo = 'time';
-                break;
+        $this->tipo = tiposList[$type + 1];
+        if($type == 2 || $type == 3){
+            $this->askMaximo();
+            $this->askMinimo();
+            $this->askStep();
+        }
+        else if($type == 5){
+            $this->askLongitud();
         }
 
         do {
