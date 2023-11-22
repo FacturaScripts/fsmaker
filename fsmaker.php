@@ -80,7 +80,7 @@ final class fsmaker
         $this->globalFields = false;
 
         echo "\n";
-        if ($this->prompt("¿Desea crear los campos (id, creationdate, lastupdate, nick, lastnick, name) por defecto? 1=Si, 0=No\n") === '1') {
+        if ($this->prompt("¿Desea crear los campos (id, creation_date, last_update, nick, last_nick, name) por defecto? 1=Si, 0=No\n") === '1') {
             $this->globalFields = true;
             $fields[] = new Columna([
                 'display' => 'none',
@@ -90,13 +90,13 @@ final class fsmaker
             ]);
             $fields[] = new Columna([
                 'display' => 'none',
-                'nombre' => 'creationdate',
+                'nombre' => 'creation_date',
                 'requerido' => true,
                 'tipo' => 'timestamp'
             ]);
             $fields[] = new Columna([
                 'display' => 'none',
-                'nombre' => 'lastupdate',
+                'nombre' => 'last_update',
                 'tipo' => 'timestamp'
             ]);
             $fields[] = new Columna([
@@ -107,7 +107,7 @@ final class fsmaker
             ]);
             $fields[] = new Columna([
                 'display' => 'none',
-                'nombre' => 'lastnick',
+                'nombre' => 'last_nick',
                 'tipo' => 'character varying',
                 'longitud' => 50
             ]);
@@ -546,9 +546,9 @@ final class fsmaker
         $properties = '';
         $primaryColumn = '';
         $clear = '';
-        $clearExclude = ['creationdate', 'nick', 'lastnick', 'lastupdate'];
+        $clearExclude = ['creation_date', 'nick', 'last_nick', 'last_update'];
         $test = '';
-        $testExclude = ['creationdate', 'nick', 'lastnick', 'lastupdate'];
+        $testExclude = ['creation_date', 'nick', 'last_nick', 'last_update'];
 
         foreach ($fields as $field) {
             // para especificar el tipo de propiedad
@@ -655,14 +655,14 @@ final class fsmaker
 
         if ($this->globalFields) {
             $sample .= '        if (empty($this->primaryColumnValue())) {' . "\n"
-                . '            $this->creationdate = Tools::dateTime();' . "\n"
-                . '            $this->lastnick = null;' . "\n"
-                . '            $this->lastupdate = null;' . "\n"
+                . '            $this->creation_date = Tools::dateTime();' . "\n"
+                . '            $this->last_nick = null;' . "\n"
+                . '            $this->last_update = null;' . "\n"
                 . '            $this->nick = Session::user()->nick;' . "\n"
                 . '        } else {' . "\n"
-                . '            $this->creationdate = $this->creationdate ?? Tools::dateTime();' . "\n"
-                . '            $this->lastnick = Session::user()->nick;' . "\n"
-                . '            $this->lastupdate = Tools::dateTime();' . "\n"
+                . '            $this->creation_date = $this->creationdate ?? Tools::dateTime();' . "\n"
+                . '            $this->last_nick = Session::user()->nick;' . "\n"
+                . '            $this->last_update = Tools::dateTime();' . "\n"
                 . '            $this->nick = $this->nick ?? Session::user()->nick;' . "\n"
                 . '        }' . "\n\n";
         }
@@ -778,7 +778,7 @@ final class fsmaker
                     . "    </constraint>\n";
             }
 
-            if ($field->nombre === 'nick' || $field->nombre === 'lastnick') {
+            if ($field->nombre === 'nick' || $field->nombre === 'last_nick') {
                 $constraints .= "    <constraint>\n"
                     . "        <name>ca_" . $tableName . "_users_" . $field->nombre . "</name>\n"
                     . "        <type>FOREIGN KEY (" . $field->nombre . ") REFERENCES users (nick) ON DELETE SET NULL ON UPDATE CASCADE</type>\n"
@@ -817,7 +817,7 @@ final class fsmaker
         $fieldDefault = [];
         foreach ($fields as $field) {
             // guardamos las columnas por defecto aparte
-            if ($this->globalFields && in_array($field->nombre, ['creationdate', 'lastnick', 'lastupdate', 'nick'])) {
+            if ($this->globalFields && in_array($field->nombre, ['creation_date', 'last_nick', 'last_update', 'nick'])) {
                 $fieldDefault[] = $field;
                 continue;
             }
@@ -834,9 +834,9 @@ final class fsmaker
         }
 
         if (count($fieldDefault) > 0) {
-            // ordenamos el array de columnas poniendo este orden: creationdate, nick, lastupdate, lastnick
+            // ordenamos el array de columnas poniendo este orden: creation_date, nick, last_update, last_nick
             usort($fieldDefault, function ($a, $b) {
-                $order = ['creationdate' => 1, 'nick' => 2, 'lastupdate' => 3, 'lastnick' => 4];
+                $order = ['creation_date' => 1, 'nick' => 2, 'last_update' => 3, 'last_nick' => 4];
                 return $order[$a->nombre] <=> $order[$b->nombre];
             });
         }
@@ -910,15 +910,15 @@ final class fsmaker
         $requerido = $column->requerido ? ' required="true"' : '';
 
         switch ($nombreWidget) {
-            case 'creationdate':
+            case 'creation_date':
                 $nombreColumn = 'creation-date';
                 break;
 
-            case 'lastnick':
+            case 'last_nick':
                 $nombreColumn = 'last-user';
                 break;
 
-            case 'lastupdate':
+            case 'last_update':
                 $nombreColumn = 'last-update';
                 break;
 
@@ -928,7 +928,7 @@ final class fsmaker
         }
 
         switch ($nombreWidget) {
-            case 'lastnick':
+            case 'last_nick':
             case 'nick':
                 $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '" ' . $requerido . '>' . "\n"
