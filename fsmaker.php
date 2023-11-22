@@ -606,7 +606,7 @@ final class fsmaker
                 case 'text':
                     $typeProperty = 'string';
                     if (false === in_array($field->nombre, $testExclude)) {
-                        $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                        $test .= '        $this->' . $field->nombre . ' = Tools::noHtml($this->' . $field->nombre . ');' . "\n";
                     }
                     break;
             }
@@ -614,7 +614,7 @@ final class fsmaker
             if (strpos($field->tipo, 'character varying') !== false) {
                 $typeProperty = 'string';
                 if (false === in_array($field->nombre, $testExclude)) {
-                    $test .= '        $this->' . $field->nombre . ' = $this->toolBox()->utils()->noHtml($this->' . $field->nombre . ');' . "\n";
+                    $test .= '        $this->' . $field->nombre . ' = Tools::noHtml($this->' . $field->nombre . ');' . "\n";
                 }
             }
 
@@ -626,7 +626,8 @@ final class fsmaker
         $sample = '<?php' . "\n"
             . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
             . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
-            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n";
+            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n"
+            . "use FacturaScripts\Core\Tools;\n";
 
         if ($this->globalFields) {
             $sample .= "use FacturaScripts\Core\Session;\n\n";
@@ -653,14 +654,16 @@ final class fsmaker
             . "    {\n";
 
         if ($this->globalFields) {
-            $sample .= '        if ($this->exists()) {' . "\n"
-                . '            $this->lastnick = Session::user()->nick;' . "\n"
-                . '            $this->lastupdate = date(self::DATETIME_STYLE);' . "\n"
-                . '        } else {' . "\n"
-                . '            $this->creationdate = date(self::DATETIME_STYLE);' . "\n"
+            $sample .= '        if (empty($this->primaryColumnValue())) {' . "\n"
+                . '            $this->creationdate = Tools::dateTime();' . "\n"
                 . '            $this->lastnick = null;' . "\n"
                 . '            $this->lastupdate = null;' . "\n"
                 . '            $this->nick = Session::user()->nick;' . "\n"
+                . '        } else {' . "\n"
+                . '            $this->creationdate = $this->creationdate ?? Tools::dateTime();' . "\n"
+                . '            $this->lastnick = Session::user()->nick;' . "\n"
+                . '            $this->lastupdate = Tools::dateTime();' . "\n"
+                . '            $this->nick = $this->nick ?? Session::user()->nick;' . "\n"
                 . '        }' . "\n\n";
         }
 
