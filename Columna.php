@@ -21,6 +21,9 @@ final class Columna
     public $nombre = '';
 
     /** bool */
+    public $primary = false;
+
+    /** bool */
     public $requerido = false;
 
     /** @var float */
@@ -55,8 +58,8 @@ final class Columna
 
             if ($type === 1) {
                 foreach ($previous as $column) {
-                    if ($column->tipo === 'serial') {
-                        echo "\nYa hay un campo de tipo serial.\n";
+                    if ($column->tipo === 'serial' || $column->primary) {
+                        echo "\nYa hay un campo de tipo serial o primary key.\n";
                         continue 2;
                     }
                 }
@@ -104,6 +107,8 @@ final class Columna
         switch ($type) {
             case 1:
                 $this->tipo = 'serial';
+                $this->primary = true;
+                $this->requerido = true;
                 return;
 
             case 2:

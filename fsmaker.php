@@ -89,6 +89,7 @@ final class fsmaker
             $fields[] = new Columna([
                 'display' => 'none',
                 'nombre' => 'id',
+                'primary' => true,
                 'requerido' => true,
                 'tipo' => 'serial'
             ]);
@@ -124,9 +125,11 @@ final class fsmaker
         echo "\n";
 
         while (true) {
-            $name = strtolower($this->prompt('Nombre del campo (vacío para terminar)'));
-            if (empty($name)) {
+            $name = $this->prompt('Nombre del campo (vacío para terminar)', '/^[a-z][a-z0-9_]*$/');
+            if (is_null($name)) {
                 break;
+            } elseif (empty($name)) {
+                continue;
             }
 
             if (in_array($name, explode(',', self::FORBIDDEN_WORDS))) {
@@ -146,7 +149,34 @@ final class fsmaker
             return strcmp($a->nombre, $b->nombre);
         });
 
+        $this->askPrimaryKey($fields);
         return $fields;
+    }
+
+    private function askPrimaryKey(array &$fields)
+    {
+        // si hay un campo serial o primary key, terminamos
+        foreach ($fields as $field) {
+            if ($field->tipo === 'serial' || $field->primary) {
+                return;
+            }
+        }
+
+        // indicamos que campo es la clave primaria
+        while (true) {
+            foreach ($fields as $index => $field) {
+                echo $index . " - " . $field->nombre . "\n";
+            }
+
+            $pos = $this->prompt('No estableció ninguna clave primaria, seleccione una de las anteriores', '/^[0-9]*$/');
+            if ($pos == '' || false === isset($fields[$pos])) {
+                continue;
+            }
+
+            $fields[$pos]->primary = true;
+            $fields[$pos]->requerido = true;
+            break;
+        }
     }
 
     private function createController()
@@ -615,6 +645,10 @@ final class fsmaker
                     break;
             }
 
+            if ($field->primary) {
+                $primaryColumn = $field->nombre;
+            }
+
             if (strpos($field->tipo, 'character varying') !== false) {
                 $typeProperty = 'string';
                 if (false === in_array($field->nombre, $testExclude)) {
@@ -769,13 +803,13 @@ final class fsmaker
                 . "        <name>$field->nombre</name>\n"
                 . "        <type>$field->tipo</type>\n";
 
-            if ($field->tipo === 'serial' || $field->requerido) {
+            if ($field->tipo === 'serial' || $field->primary || $field->requerido) {
                 $columns .= "        <null>NO</null>\n";
             }
 
             $columns .= "    </column>\n";
 
-            if ($field->tipo === 'serial') {
+            if ($field->tipo === 'serial' || $field->primary) {
                 $constraints .= "    <constraint>\n"
                     . '        <name>' . $tableName . "_pkey</name>\n"
                     . '        <type>PRIMARY KEY (' . $field->nombre . ")</type>\n"
@@ -826,8 +860,8 @@ final class fsmaker
                 continue;
             }
 
-            // si la columna es de tipo serial, la ponemos al principio
-            if ($field->tipo === 'serial') {
+            // si la columna es de tipo serial o primary, la ponemos al principio
+            if ($field->tipo === 'serial' || $field->primary) {
                 $columns = $this->getWidget($field, $order, $tabForColums) . $columns;
                 $order += 10;
                 continue;
@@ -1081,11 +1115,17 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function prompt($label, $pattern = ''): string
+    private function prompt($label, $pattern = ''): ?string
     {
         echo $label . ': ';
         $matches = [];
         $value = trim(fgets(STDIN));
+
+        // si el valor esta vacío, devolvemos null
+        if ($value == '') {
+            return null;
+        }
+
         if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
             echo "Valor no válido. Debe cumplir: " . $pattern . "\n";
             return '';
