@@ -1213,7 +1213,10 @@ final class fsmaker
             $fileStr = str_replace($searchLog, 'Tools::log(', $fileStr);
 
             // reemplazamos lang
-            $searchLang = ['ToolBox::i18n(', '$this->toolBox()->i18n(', 'self::toolBox()->i18n(', 'self::toolBox()::i18n('];
+            $searchLang = [
+                'ToolBox::i18n(', '$this->toolBox()->i18n(',
+                'self::toolBox()::i18n(', 'self::toolbox()->i18n('
+            ];
             $fileStr = str_replace($searchLang, 'Tools::lang(', $fileStr);
 
             // reemplazamos noHtml
