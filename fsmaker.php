@@ -739,7 +739,7 @@ final class fsmaker
         ];
         foreach ($folders as $folder) {
             $this->createFolder($name . '/' . $folder);
-            file_put_contents($name . '/' . $folder . '/.gitignore', "*\n!.gitignore");
+            touch($name . '/' . $folder . '/.gitignore');
         }
 
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
