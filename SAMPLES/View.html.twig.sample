@@ -1,13 +1,33 @@
+{#
+FacturaScripts utiliza el motor de plantillas twig.
+Los archivos de las vistas HTML deben tener la extensión .html.twig
+y se deben almacenar en la carpeta View de su plugin.
+
+https://facturascripts.com/publicaciones/las-vistas-html-69
+
+https://twig.symfony.com/
+
+#}
+
 {% extends "Master/MenuTemplate.html.twig" %}
 
 {% block body %}
     {{ parent() }}
+
+    {# tu código aquí #}
+
 {% endblock %}
 
 {% block css %}
     {{ parent() }}
+
+    {# tu código aquí #}
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+
+    {# tu código aquí #}
+
 {% endblock %}

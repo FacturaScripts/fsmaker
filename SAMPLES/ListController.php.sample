@@ -1,25 +1,33 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\ListController;
 
+/**
+ * Este es un controlador específico para listados. Permite una o varias pestañas.
+ * Cada una con un listado de los registros de un modelo.
+ * Además hace uso de archivos de XMLView para definir qué columnas mostrar y cómo.
+ *
+ * https://facturascripts.com/publicaciones/listcontroller-232
+ */
 class List[[MODEL_NAME]] extends ListController
 {
     public function getPageData(): array
     {
-        $data = parent::getPageData();
-        $data["title"] = "[[TITLE]]";
-        $data["menu"] = "[[MENU]]";
-        $data["icon"] = "fas fa-search";
-        return $data;
+        $pageData = parent::getPageData();
+        $pageData["title"] = "[[TITLE]]";
+        $pageData["menu"] = "[[MENU]]";
+        $pageData["icon"] = "fas fa-search";
+        return $pageData;
     }
 
-    protected function createViews()
+    protected function createViews(): void
     {
         $this->createViews[[MODEL_NAME]]();
     }
 
-    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]")
+    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]"): void
     {
         $this->addView($viewName, "[[MODEL_NAME]]", "[[TITLE]]");
         

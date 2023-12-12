@@ -1,8 +1,15 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace FacturaScripts\[[NAME_SPACE]]\Extension\Controller;
 
 use Closure;
 
+/**
+ * Para modificar el comportamiento o añadir pestañas o secciones a controladores de otros plugins (o del core)
+ * podemos crear una extensión de ese controlador.
+ *
+ * https://facturascripts.com/publicaciones/extensiones-de-modelos
+ */
 class [[NAME]]
 {
     public function createViews(): Closure
