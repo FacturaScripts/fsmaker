@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
@@ -286,9 +287,11 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/ListController.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]'],
+        $template = str_replace(
+            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]'],
             [$this->getNamespace(), $modelName, $title, $menu],
-            $sample);
+            $sample
+        );
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
@@ -779,9 +782,12 @@ final class fsmaker
         }
 
         $txtFile = $filePath . 'install-plugins.txt';
-        $ini = parse_ini_file('facturascripts.ini');
-        file_put_contents($txtFile, $ini['name']);
-        echo '* ' . $txtFile . self::OK;
+        if (false === file_exists($txtFile)) {
+            // Creamos el fichero install-plugins.txt con el nombre del plugin
+            $ini = parse_ini_file('facturascripts.ini');
+            file_put_contents($txtFile, $ini['name']);
+            echo '* ' . $txtFile . self::OK;
+        }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Test.php.sample");
         $nameSpace = $this->getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
@@ -1199,9 +1205,11 @@ final class fsmaker
 
             // buscamos si existe la palabra toolBox(), ToolBox:: o AppSettings()
             // si no existe, pasamos al siguiente archivo
-            if (strpos($fileStr, 'ToolBox::') === false
+            if (
+                strpos($fileStr, 'ToolBox::') === false
                 && strpos($fileStr, 'toolBox()') === false
-                && strpos($fileStr, 'AppSettings()') === false) {
+                && strpos($fileStr, 'AppSettings()') === false
+            ) {
                 continue;
             }
 
@@ -1356,10 +1364,12 @@ final class fsmaker
         );
 
         foreach ($files as $name => $file) {
-            if ($file->getFilename() === '.'
+            if (
+                $file->getFilename() === '.'
                 || $file->getFilename() === '..'
                 || $file->getFilename()[0] === '.'
-                || substr($name, 0, 3) === './.') {
+                || substr($name, 0, 3) === './.'
+            ) {
                 continue;
             }
             $path = str_replace('./', $pluginName . '/', $name);
