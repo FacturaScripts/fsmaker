@@ -1011,7 +1011,7 @@ final class fsmaker
             case 'nick':
                 $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '" ' . $requerido . '>' . "\n"
-                    . $spaces . '        <values source="users" fieldcode="nick" filedtile="nick"/>' . "\n"
+                    . $spaces . '        <values source="users" fieldcode="nick" fieldtile="nick"/>' . "\n"
                     . $spaces . '    </widget>' . "\n"
                     . $spaces . "</column>\n";
                 return $sample;
