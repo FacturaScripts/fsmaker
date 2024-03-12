@@ -22,6 +22,8 @@ final class fsmaker
 
     public $globalFields = false;
 
+    private $extension = false;
+
     public function __construct($argv)
     {
         if (count($argv) < 2) {
@@ -86,46 +88,49 @@ final class fsmaker
         $fields = [];
         $this->globalFields = false;
 
-        echo "\n";
-        if ($this->prompt("¿Desea crear los campos (id, creation_date, last_update, nick, last_nick, name) por defecto? 1=Si, 0=No\n") === '1') {
-            $this->globalFields = true;
-            $fields[] = new Columna([
-                'display' => 'none',
-                'nombre' => 'id',
-                'primary' => true,
-                'requerido' => true,
-                'tipo' => 'serial'
-            ]);
-            $fields[] = new Columna([
-                'display' => 'none',
-                'nombre' => 'creation_date',
-                'requerido' => true,
-                'tipo' => 'timestamp'
-            ]);
-            $fields[] = new Columna([
-                'display' => 'none',
-                'nombre' => 'last_update',
-                'tipo' => 'timestamp'
-            ]);
-            $fields[] = new Columna([
-                'display' => 'none',
-                'nombre' => 'nick',
-                'tipo' => 'character varying',
-                'longitud' => 50
-            ]);
-            $fields[] = new Columna([
-                'display' => 'none',
-                'nombre' => 'last_nick',
-                'tipo' => 'character varying',
-                'longitud' => 50
-            ]);
-            $fields[] = new Columna([
-                'nombre' => 'name',
-                'tipo' => 'character varying',
-                'longitud' => 100
-            ]);
+        // si estamos en una extensión, no preguntamos por los campos por defecto
+        if (false === $this->extension) {
+            echo "\n";
+            if ($this->prompt("¿Desea crear los campos (id, creation_date, last_update, nick, last_nick, name) por defecto? 1=Si, 0=No\n") === '1') {
+                $this->globalFields = true;
+                $fields[] = new Columna([
+                    'display' => 'none',
+                    'nombre' => 'id',
+                    'primary' => true,
+                    'requerido' => true,
+                    'tipo' => 'serial'
+                ]);
+                $fields[] = new Columna([
+                    'display' => 'none',
+                    'nombre' => 'creation_date',
+                    'requerido' => true,
+                    'tipo' => 'timestamp'
+                ]);
+                $fields[] = new Columna([
+                    'display' => 'none',
+                    'nombre' => 'last_update',
+                    'tipo' => 'timestamp'
+                ]);
+                $fields[] = new Columna([
+                    'display' => 'none',
+                    'nombre' => 'nick',
+                    'tipo' => 'character varying',
+                    'longitud' => 50
+                ]);
+                $fields[] = new Columna([
+                    'display' => 'none',
+                    'nombre' => 'last_nick',
+                    'tipo' => 'character varying',
+                    'longitud' => 50
+                ]);
+                $fields[] = new Columna([
+                    'nombre' => 'name',
+                    'tipo' => 'character varying',
+                    'longitud' => 100
+                ]);
+            }
+            echo "\n";
         }
-        echo "\n";
 
         while (true) {
             $name = $this->prompt('Nombre del campo (vacío para terminar)', '/^[a-z][a-z0-9_]*$/');
@@ -158,6 +163,11 @@ final class fsmaker
 
     private function askPrimaryKey(array &$fields)
     {
+        // si estamos en una extensión, no preguntamos por la clave primaria y terminamos
+        if ($this->extension) {
+            return;
+        }
+
         // si hay un campo serial o primary key, terminamos
         foreach ($fields as $field) {
             if ($field->tipo === 'serial' || $field->primary) {
@@ -335,6 +345,7 @@ final class fsmaker
             return;
         }
 
+        $this->extension = true;
         $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
         switch ($option) {
             case 1:
