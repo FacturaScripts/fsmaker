@@ -9,6 +9,8 @@ if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
+$argv = $_SERVER['argv'] ?? [];
+
 include __DIR__ . '/Columna.php';
 
 final class fsmaker

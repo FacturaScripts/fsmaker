@@ -1,0 +1,24 @@
+{
+  "name": "facturascripts/fsmaker",
+  "description": "Herramienta de creación de plugin para FacturaScripts.",
+  "type": "project",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Carlos García Gómez",
+      "email": "carlos@facturascripts.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Facturascripts\\Fsmaker\\": "src/"
+    },
+    "files": ["fsmaker.php"]
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.3"
+  },
+  "bin": ["bin/fsmaker"],
+  "version": "1.0.0"
+}
