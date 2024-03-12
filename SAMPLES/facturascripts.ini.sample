@@ -1,4 +1,9 @@
-description = '[[NAME]]'
-min_version = 2023.1
 name = '[[NAME]]'
+description = '[[NAME]]'
 version = 0.1
+min_version = 2023.1
+
+;Campos opcionales:
+;min_php = 7.3
+;require = 'POS'
+;require_php = 'soap'

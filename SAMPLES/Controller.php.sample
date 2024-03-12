@@ -1,22 +1,42 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 use FacturaScripts\Core\Base\Controller;
 
+/**
+ * Un controlador es básicamente una página o una opción del menú de FacturaScripts.
+ *
+ * https://facturascripts.com/publicaciones/los-controladores-410
+ */
 class [[NAME]] extends Controller
 {
     public function getPageData(): array
     {
-        $data = parent::getPageData();
-        $data["menu"] = "admin";
-        $data["title"] = "[[NAME]]";
-        $data["icon"] = "fas fa-file";
-        return $data;
+        $pageData = parent::getPageData();
+        $pageData["menu"] = "admin";
+        $pageData["title"] = "[[NAME]]";
+        $pageData["icon"] = "fas fa-file";
+        return $pageData;
     }
-    
-    public function privateCore(&$response, $user, $permissions)
+
+    /**
+     * Ejecuta la lógica privada del controlador.
+     */
+    public function privateCore(&$response, $user, $permissions): void
     {
         parent::privateCore($response, $user, $permissions);
+
+        // tu código aquí
+    }
+
+    /**
+     * Ejecuta la lógica pública del controlador.
+     */
+    public function publicCore(&$response): void
+    {
+        parent::publicCore($response);
+
         // tu código aquí
     }
 }

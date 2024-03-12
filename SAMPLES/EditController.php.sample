@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
@@ -12,9 +13,9 @@ class Edit[[MODEL_NAME]] extends EditController
 
     public function getPageData(): array
     {
-        $data = parent::getPageData();
-        $data["title"] = "[[MODEL_NAME]]";
-        $data["icon"] = "fas fa-search";
-        return $data;
+        $pageData = parent::getPageData();
+        $pageData["title"] = "[[MODEL_NAME]]";
+        $pageData["icon"] = "fas fa-search";
+        return $pageData;
     }
 }
