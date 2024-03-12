@@ -154,25 +154,9 @@ final class Columna
         do {
             $display = (int)$this->prompt("¿Cual es la alineación del campo {$this->nombre}? 0=Izquierda, 1=Derecha, 2=Centro, 3=Ocultar");
         } while ($display < 0 || $display > 3);
-
-        switch ($display) {
-            case 0:
-                $this->display = 'left';
-                break;
-
-            case 1:
-                $this->display = 'right';
-                break;
-
-            case 2:
-                $this->display = 'center';
-                break;
-
-            case 3:
-                $this->display = 'none';
-                break;
-        }
-
+        
+        $displayList = ['left', 'right', 'center', 'none'];
+        $this->display = $displayList[$display];
 
         do {
             $requerido = $this->prompt("¿El campo {$this->nombre} es obligatorio? 1=Si, 0=No");
