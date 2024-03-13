@@ -708,23 +708,25 @@ final class fsmaker
             . "    {\n";
 
         if ($this->globalFields) {
-            $sample .= '        if (empty($this->primaryColumnValue())) {' . "\n"
-                . '            $this->creation_date = Tools::dateTime();' . "\n"
-                . '            $this->last_nick = null;' . "\n"
-                . '            $this->last_update = null;' . "\n"
-                . '            $this->nick = Session::user()->nick;' . "\n"
-                . '        } else {' . "\n"
-                . '            $this->creation_date = $this->creationdate ?? Tools::dateTime();' . "\n"
-                . '            $this->last_nick = Session::user()->nick;' . "\n"
-                . '            $this->last_update = Tools::dateTime();' . "\n"
-                . '            $this->nick = $this->nick ?? Session::user()->nick;' . "\n"
-                . '        }' . "\n\n";
+            $sample .= '        $this->creation_date = $this->creationdate ?? Tools::dateTime();' . "\n"
+                . '        $this->nick = $this->nick ?? Session::user()->nick;' . "\n";
         }
 
         $sample .= $test
             . '        return parent::test();' . "\n"
-            . '    }' . "\n"
-            . '}' . "\n";
+            . '    }';
+
+        if ($this->globalFields) {
+            $sample .= "\n\n"
+                . '    protected function saveUpdate(array $values = [])' . "\n"
+                . '    {' . "\n"
+                . '        $this->last_nick = Session::user()->nick;' . "\n"
+                . '        $this->last_update = Tools::dateTime();' . "\n"
+                . '        return parent::saveUpdate($values);' . "\n"
+                . '    }' . "\n";
+        }
+
+        $sample .= '}' . "\n";
         file_put_contents($fileName, $sample);
     }
 
