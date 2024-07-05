@@ -279,7 +279,7 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLViewByFields($xmlFilename, $fields, 1);
+        $this->createXMLViewByFields($xmlFilename, $fields, 'edit');
         echo '* ' . $xmlFilename . self::OK;
     }
 
@@ -315,7 +315,7 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLViewByFields($xmlFilename, $fields, 0);
+        $this->createXMLViewByFields($xmlFilename, $fields, 'list');
         echo '* ' . $xmlFilename . self::OK;
     }
 
@@ -462,8 +462,15 @@ final class fsmaker
             return;
         }
 
+        // comprobamos si el $name empieza por List o Edit
+        if (strpos($name, 'List') === 0) {
+            $type = 'list';
+        } else {
+            $type = 'edit';
+        }
+
         $fields = $this->askFields();
-        $this->createXMLViewByFields($fileName, $fields, 2);
+        $this->createXMLViewByFields($fileName, $fields, $type, true);
         echo '* ' . $fileName . self::OK;
     }
 
@@ -853,7 +860,7 @@ final class fsmaker
         file_put_contents($tableFilename, $sample);
     }
 
-    private function createXMLViewByFields(string $xmlFilename, array $fields, int $editOrList)
+    private function createXMLViewByFields(string $xmlFilename, array $fields, string $type, bool $extension = false)
     {
         if (empty($fields)) {
             $fields = $this->askFields();
@@ -861,16 +868,16 @@ final class fsmaker
 
         // Creamos el xml con los campos introducidos
         $groupName = 'data';
-        if ($editOrList === 2) { // Es una extension
+        if ($extension) {
             $groupName = 'data_extension';
         }
 
-        $tabForColums = 12;
-        if ($editOrList === 0) { // Es un ListController
-            $tabForColums = 8;
+        $tabForColumns = 12;
+        if ($type === 'list') { // Es un ListController
+            $tabForColumns = 8;
         }
 
-        $order = 100;
+        $order = 110;
         $columns = '';
 
         $fieldDefault = [];
@@ -883,12 +890,11 @@ final class fsmaker
 
             // si la columna es de tipo serial o primary, la ponemos al principio
             if ($field->tipo === 'serial' || $field->primary) {
-                $columns = $this->getWidget($field, $order, $tabForColums) . $columns;
-                $order += 10;
+                $columns = $this->getWidget($field, 100, $tabForColumns) . $columns;
                 continue;
             }
 
-            $columns .= $this->getWidget($field, $order, $tabForColums);
+            $columns .= $this->getWidget($field, $order, $tabForColumns);
             $order += 10;
         }
 
@@ -904,21 +910,20 @@ final class fsmaker
             . '<view>' . "\n"
             . '    <columns>' . "\n";
 
-        switch ($editOrList) {
-            case 0: // Es un ListController
+        switch ($type) {
+            case 'list': // Es un ListController
                 $sample .= $columns;
 
                 // añadimos las columnas por defecto al final
                 if ($this->globalFields) {
                     foreach ($fieldDefault as $field) {
-                        $sample .= $this->getWidget($field, $order, $tabForColums);
+                        $sample .= $this->getWidget($field, $order, $tabForColumns);
                         $order += 10;
                     }
                 }
                 break;
 
-            case 1: // Es un EditController
-            case 2: // Es una extensión
+            case 'edit': // Es un EditController
                 $sample .= '        <group name="' . $groupName . '" numcolumns="12">' . "\n"
                     . $columns
                     . '        </group>' . "\n";
@@ -928,7 +933,7 @@ final class fsmaker
                     $order = 100;
                     $sample .= '        <group name="logs" numcolumns="12">' . "\n";
                     foreach ($fieldDefault as $field) {
-                        $sample .= $this->getWidget($field, $order, $tabForColums);
+                        $sample .= $this->getWidget($field, $order, $tabForColumns);
                         $order += 10;
                     }
                     $sample .= '        </group>' . "\n";
@@ -1025,7 +1030,7 @@ final class fsmaker
             case 'last_nick':
             case 'nick':
                 $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '" ' . $requerido . '>' . "\n"
+                    . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '"' . $requerido . '>' . "\n"
                     . $spaces . '        <values source="users" fieldcode="nick" fieldtile="nick"/>' . "\n"
                     . $spaces . '    </widget>' . "\n"
                     . $spaces . "</column>\n";
