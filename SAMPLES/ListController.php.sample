@@ -7,7 +7,7 @@ use FacturaScripts\Core\Lib\ExtendedController\ListController;
 /**
  * Este es un controlador específico para listados. Permite una o varias pestañas.
  * Cada una con un listado de los registros de un modelo.
- * Además hace uso de archivos de XMLView para definir qué columnas mostrar y cómo.
+ * Además, hace uso de archivos de XMLView para definir qué columnas mostrar y cómo.
  *
  * https://facturascripts.com/publicaciones/listcontroller-232
  */
