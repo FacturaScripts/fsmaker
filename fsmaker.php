@@ -760,7 +760,7 @@ final class fsmaker
         $folders = [
             'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES', 'Extension/Controller',
             'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Extension/View', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
-            'Test/main'
+            'Test/main', 'CronJob', 'Mod'
         ];
         foreach ($folders as $folder) {
             $this->createFolder($name . '/' . $folder);
