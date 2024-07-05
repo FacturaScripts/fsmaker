@@ -1,7 +1,7 @@
 name = '[[NAME]]'
 description = '[[NAME]]'
 version = 0.1
-min_version = 2023.1
+min_version = 2024.5
 
 ;Campos opcionales:
 ;min_php = 7.3
