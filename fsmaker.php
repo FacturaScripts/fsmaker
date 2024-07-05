@@ -684,7 +684,7 @@ final class fsmaker
             $properties .= "    public $" . $field->nombre . ";" . "\n\n";
         }
 
-        $sample = '<?php' . "\n"
+        $sample = '<?php' . "\n\n"
             . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
             . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
             . "use FacturaScripts\Core\Model\Base\ModelTrait;\n"
@@ -725,7 +725,7 @@ final class fsmaker
 
         if ($this->globalFields) {
             $sample .= "\n\n"
-                . '    protected function saveUpdate(array $values = [])' . "\n"
+                . '    protected function saveUpdate(array $values = []): bool' . "\n"
                 . '    {' . "\n"
                 . '        $this->last_nick = Session::user()->nick;' . "\n"
                 . '        $this->last_update = Tools::dateTime();' . "\n"
