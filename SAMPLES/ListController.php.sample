@@ -15,11 +15,11 @@ class List[[MODEL_NAME]] extends ListController
 {
     public function getPageData(): array
     {
-        $pageData = parent::getPageData();
-        $pageData["title"] = "[[TITLE]]";
-        $pageData["menu"] = "[[MENU]]";
-        $pageData["icon"] = "fas fa-search";
-        return $pageData;
+        $data = parent::getPageData();
+        $data['menu'] = '[[MENU]]';
+        $data['title'] = '[[TITLE]]';
+        $data['icon'] = 'fa-solid fa-search';
+        return $data;
     }
 
     protected function createViews(): void
@@ -27,15 +27,15 @@ class List[[MODEL_NAME]] extends ListController
         $this->createViews[[MODEL_NAME]]();
     }
 
-    protected function createViews[[MODEL_NAME]](string $viewName = "List[[MODEL_NAME]]"): void
+    protected function createViews[[MODEL_NAME]](string $viewName = 'List[[MODEL_NAME]]'): void
     {
-        $this->addView($viewName, "[[MODEL_NAME]]", "[[TITLE]]");
+        $this->addView($viewName, '[[MODEL_NAME]]', '[[TITLE]]');
         
         // Esto es un ejemplo ... debe de cambiarlo según los nombres de campos del modelo
-        // $this->addOrderBy($viewName, ["id"], "id", 2);
-        // $this->addOrderBy($viewName, ["name"], "name");
+        // $this->addOrderBy($viewName, ['id'], 'id', 2);
+        // $this->addOrderBy($viewName, ['name'], 'name');
         
         // Esto es un ejemplo ... debe de cambiarlo según los nombres de campos del modelo
-        // $this->addSearchFields($viewName, ["id", "name"]);
+        // $this->addSearchFields($viewName, ['id', 'name']);
     }
 }

@@ -13,11 +13,11 @@ class [[NAME]] extends Controller
 {
     public function getPageData(): array
     {
-        $pageData = parent::getPageData();
-        $pageData["menu"] = "admin";
-        $pageData["title"] = "[[NAME]]";
-        $pageData["icon"] = "fas fa-file";
-        return $pageData;
+        $data = parent::getPageData();
+        $data['menu'] = '[[MENU]]';
+        $data['title'] = '[[NAME]]';
+        $data['icon'] = 'fa-solid fa-file';
+        return $data;
     }
 
     /**

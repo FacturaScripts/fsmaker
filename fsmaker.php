@@ -1,28 +1,25 @@
 <?php
-
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
  * @author Jerónimo Pedro Sánchez Manzano <socger@gmail.com>
  */
+
 if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
-$argv = $_SERVER['argv'] ?? [];
+include __DIR__ . '/vendor/autoload.php';
 
-include __DIR__ . '/Columna.php';
+use fsmaker\Column;
+use fsmaker\FileGenerator;
+use fsmaker\FileUpdater;
 
 final class fsmaker
 {
     const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
-    const FORBIDDEN_WORDS = 'action,activetab,code';
-    const VERSION = 1.3;
+    const VERSION = 1.4;
     const OK = " -> OK.\n";
-
-    public $globalFields = false;
-
-    private $extension = false;
 
     public function __construct($argv)
     {
@@ -31,13 +28,13 @@ final class fsmaker
             return;
         }
 
-        $name = $this->findPluginName();
         switch ($argv[1]) {
             case 'controller':
                 $this->createControllerAction();
                 break;
 
             case 'cron':
+                $name = $this->findPluginName();
                 $this->createCron($name);
                 break;
 
@@ -46,7 +43,7 @@ final class fsmaker
                 break;
 
             case 'gitignore':
-                $this->createGitIgnore();
+                FileGenerator::createGitIgnore();
                 break;
 
             case 'init':
@@ -83,116 +80,7 @@ final class fsmaker
         }
     }
 
-    private function askFields(): array
-    {
-        $fields = [];
-        $this->globalFields = false;
-
-        // si estamos en una extensión, no preguntamos por los campos por defecto
-        if (false === $this->extension) {
-            echo "\n";
-            if ($this->prompt("¿Desea crear los campos (id, creation_date, last_update, nick, last_nick, name) por defecto? 1=Si, 0=No\n") === '1') {
-                $this->globalFields = true;
-                $fields[] = new Columna([
-                    'display' => 'none',
-                    'nombre' => 'id',
-                    'primary' => true,
-                    'requerido' => true,
-                    'tipo' => 'serial'
-                ]);
-                $fields[] = new Columna([
-                    'display' => 'none',
-                    'nombre' => 'creation_date',
-                    'requerido' => true,
-                    'tipo' => 'timestamp'
-                ]);
-                $fields[] = new Columna([
-                    'display' => 'none',
-                    'nombre' => 'last_update',
-                    'tipo' => 'timestamp'
-                ]);
-                $fields[] = new Columna([
-                    'display' => 'none',
-                    'nombre' => 'nick',
-                    'tipo' => 'character varying',
-                    'longitud' => 50
-                ]);
-                $fields[] = new Columna([
-                    'display' => 'none',
-                    'nombre' => 'last_nick',
-                    'tipo' => 'character varying',
-                    'longitud' => 50
-                ]);
-                $fields[] = new Columna([
-                    'nombre' => 'name',
-                    'tipo' => 'character varying',
-                    'longitud' => 100
-                ]);
-            }
-            echo "\n";
-        }
-
-        while (true) {
-            $name = $this->prompt('Nombre del campo (vacío para terminar)', '/^[a-z][a-z0-9_]*$/');
-            if (is_null($name)) {
-                break;
-            } elseif (empty($name)) {
-                continue;
-            }
-
-            if (in_array($name, explode(',', self::FORBIDDEN_WORDS))) {
-                echo "\n" . self::FORBIDDEN_WORDS . " son nombres no permitidos.\n";
-                continue;
-            }
-
-            $column = new Columna(['nombre' => $name]);
-            $column->ask($fields);
-
-            $fields[] = $column;
-            echo "\n";
-        }
-
-        // ordenamos el array por la propiedad nombre
-        usort($fields, function ($a, $b) {
-            return strcmp($a->nombre, $b->nombre);
-        });
-
-        $this->askPrimaryKey($fields);
-        return $fields;
-    }
-
-    private function askPrimaryKey(array &$fields)
-    {
-        // si estamos en una extensión, no preguntamos por la clave primaria y terminamos
-        if ($this->extension) {
-            return;
-        }
-
-        // si hay un campo serial o primary key, terminamos
-        foreach ($fields as $field) {
-            if ($field->tipo === 'serial' || $field->primary) {
-                return;
-            }
-        }
-
-        // indicamos que campo es la clave primaria
-        while (true) {
-            foreach ($fields as $index => $field) {
-                echo $index . " - " . $field->nombre . "\n";
-            }
-
-            $pos = $this->prompt('No estableció ninguna clave primaria, seleccione una de las anteriores', '/^[0-9]*$/');
-            if ($pos == '' || false === isset($fields[$pos])) {
-                continue;
-            }
-
-            $fields[$pos]->primary = true;
-            $fields[$pos]->requerido = true;
-            break;
-        }
-    }
-
-    private function createController()
+    private function createController(): void
     {
         $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
         $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
@@ -225,7 +113,7 @@ final class fsmaker
         echo '* ' . $viewFilename . self::OK;
     }
 
-    private function createControllerAction()
+    private function createControllerAction(): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
@@ -240,21 +128,21 @@ final class fsmaker
 
             case 2:
                 $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
-                $fields = $this->askFields();
-                $this->createControllerList($modelName, $fields);
+                $fields = Column::askMulti();
+                $this->createListController($modelName, $fields);
                 return;
 
             case 3:
                 $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
-                $fields = $this->askFields();
-                $this->createControllerEdit($modelName, $fields);
+                $fields = Column::askMulti();
+                $this->createEditController($modelName, $fields);
                 return;
         }
 
         echo "Opción no válida.\n";
     }
 
-    private function createControllerEdit(string $modelName, array $fields)
+    private function createEditController(string $modelName, array $fields): void
     {
         $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'Edit' . $modelName . '.php';
@@ -266,8 +154,13 @@ final class fsmaker
             return;
         }
 
+        $menu = $this->prompt('Menú');
         $sample = file_get_contents(__DIR__ . "/SAMPLES/EditController.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[MODEL_NAME]]'], [$this->getNamespace(), $modelName], $sample);
+        $template = str_replace(
+            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
+            [$this->getNamespace(), $modelName, $menu],
+            $sample
+        );
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
@@ -279,11 +172,11 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLViewByFields($xmlFilename, $fields, 'edit');
+        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit');
         echo '* ' . $xmlFilename . self::OK;
     }
 
-    private function createControllerList(string $modelName, array $fields)
+    private function createListController(string $modelName, array $fields): void
     {
         $menu = $this->prompt('Menú');
         $title = $this->prompt('Título');
@@ -315,11 +208,11 @@ final class fsmaker
             return;
         }
 
-        $this->createXMLViewByFields($xmlFilename, $fields, 'list');
+        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list');
         echo '* ' . $xmlFilename . self::OK;
     }
 
-    private function createCron(string $name)
+    private function createCron(string $name): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
@@ -338,14 +231,13 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createExtensionAction()
+    private function createExtensionAction(): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $this->extension = true;
         $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
         switch ($option) {
             case 1:
@@ -377,7 +269,7 @@ final class fsmaker
         echo "* Opción no válida.\n";
     }
 
-    private function createExtensionController(string $name)
+    private function createExtensionController(string $name): void
     {
         if (empty($name)) {
             echo "* No introdujo el nombre del controlador a extender.\n";
@@ -401,7 +293,7 @@ final class fsmaker
         $this->modifyInit($name, 1);
     }
 
-    private function createExtensionModel(string $name)
+    private function createExtensionModel(string $name): void
     {
         if (empty($name)) {
             echo "* No introdujo el nombre del modelo a extender.\n";
@@ -425,7 +317,7 @@ final class fsmaker
         $this->modifyInit($name, 0);
     }
 
-    private function createExtensionTable(string $name)
+    private function createExtensionTable(string $name): void
     {
         if (empty($name)) {
             echo "* No introdujo el nombre de la tabla a extender.\n";
@@ -441,12 +333,12 @@ final class fsmaker
             return;
         }
 
-        $fields = $this->askFields();
-        $this->createXMLTableByFields($fileName, $name, $fields);
+        $fields = Column::askMulti();
+        FileGenerator::createTableXmlByFields($fileName, $name, $fields);
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createExtensionXMLView(string $name)
+    private function createExtensionXMLView(string $name): void
     {
         if (empty($name)) {
             echo "* No introdujo el nombre del XMLView a extender.\n";
@@ -469,12 +361,12 @@ final class fsmaker
             $type = 'edit';
         }
 
-        $fields = $this->askFields();
-        $this->createXMLViewByFields($fileName, $fields, $type, true);
+        $fields = Column::askMulti();
+        FileGenerator::createXMLViewByFields($fileName, $fields, $type, true);
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createExtensionView(string $name)
+    private function createExtensionView(string $name): void
     {
         if (empty($name)) {
             echo "* No introdujo el nombre de la vista a extender.\n";
@@ -494,7 +386,7 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createFolder(string $path)
+    private function createFolder(string $path): void
     {
         if (file_exists($path)) {
             return;
@@ -505,34 +397,7 @@ final class fsmaker
         }
     }
 
-    private function createGitIgnore()
-    {
-        $fileName = '.gitignore';
-        if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
-            return;
-        }
-
-        $template = file_get_contents(__DIR__ . "/SAMPLES/gitignore.sample");
-        file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
-    }
-
-    private function createIni(string $name)
-    {
-        $fileName = "facturascripts.ini";
-        if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
-            return;
-        }
-
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/facturascripts.ini.sample");
-        $template = str_replace('[[NAME]]', $name, $sample);
-        file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
-    }
-
-    private function createInit()
+    private function createInit(): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
@@ -551,17 +416,20 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createModelAction()
+    private function createModelAction(): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
-        $tableName = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
-        if (empty($name) || empty($tableName)) {
-            echo "* No introdujo ni el modelo ni la tabla.\n";
+        $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        if (empty($name)) {
+            return;
+        }
+
+        $tableName = $this->prompt('Nombre de la tabla (plural)', '/^[a-z][a-z0-9_]*$/', 'empezar por letra, todo en minúsculas y sin espacios');
+        if (empty($tableName)) {
             return;
         }
 
@@ -573,171 +441,32 @@ final class fsmaker
             return;
         }
 
-        $fields = $this->askFields();
-        $this->createModelByFields($fileName, $tableName, $fields, $name);
+        $fields = Column::askMulti();
+        FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, $this->getNamespace());
         echo '* ' . $fileName . self::OK;
 
         $tablePath = $this->isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         $this->createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
-            $this->createXMLTableByFields($tableFilename, $tableName, $fields);
+            FileGenerator::createTableXmlByFields($tableFilename, $tableName, $fields);
             echo '* ' . $tableFilename . self::OK;
         } else {
             echo "\n" . '* ' . $tableFilename . " YA EXISTE";
         }
 
         echo "\n";
-        if ($this->prompt('¿Crear EditController? 1=Si, 0=No') === '1') {
-            $this->createControllerEdit($name, $fields);
+        if ($this->prompt('¿Crear EditController? 0=No (predeterminado), 1=Si') === '1') {
+            $this->createEditController($name, $fields);
         }
 
         echo "\n";
-        if ($this->prompt('¿Crear ListController? 1=Si, 0=No') === '1') {
-            $this->createControllerList($name, $fields);
+        if ($this->prompt('¿Crear ListController? 0=No (predeterminado), 1=Si') === '1') {
+            $this->createListController($name, $fields);
         }
     }
 
-    private function createModelByFields(string $fileName, string $tableName, array $fields, string $name)
-    {
-        $properties = '';
-        $primaryColumn = '';
-        $clear = '';
-        $clearExclude = ['creation_date', 'nick', 'last_nick', 'last_update'];
-        $test = '';
-        $testExclude = ['creation_date', 'nick', 'last_nick', 'last_update'];
-
-        foreach ($fields as $field) {
-            // para especificar el tipo de propiedad
-            $typeProperty = '';
-
-            // Para el método clear()
-            switch ($field->tipo) {
-                case 'serial':
-                    $typeProperty = 'int';
-                    $primaryColumn = $field->nombre;
-                    break;
-
-                case 'integer':
-                    $typeProperty = 'int';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = 0;' . "\n";
-                    }
-                    break;
-
-                case 'double precision':
-                    $typeProperty = 'float';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = 0.0;' . "\n";
-                    }
-                    break;
-
-                case 'boolean':
-                    $typeProperty = 'bool';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = false;' . "\n";
-                    }
-                    break;
-
-                case 'timestamp':
-                    $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = date(self::DATETIME_STYLE);' . "\n";
-                    }
-                    break;
-
-                case 'date':
-                    $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = date(self::DATE_STYLE);' . "\n";
-                    }
-                    break;
-
-                case 'time':
-                    $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $clearExclude)) {
-                        $clear .= '        $this->' . $field->nombre . ' = date(self::HOUR_STYLE);' . "\n";
-                    }
-                    break;
-
-                case 'text':
-                    $typeProperty = 'string';
-                    if (false === in_array($field->nombre, $testExclude)) {
-                        $test .= '        $this->' . $field->nombre . ' = Tools::noHtml($this->' . $field->nombre . ');' . "\n";
-                    }
-                    break;
-            }
-
-            if ($field->primary) {
-                $primaryColumn = $field->nombre;
-            }
-
-            if (strpos($field->tipo, 'character varying') !== false) {
-                $typeProperty = 'string';
-                if (false === in_array($field->nombre, $testExclude)) {
-                    $test .= '        $this->' . $field->nombre . ' = Tools::noHtml($this->' . $field->nombre . ');' . "\n";
-                }
-            }
-
-            // Para la creación de properties
-            $properties .= "    /** @var " . $typeProperty . " */\n";
-            $properties .= "    public $" . $field->nombre . ";" . "\n\n";
-        }
-
-        $sample = '<?php' . "\n\n"
-            . 'namespace FacturaScripts\\' . $this->getNamespace() . '\Model;' . "\n\n"
-            . "use FacturaScripts\Core\Model\Base\ModelClass;\n"
-            . "use FacturaScripts\Core\Model\Base\ModelTrait;\n"
-            . "use FacturaScripts\Core\Tools;\n";
-
-        if ($this->globalFields) {
-            $sample .= "use FacturaScripts\Core\Session;\n\n";
-        }
-
-        $sample .= 'class ' . $name . ' extends ModelClass' . "\n"
-            . '{' . "\n"
-            . '    use ModelTrait;' . "\n\n"
-            . $properties
-            . "    public function clear() \n"
-            . "    {\n"
-            . '        parent::clear();' . "\n"
-            . $clear
-            . '    }' . "\n\n"
-            . "    public static function primaryColumn(): string\n"
-            . "    {\n"
-            . '        return "' . $primaryColumn . '";' . "\n"
-            . '    }' . "\n\n"
-            . "    public static function tableName(): string\n"
-            . "    {\n"
-            . '        return "' . $tableName . '";' . "\n"
-            . '    }' . "\n\n"
-            . "    public function test(): bool\n"
-            . "    {\n";
-
-        if ($this->globalFields) {
-            $sample .= '        $this->creation_date = $this->creationdate ?? Tools::dateTime();' . "\n"
-                . '        $this->nick = $this->nick ?? Session::user()->nick;' . "\n";
-        }
-
-        $sample .= $test
-            . '        return parent::test();' . "\n"
-            . '    }';
-
-        if ($this->globalFields) {
-            $sample .= "\n\n"
-                . '    protected function saveUpdate(array $values = []): bool' . "\n"
-                . '    {' . "\n"
-                . '        $this->last_nick = Session::user()->nick;' . "\n"
-                . '        $this->last_update = Tools::dateTime();' . "\n"
-                . '        return parent::saveUpdate($values);' . "\n"
-                . '    }' . "\n";
-        }
-
-        $sample .= '}' . "\n";
-        file_put_contents($fileName, $sample);
-    }
-
-    private function createPluginAction()
+    private function createPluginAction(): void
     {
         if (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
             echo "* No se puede crear un plugin en esta carpeta.\n";
@@ -745,7 +474,7 @@ final class fsmaker
         }
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
-        $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/');
+        $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             echo "* El plugin debe tener un nombre.\n";
             return;
@@ -776,20 +505,20 @@ final class fsmaker
         }
 
         chdir($name);
-        $this->createIni($name);
-        $this->createGitIgnore();
+        FileGenerator::createIni($name);
+        FileGenerator::createGitIgnore();
         $this->createCron($name);
         $this->createInit();
     }
 
-    private function createTestAction()
+    private function createTestAction(): void
     {
         if ($this->isCoreFolder() || false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/');
+        $name = $this->prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/', 'empezar por mayúscula y terminar en Test');
         if (empty($name)) {
             echo "* No introdujo el nombre del test o está mal escrito.\n";
             return;
@@ -818,138 +547,6 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createXMLTableByFields(string $tableFilename, string $tableName, array $fields)
-    {
-        $columns = '';
-        $constraints = '';
-        foreach ($fields as $field) {
-            if ($field->tipo === 'character varying') {
-                $field->tipo .= '(' . $field->longitud . ')';
-            }
-
-            $columns .= "    <column>\n"
-                . "        <name>$field->nombre</name>\n"
-                . "        <type>$field->tipo</type>\n";
-
-            if ($field->tipo === 'serial' || $field->primary || $field->requerido) {
-                $columns .= "        <null>NO</null>\n";
-            }
-
-            $columns .= "    </column>\n";
-
-            if ($field->tipo === 'serial' || $field->primary) {
-                $constraints .= "    <constraint>\n"
-                    . '        <name>' . $tableName . "_pkey</name>\n"
-                    . '        <type>PRIMARY KEY (' . $field->nombre . ")</type>\n"
-                    . "    </constraint>\n";
-            }
-
-            if ($field->nombre === 'nick' || $field->nombre === 'last_nick') {
-                $constraints .= "    <constraint>\n"
-                    . "        <name>ca_" . $tableName . "_users_" . $field->nombre . "</name>\n"
-                    . "        <type>FOREIGN KEY (" . $field->nombre . ") REFERENCES users (nick) ON DELETE SET NULL ON UPDATE CASCADE</type>\n"
-                    . "    </constraint>\n";
-            }
-        }
-
-        $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-            . '<table>' . "\n"
-            . $columns
-            . $constraints
-            . '</table>' . "\n";
-        file_put_contents($tableFilename, $sample);
-    }
-
-    private function createXMLViewByFields(string $xmlFilename, array $fields, string $type, bool $extension = false)
-    {
-        if (empty($fields)) {
-            $fields = $this->askFields();
-        }
-
-        // Creamos el xml con los campos introducidos
-        $groupName = 'data';
-        if ($extension) {
-            $groupName = 'data_extension';
-        }
-
-        $tabForColumns = 12;
-        if ($type === 'list') { // Es un ListController
-            $tabForColumns = 8;
-        }
-
-        $order = 110;
-        $columns = '';
-
-        $fieldDefault = [];
-        foreach ($fields as $field) {
-            // guardamos las columnas por defecto aparte
-            if ($this->globalFields && in_array($field->nombre, ['creation_date', 'last_nick', 'last_update', 'nick'])) {
-                $fieldDefault[] = $field;
-                continue;
-            }
-
-            // si la columna es de tipo serial o primary, la ponemos al principio
-            if ($field->tipo === 'serial' || $field->primary) {
-                $columns = $this->getWidget($field, 100, $tabForColumns) . $columns;
-                continue;
-            }
-
-            $columns .= $this->getWidget($field, $order, $tabForColumns);
-            $order += 10;
-        }
-
-        if (count($fieldDefault) > 0) {
-            // ordenamos el array de columnas poniendo este orden: creation_date, nick, last_update, last_nick
-            usort($fieldDefault, function ($a, $b) {
-                $order = ['creation_date' => 1, 'nick' => 2, 'last_update' => 3, 'last_nick' => 4];
-                return $order[$a->nombre] <=> $order[$b->nombre];
-            });
-        }
-
-        $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-            . '<view>' . "\n"
-            . '    <columns>' . "\n";
-
-        switch ($type) {
-            case 'list': // Es un ListController
-                $sample .= $columns;
-
-                // añadimos las columnas por defecto al final
-                if ($this->globalFields) {
-                    foreach ($fieldDefault as $field) {
-                        $sample .= $this->getWidget($field, $order, $tabForColumns);
-                        $order += 10;
-                    }
-                }
-                break;
-
-            case 'edit': // Es un EditController
-                $sample .= '        <group name="' . $groupName . '" numcolumns="12">' . "\n"
-                    . $columns
-                    . '        </group>' . "\n";
-
-                // añadimos el grupo de logs
-                if ($this->globalFields) {
-                    $order = 100;
-                    $sample .= '        <group name="logs" numcolumns="12">' . "\n";
-                    foreach ($fieldDefault as $field) {
-                        $sample .= $this->getWidget($field, $order, $tabForColumns);
-                        $order += 10;
-                    }
-                    $sample .= '        </group>' . "\n";
-                }
-                break;
-
-            default: // No es ninguna de las opciones de antes
-                return;
-        }
-
-        $sample .= '    </columns>' . "\n"
-            . '</view>' . "\n";
-
-        file_put_contents($xmlFilename, $sample);
-    }
-
     private function findPluginName(): string
     {
         if ($this->isPluginFolder()) {
@@ -958,130 +555,6 @@ final class fsmaker
         }
 
         return '';
-    }
-
-    private function getFilesByExtension(string $folder, string $extension, &$files = array()): array
-    {
-        // obtenemos la lista de archivos y carpetas
-        $content = scandir($folder);
-
-        // añadimos las carpetas excluidas
-        $excludeDir = array('.', '..', '.git', 'idea', 'vendor', 'node_modules');
-
-        // recorre la lista de archivos
-        foreach ($content as $item) {
-            // ignorar los directorios excluidos
-            if (in_array($item, $excludeDir)) {
-                continue;
-            }
-
-            // construir la ruta del archivo
-            $rute = $folder . '/' . $item;
-
-            // verificar si es un directorio
-            if (is_dir($rute)) {
-                // llamada recursiva para explorar subcarpetas
-                $this->getFilesByExtension($rute, $extension, $files);
-            } else {
-                // verificar la extensión del archivo
-                $info = pathinfo($rute);
-                if (isset($info['extension']) && strtolower($info['extension']) == strtolower($extension)) {
-                    // agregar el archivo al array de resultados
-                    $files[] = $rute;
-                }
-            }
-        }
-
-        return $files;
-    }
-
-    private function getWidget(Columna $column, string $order, int $tabForColums): string
-    {
-        $spaces = str_repeat(" ", $tabForColums);
-        $sample = '';
-
-        $max = is_null($column->maximo) ? '' : ' max="' . $column->maximo . '"';
-        $maxlength = is_null($column->longitud) ? '' : ' maxlength="' . $column->longitud . '"';
-        $min = is_null($column->minimo) ? '' : ' min="' . $column->minimo . '"';
-        $nombreColumn = $column->nombre;
-        $nombreWidget = $column->nombre;
-        $step = is_null($column->step) ? '' : ' step="' . $column->step . '"';
-        $requerido = $column->requerido ? ' required="true"' : '';
-
-        switch ($nombreWidget) {
-            case 'creation_date':
-                $nombreColumn = 'creation-date';
-                break;
-
-            case 'last_nick':
-                $nombreColumn = 'last-user';
-                break;
-
-            case 'last_update':
-                $nombreColumn = 'last-update';
-                break;
-
-            case 'nick':
-                $nombreColumn = 'user';
-                break;
-        }
-
-        switch ($nombreWidget) {
-            case 'last_nick':
-            case 'nick':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="select" fieldname="' . $nombreWidget . '"' . $requerido . '>' . "\n"
-                    . $spaces . '        <values source="users" fieldcode="nick" fieldtile="nick"/>' . "\n"
-                    . $spaces . '    </widget>' . "\n"
-                    . $spaces . "</column>\n";
-                return $sample;
-        }
-
-        switch ($column->tipo) {
-            default:
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '"' . $maxlength . $requerido . '/>' . "\n";
-                break;
-
-            case 'serial':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="text" fieldname="' . $nombreWidget . '" readonly="true"/>' . "\n";
-                break;
-
-            case 'double precision':
-            case 'integer':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="number" fieldname="' . $nombreWidget . '"' . $max . $min . $step . $requerido . '/>' . "\n";
-                break;
-
-            case 'boolean':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="checkbox" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
-                break;
-
-            case 'text':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="textarea" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
-                break;
-
-            case 'timestamp':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="datetime" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
-                break;
-
-            case 'date':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="date" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
-                break;
-
-            case 'time':
-                $sample .= $spaces . '<column name="' . $nombreColumn . '" display="' . $column->display . '" order="' . $order . '">' . "\n"
-                    . $spaces . '    <widget type="time" fieldname="' . $nombreWidget . '"' . $requerido . '/>' . "\n";
-                break;
-        }
-
-        $sample .= $spaces . "</column>\n";
-        return $sample;
     }
 
     private function getNamespace(): string
@@ -1094,7 +567,7 @@ final class fsmaker
         return 'Plugins\\' . $ini['name'];
     }
 
-    private function help()
+    private function help(): void
     {
         echo 'FacturaScripts Maker v' . self::VERSION . "\n\n"
             . "crear:\n"
@@ -1122,7 +595,7 @@ final class fsmaker
         return file_exists('facturascripts.ini');
     }
 
-    private function modifyInit(string $name, int $modelOrController)
+    private function modifyInit(string $name, int $modelOrController): void
     {
         $fileName = "Init.php";
         if (false === file_exists($fileName)) {
@@ -1141,7 +614,7 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
-    private function prompt($label, $pattern = ''): ?string
+    private function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
     {
         echo $label . ': ';
         $matches = [];
@@ -1153,14 +626,14 @@ final class fsmaker
         }
 
         if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            echo "Valor no válido. Debe cumplir: " . $pattern . "\n";
+            echo "Valor no válido. Debe " . $pattern_explain . "\n";
             return '';
         }
 
         return $value;
     }
 
-    private function updateTranslationsAction()
+    private function updateTranslationsAction(): void
     {
         if ($this->isPluginFolder()) {
             $folder = 'Translation/';
@@ -1196,162 +669,19 @@ final class fsmaker
         }
     }
 
-    private function upgradeAction()
+    private function upgradeAction(): void
     {
         if (false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $this->upgradePhpAction();
-        $this->upgradeTwigAction();
+        FileUpdater::upgradePhpFiles();
+        FileUpdater::upgradeTwigFiles();
     }
 
-    private function upgradePhpAction()
+    private function zipAction(): void
     {
-        // obtenemos la lista de archivos
-        $pathFiles = $this->getFilesByExtension('.', 'php');
-
-        // si está vacía, salimos
-        if (empty($pathFiles)) {
-            echo "* No se han encontrado archivos php.\n";
-            return;
-        }
-
-        // recorremos la lista de archivos
-        foreach ($pathFiles as $pathFile) {
-            // leemos el contenido del archivo
-            $fileStr = file_get_contents($pathFile);
-
-            // buscamos si existe la palabra toolBox(), ToolBox:: o AppSettings()
-            // si no existe, pasamos al siguiente archivo
-            if (
-                strpos($fileStr, 'ToolBox::') === false
-                && strpos($fileStr, 'toolBox()') === false
-                && strpos($fileStr, 'AppSettings()') === false
-            ) {
-                continue;
-            }
-
-            // reemplazamos log
-            $searchLog = [
-                'ToolBox::log(', '$this->toolBox()->log(', 'self::toolBox()->log(', 'self::toolBox()::log(',
-                'ToolBox::i18nLog(', '$this->toolBox()->i18nLog(', 'self::toolBox()->i18nLog(', 'self::toolBox()::i18nLog('
-            ];
-            $fileStr = str_replace($searchLog, 'Tools::log(', $fileStr);
-
-            // reemplazamos lang
-            $searchLang = [
-                'ToolBox::i18n(', '$this->toolBox()->i18n(',
-                'self::toolBox()::i18n(', 'self::toolbox()->i18n('
-            ];
-            $fileStr = str_replace($searchLang, 'Tools::lang(', $fileStr);
-
-            // reemplazamos noHtml
-            $searchNoHtml = ['ToolBox::utils()->noHtml(', 'self::toolBox()->utils()->noHtml(', '$this->toolBox()->utils()->noHtml('];
-            $fileStr = str_replace($searchNoHtml, 'Tools::noHtml(', $fileStr);
-
-            // reemplazamos settings
-            $searchSettings = [
-                'ToolBox::appSettings()::get(', 'ToolBox::appSettings()->get(', '$this->toolBox()->appSettings()->get(',
-                'self::toolBox()->appSettings()->get(', 'self::toolBox()::appSettings()->get(', 'self::toolBox()::appSettings()::get(',
-                'AppSettings()::get(', 'AppSettings()->get('
-            ];
-            $fileStr = str_replace($searchSettings, 'Tools::settings(', $fileStr);
-
-            // reemplazamos date
-            $searchDate = ['date(ModelCore::DATE_STYLE)', 'date(self::DATE_STYLE)'];
-            $fileStr = str_replace($searchDate, 'Tools::date()', $fileStr);
-
-            // reemplazamos dateTime
-            $searchDateTime = ['date(ModelCore::DATETIME_STYLE)', 'date(self::DATETIME_STYLE)'];
-            $fileStr = str_replace($searchDateTime, 'Tools::dateTime()', $fileStr);
-
-            // reemplazamos hour
-            $searchHour = ['date(ModelCore::HOUR_STYLE)', 'date(self::HOUR_STYLE)'];
-            $fileStr = str_replace($searchHour, 'Tools::hour()', $fileStr);
-
-            // buscamos si tiene él use de Tools, si no lo añadimos
-            if (strpos($fileStr, 'use FacturaScripts\Core\Tools;') === false) {
-
-                // pueden existir varios use, obtenemos todos los use del core
-                $uses = [];
-                $matches = [];
-                preg_match_all('/use FacturaScripts\\\\Core\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
-                foreach ($matches[0] as $match) {
-                    $uses[] = $match;
-                }
-
-                // añadimos el use de Tools
-                $uses[] = 'use FacturaScripts\Core\Tools;';
-
-                // ordenamos los use
-                sort($uses);
-
-                // obtenemos la posición del array donde está él use de Tools
-                $pos = array_search('use FacturaScripts\Core\Tools;', $uses);
-
-                // obtenemos el namespace del archivo
-                $namespace = '';
-                preg_match('/namespace FacturaScripts\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
-                if (isset($matches[0])) {
-                    $namespace = $matches[0];
-                }
-
-                // si la posición del use de Tools es 0, añadimos él use después del namespace
-                if ($pos === 0) {
-                    $fileStr = str_replace($namespace, $namespace . "\n\n" . $uses[$pos] . "\n", $fileStr);
-                } else {
-                    // si la posición es mayor que 0, añadimos él use antes de la posición obtenida
-                    $fileStr = str_replace($uses[$pos - 1], $uses[$pos - 1] . "\n" . $uses[$pos] . "\n", $fileStr);
-                }
-            }
-
-            // guardamos el archivo
-            if (file_put_contents($pathFile, $fileStr)) {
-                echo '* ' . $pathFile . self::OK;
-                continue;
-            }
-
-            echo "* Error al guardar el archivo " . $pathFile . "\n";
-        }
-    }
-
-    private function upgradeTwigAction()
-    {
-        // obtenemos la lista de archivos
-        $pathFiles = $this->getFilesByExtension('.', 'twig');
-
-        // si está vacía, salimos
-        if (empty($pathFiles)) {
-            echo "* No se han encontrado archivos html.twig.\n";
-            return;
-        }
-
-        // recorremos la lista de archivos
-        foreach ($pathFiles as $pathFile) {
-            // leemos el contenido del archivo
-            $fileStr = file_get_contents($pathFile);
-
-            // reemplazamos lang
-            $fileStr = str_replace('i18n.trans(', 'trans(', $fileStr);
-
-            // reemplazamos settings
-            $fileStr = str_replace('appSettings.get(', 'settings(', $fileStr);
-
-            // guardamos el archivo
-            if (file_put_contents($pathFile, $fileStr)) {
-                echo '* ' . $pathFile . self::OK;
-                continue;
-            }
-
-            echo "* Error al guardar el archivo " . $pathFile . "\n";
-        }
-    }
-
-    private function zipAction()
-    {
-
         if (false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
@@ -1385,10 +715,10 @@ final class fsmaker
 
         foreach ($files as $name => $file) {
             if (
-                $file->getFilename() === '.'
-                || $file->getFilename() === '..'
-                || $file->getFilename()[0] === '.'
-                || substr($name, 0, 3) === './.'
+                $file->getFilename() === '.' ||
+                $file->getFilename() === '..' ||
+                $file->getFilename()[0] === '.' ||
+                substr($name, 0, 3) === './.'
             ) {
                 continue;
             }
@@ -1401,4 +731,5 @@ final class fsmaker
     }
 }
 
+$argv = $_SERVER['argv'] ?? [];
 new fsmaker($argv);
