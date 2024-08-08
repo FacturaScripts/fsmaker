@@ -17,7 +17,7 @@ final class FileGenerator
             return;
         }
 
-        $template = file_get_contents(__DIR__ . "/SAMPLES/gitignore.sample");
+        $template = file_get_contents(__DIR__ . "/../SAMPLES/gitignore.sample");
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
@@ -30,7 +30,7 @@ final class FileGenerator
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/facturascripts.ini.sample");
+        $sample = file_get_contents(__DIR__ . "/../SAMPLES/facturascripts.ini.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
