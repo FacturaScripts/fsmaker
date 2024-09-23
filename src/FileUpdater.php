@@ -25,27 +25,42 @@ final class FileUpdater
             // leemos el contenido del archivo
             $fileStr = file_get_contents($pathFile);
 
-            // buscamos si existe la palabra toolBox(), ToolBox:: o AppSettings()
-            // si no existe, pasamos al siguiente archivo
+            // buscamos si existe las siguientes coincidencias
+            // si no existen, pasamos al siguiente archivo
             if (
                 strpos($fileStr, 'ToolBox::') === false &&
                 strpos($fileStr, 'toolBox()') === false &&
-                strpos($fileStr, 'AppSettings()') === false
+                strpos($fileStr, 'toolbox()') === false &&
+                strpos($fileStr, 'AppSettings()') === false &&
+                strpos($fileStr, 'fas ') === false &&
+                strpos($fileStr, 'far ') === false &&
+                strpos($fileStr, 'fal ') === false &&
+                strpos($fileStr, 'fat ') === false &&
+                strpos($fileStr, 'fad ') === false
             ) {
                 continue;
             }
 
             // reemplazamos log
             $searchLog = [
-                'ToolBox::log(', '$this->toolBox()->log(', 'self::toolBox()->log(', 'self::toolBox()::log(',
-                'ToolBox::i18nLog(', '$this->toolBox()->i18nLog(', 'self::toolBox()->i18nLog(', 'self::toolBox()::i18nLog('
+                'ToolBox::log(', 'ToolBox::i18nLog(',
+                '$this->toolBox()->log(', '$this->toolbox()->log(', '$this->toolBox()::log(', '$this->toolbox()::log(',
+                'self::toolBox()->log(', 'self::toolbox()->log(', 'self::toolBox()::log(', 'self::toolbox()::log(',
+                'static::toolBox()->log(', 'static::toolbox()->log(', 'static::toolBox()::log(', 'static::toolbox()::log(',
+                '$this->toolBox()->i18nLog(', '$this->toolbox()->i18nLog(', '$this->toolBox()::i18nLog(', '$this->toolbox()::i18nLog(',
+                'self::toolBox()->i18nLog(', 'self::toolbox()->i18nLog(', 'self::toolBox()::i18nLog(', 'self::toolbox()::i18nLog(',
+                'static::toolBox()->i18nLog(', 'static::toolbox()->i18nLog(', 'static::toolBox()::i18nLog(', 'static::toolbox()::i18nLog(',
             ];
             $fileStr = str_replace($searchLog, 'Tools::log(', $fileStr);
 
             // reemplazamos lang
             $searchLang = [
-                'ToolBox::i18n(', '$this->toolBox()->i18n(',
-                'self::toolBox()::i18n(', 'self::toolbox()->i18n('
+                'ToolBox::i18n(',
+                '$this->toolBox()->i18n(', '$this->toolbox()->i18n(',
+                'self::toolBox()::i18n(', 'self::toolbox()::i18n(',
+                'self::toolBox()->i18n(', 'self::toolbox()->i18n(',
+                'static::toolBox()::i18n(', 'static::toolbox()::i18n(',
+                'static::toolBox()->i18n(', 'static::toolbox()->i18n(',
             ];
             $fileStr = str_replace($searchLang, 'Tools::lang(', $fileStr);
 
@@ -72,6 +87,11 @@ final class FileUpdater
             // reemplazamos hour
             $searchHour = ['date(ModelCore::HOUR_STYLE)', 'date(self::HOUR_STYLE)'];
             $fileStr = str_replace($searchHour, 'Tools::hour()', $fileStr);
+
+            // reemplazamos iconos
+            $oldIcons = ['fas ', 'far ', 'fal ', 'fat ', 'fad '];
+            $newIcons = ['fa-solid ', 'fa-regular ', 'fa-light ', 'fa-thin ', 'fa-duotone '];
+            $fileStr = str_replace($oldIcons, $newIcons, $fileStr);
 
             // buscamos si tiene él use de Tools, si no lo añadimos
             if (strpos($fileStr, 'use FacturaScripts\Core\Tools;') === false) {
@@ -140,6 +160,11 @@ final class FileUpdater
 
             // reemplazamos settings
             $fileStr = str_replace('appSettings.get(', 'settings(', $fileStr);
+
+            // reemplazamos iconos
+            $oldIcons = ['fas ', 'far ', 'fal ', 'fat ', 'fad '];
+            $newIcons = ['fa-solid ', 'fa-regular ', 'fa-light ', 'fa-thin ', 'fa-duotone '];
+            $fileStr = str_replace($oldIcons, $newIcons, $fileStr);
 
             // guardamos el archivo
             if (file_put_contents($pathFile, $fileStr)) {
