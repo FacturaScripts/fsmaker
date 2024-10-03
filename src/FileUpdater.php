@@ -176,6 +176,37 @@ final class FileUpdater
         }
     }
 
+    public static function upgradeXmlFiles(): void
+    {
+        // obtenemos la lista de archivos
+        $pathFiles = self::getFilesByExtension('.', 'xml');
+
+        // si está vacía, salimos
+        if (empty($pathFiles)) {
+            echo "* No se han encontrado archivos xml.\n";
+            return;
+        }
+
+        // recorremos la lista de archivos
+        foreach ($pathFiles as $pathFile) {
+            // leemos el contenido del archivo
+            $fileStr = file_get_contents($pathFile);
+
+            // reemplazamos iconos
+            $oldIcons = ['fas ', 'far ', 'fal ', 'fat ', 'fad '];
+            $newIcons = ['fa-solid ', 'fa-regular ', 'fa-light ', 'fa-thin ', 'fa-duotone '];
+            $fileStr = str_replace($oldIcons, $newIcons, $fileStr);
+
+            // guardamos el archivo
+            if (file_put_contents($pathFile, $fileStr)) {
+                echo '* ' . $pathFile . self::OK;
+                continue;
+            }
+
+            echo "* Error al guardar el archivo " . $pathFile . "\n";
+        }
+    }
+
     private static function getFilesByExtension(string $folder, string $extension, &$files = array()): array
     {
         // obtenemos la lista de archivos y carpetas
