@@ -689,6 +689,7 @@ final class fsmaker
 
         $ini = parse_ini_file('facturascripts.ini');
         $pluginName = $ini['name'] ?? '';
+        $pluginVersion = $ini['version'] ?? '';
         if (empty($pluginName)) {
             echo "* No se ha encontrado el nombre del plugin.\n";
             return;
@@ -696,7 +697,8 @@ final class fsmaker
 
         $customName = $this->prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
         if (empty($customName)) {
-            $zipName = $pluginName . '.zip';
+            $pluginVersion = !empty($pluginVersion) ? '-' . $pluginVersion : '';
+            $zipName = $pluginName . $pluginVersion . '.zip';
         } else {
             $zipName = $customName . '.zip';
         }
@@ -709,25 +711,50 @@ final class fsmaker
 
         $zip->addEmptyDir($pluginName);
         $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator('.'),
+            new RecursiveDirectoryIterator('.', RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::LEAVES_ONLY
         );
 
+        $customExcluded = [];
+        if(file_exists('.zipignore')){
+            $customExcluded = explode("\n", file_get_contents('.' . DIRECTORY_SEPARATOR . '.zipignore'));
+        }
+
         foreach ($files as $name => $file) {
-            if (
-                $file->getFilename() === '.' ||
-                $file->getFilename() === '..' ||
-                $file->getFilename()[0] === '.' ||
-                substr($name, 0, 3) === './.'
-            ) {
+            if ($this->isExcluded($file, $name, $customExcluded)) {
                 continue;
             }
-            $path = str_replace('./', $pluginName . '/', $name);
+
+            $path = str_replace('.' . DIRECTORY_SEPARATOR, $pluginName . DIRECTORY_SEPARATOR, $name);
+
             $zip->addFile($name, $path);
         }
 
         $zip->close();
         echo "* " . $zipName . self::OK;
+    }
+
+    private function isExcluded($file, $name, $customExcluded = [])
+    {
+        // Verifica si el archivo es oculto (empieza con '.')
+        if ($file->getFilename()[0] === '.') {
+            return true;
+        }
+
+        // Verifica si el nombre del archivo empieza con '.\.' o './.'
+        $excludedPattern = '.' . DIRECTORY_SEPARATOR . '.';
+        if (substr($name, 0, strlen($excludedPattern)) === $excludedPattern) {
+            return true;
+        }
+
+        // Verifica si el archivo está excluido por las reglas personalizadas
+        foreach ($customExcluded as $value) {
+            if (stripos($name, trim($value))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
