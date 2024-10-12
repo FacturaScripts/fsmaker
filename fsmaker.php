@@ -677,6 +677,7 @@ final class fsmaker
         }
 
         FileUpdater::upgradePhpFiles();
+        FileUpdater::upgradeXmlFiles();
         FileUpdater::upgradeTwigFiles();
     }
 
