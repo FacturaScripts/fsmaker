@@ -189,6 +189,11 @@ final class FileUpdater
 
         // recorremos la lista de archivos
         foreach ($pathFiles as $pathFile) {
+            // si la url tiene el texto /table/ lo ignoramos
+            if (strpos($pathFile, '/table/') !== false) {
+                continue;
+            }
+
             // leemos el contenido del archivo
             $fileStr = file_get_contents($pathFile);
 
