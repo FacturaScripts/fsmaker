@@ -9,6 +9,95 @@ final class FileUpdater
 {
     const OK = " -> OK.\n";
 
+    public static function upgradeBootstrap5(): void
+    {
+        // Expresiones regulares y sus reemplazos
+        $patterns = [
+            '/([mp])l(-[0-5])/' => '$1s$2',
+            '/([mp])r(-[0-5])/' => '$1e$2',
+            '/no-gutters/' => 'g-0',
+            '/"close"/' => '"btn-close"',
+            '/left(-[0-9]*)/' => 'start$1',
+            '/right(-[0-9]*)/' => 'end$1',
+            '/(float|border|rounded|text)-left/' => '$1-start',
+            '/(float|border|rounded|text)-right/' => '$1-end',
+            '/font-weight(-[a-zA-Z]*)/' => 'fw$1',
+            '/font-style(-[a-zA-Z]*)/' => 'fst$1',
+            '/form-row/' => 'row',
+            '/data-toggle/' => 'data-bs-toggle',
+            '/data-target/' => 'data-bs-target',
+            '/data-dismiss/' => 'data-bs-dismiss',
+            '/badge(-[a-zA-Z]*)/' => 'bg$1',
+            '/form-group/' => 'mb-3',
+            '/<span class="input-group-append">\s*(.*?)\s*<\/span>/ms' => '$1',
+            '/<div class="input-group-append">\s*(.*?)\s*<\/div>/ms' => '$1',
+            '/<span class="input-group-prepend">\s*(.*?)\s*<\/span>/ms' => '$1',
+            '/<div class="input-group-prepend">\s*(.*?)\s*<\/div>/ms' => '$1',
+            '/\)\.modal\(\)/' => ').modal(\\\'show\\\')',
+            '/(<select\b[^>]*\b)(form-control\s)([^>]*>)/' => '$1form-select $3',
+            '/(<select\b[^>]*\b)(\bform-control\b)([^>]*>)/' => '$1form-select$3',
+            '/\s*<span\s+aria-hidden="true">\&times;<\/span>\s*/' => '',
+            '/class="alert/' => 'class="alert alert-dismissible',
+            '/(text-.*-)(left)/' => '$1start',
+            '/(text-.*-)(right)/' => '$1end',
+        ];
+
+        $phpFiles = self::getFilesByExtension('.', 'php');
+        $twigFiles = self::getFilesByExtension('.', 'twig');
+        $jsFiles = self::getFilesByExtension('.', 'js');
+
+        // actualizamos los archivos php
+        foreach ($phpFiles as $phpFile) {
+            // leemos el contenido del archivo
+            $fileStr = file_get_contents($phpFile);
+
+            // Reemplazar los patrones encontrados
+            $updatedContent = preg_replace(array_keys($patterns), array_values($patterns), $fileStr);
+
+            // guardamos el archivo
+            if (file_put_contents($phpFile, $updatedContent)) {
+                echo '* ' . $phpFile . self::OK;
+                continue;
+            }
+
+            echo "* Error al guardar el archivo " . $phpFile . "\n";
+        }
+
+        // actualizamos los archivos twig
+        foreach ($twigFiles as $twigFile) {
+            // leemos el contenido del archivo
+            $fileStr = file_get_contents($twigFile);
+
+            // Reemplazar los patrones encontrados
+            $updatedContent = preg_replace(array_keys($patterns), array_values($patterns), $fileStr);
+
+            // guardamos el archivo
+            if (file_put_contents($twigFile, $updatedContent)) {
+                echo '* ' . $twigFile . self::OK;
+                continue;
+            }
+
+            echo "* Error al guardar el archivo " . $twigFile . "\n";
+        }
+
+        // actualizamos los archivos js
+        foreach ($jsFiles as $jsFile) {
+            // leemos el contenido del archivo
+            $fileStr = file_get_contents($jsFile);
+
+            // Reemplazar los patrones encontrados
+            $updatedContent = preg_replace(array_keys($patterns), array_values($patterns), $fileStr);
+
+            // guardamos el archivo
+            if (file_put_contents($jsFile, $updatedContent)) {
+                echo '* ' . $jsFile . self::OK;
+                continue;
+            }
+
+            echo "* Error al guardar el archivo " . $jsFile . "\n";
+        }
+    }
+
     public static function upgradePhpFiles(): void
     {
         // obtenemos la lista de archivos

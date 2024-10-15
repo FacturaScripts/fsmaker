@@ -29,6 +29,10 @@ final class fsmaker
         }
 
         switch ($argv[1]) {
+            case 'bs5':
+                $this->bootstrap5Action();
+                break;
+
             case 'controller':
                 $this->createControllerAction();
                 break;
@@ -78,6 +82,16 @@ final class fsmaker
                 $this->help();
                 break;
         }
+    }
+
+    private function bootstrap5Action()
+    {
+        if (false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        FileUpdater::upgradeBootstrap5();
     }
 
     private function createController(): void
@@ -578,7 +592,9 @@ final class fsmaker
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
             . "$ fsmaker init\n"
-            . "$ fsmaker test\n\n"
+            . "$ fsmaker test\n"
+            . "$ fsmaker upgrade\n"
+            . "$ fsmaker bs5\n\n"
             . "descargar:\n"
             . "$ fsmaker translations\n\n"
             . "comprimir:\n"
