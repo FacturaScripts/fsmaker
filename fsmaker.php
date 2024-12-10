@@ -347,8 +347,8 @@ final class fsmaker
             return;
         }
 
-        $fields = Column::askMulti();
-        FileGenerator::createTableXmlByFields($fileName, $name, $fields);
+        $fields = Column::askMulti(true);
+        FileGenerator::createTableXmlByFields($fileName, $name, $fields, true);
         echo '* ' . $fileName . self::OK;
     }
 
@@ -375,7 +375,7 @@ final class fsmaker
             $type = 'edit';
         }
 
-        $fields = Column::askMulti();
+        $fields = Column::askMulti(true);
         FileGenerator::createXMLViewByFields($fileName, $fields, $type, true);
         echo '* ' . $fileName . self::OK;
     }
