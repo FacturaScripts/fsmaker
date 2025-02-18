@@ -325,21 +325,21 @@ final class Column
             case 'codcliente':
                 return $spaces . '<column name="' . $name . '" display="' . $this->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="autocomplete" fieldname="' . $this->nombre . '"' . $required . ">\n"
-                    . $spaces . '        <values source="clientes" fieldcode="codcliente" fieldtile="nombre"/>' . "\n"
+                    . $spaces . '        <values source="clientes" fieldcode="codcliente" fieldtitle="nombre"/>' . "\n"
                     . $spaces . "    </widget>\n"
                     . $spaces . "</column>\n";
 
             case 'codproveedor':
                 return $spaces . '<column name="' . $name . '" display="' . $this->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="autocomplete" fieldname="' . $this->nombre . '"' . $required . ">\n"
-                    . $spaces . '        <values source="proveedores" fieldcode="codproveedor" fieldtile="nombre"/>' . "\n"
+                    . $spaces . '        <values source="proveedores" fieldcode="codproveedor" fieldtitle="nombre"/>' . "\n"
                     . $spaces . "    </widget>\n"
                     . $spaces . "</column>\n";
 
             case 'codserie':
                 return $spaces . '<column name="' . $name . '" display="' . $this->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="select" fieldname="' . $this->nombre . '"' . $required . ">\n"
-                    . $spaces . '        <values source="series" fieldcode="codserie" fieldtile="nombre"/>' . "\n"
+                    . $spaces . '        <values source="series" fieldcode="codserie" fieldtitle="nombre"/>' . "\n"
                     . $spaces . "    </widget>\n"
                     . $spaces . "</column>\n";
 
@@ -347,7 +347,7 @@ final class Column
             case 'id_contacto':
                 return $spaces . '<column name="' . $name . '" display="' . $this->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="autocomplete" fieldname="' . $this->nombre . '"' . $required . ">\n"
-                    . $spaces . '        <values source="contactos" fieldcode="idcontacto" fieldtile="email"/>' . "\n"
+                    . $spaces . '        <values source="contactos" fieldcode="idcontacto" fieldtitle="email"/>' . "\n"
                     . $spaces . "    </widget>\n"
                     . $spaces . "</column>\n";
 
@@ -355,7 +355,7 @@ final class Column
             case 'nick':
                 return $spaces . '<column name="' . $name . '" display="' . $this->display . '" order="' . $order . '">' . "\n"
                     . $spaces . '    <widget type="select" fieldname="' . $this->nombre . '"' . $required . ">\n"
-                    . $spaces . '        <values source="users" fieldcode="nick" fieldtile="nick"/>' . "\n"
+                    . $spaces . '        <values source="users" fieldcode="nick" fieldtitle="nick"/>' . "\n"
                     . $spaces . "    </widget>\n"
                     . $spaces . "</column>\n";
         }
