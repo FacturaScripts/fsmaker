@@ -41,7 +41,10 @@ final class fsmaker
                 $name = $this->findPluginName();
                 $this->createCron($name);
                 break;
-
+            case 'cronjob':
+                $name = $this->findPluginName();
+                $this->createCronjob($name);
+                break;
             case 'extension':
                 $this->createExtensionAction();
                 break;
@@ -240,6 +243,28 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Cron.php.sample");
+        $template = str_replace('[[NAME]]', $name, $sample);
+        file_put_contents($fileName, $template);
+        echo '* ' . $fileName . self::OK;
+    }
+
+    private function createCronJob(string $name): void
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $folder = 'CronJob/';
+        $this->createFolder($folder);
+
+        $fileName = $folder . "CronJob.php";
+        if (file_exists($fileName)) {
+            echo '* ' . $fileName . " YA EXISTE\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/CronJob.php.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -591,6 +616,7 @@ final class fsmaker
             . "$ fsmaker extension\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
+            . "$ fsmaker cronjob\n"
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"
