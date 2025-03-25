@@ -74,6 +74,10 @@ final class fsmaker
                 $this->upgradeAction();
                 break;
 
+            case 'worker':
+                $this->createWorkerAction();
+                break;
+
             case 'zip':
                 $this->zipAction();
                 break;
@@ -561,6 +565,33 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
+    private function createWorkerAction(): void
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $name = $this->prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        if (empty($name)) {
+            return;
+        }
+
+        $filePath = 'Worker/';
+        $fileName = $filePath . $name . 'Worker.php';
+        $this->createFolder($filePath);
+        if (file_exists($fileName)) {
+            echo "* El worker " . $name . " YA EXISTE.\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/Worker.php.sample");
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        file_put_contents($fileName, $template);
+
+        echo '* ' . $fileName . self::OK;
+    }
+
     private function findPluginName(): string
     {
         if ($this->isPluginFolder()) {
@@ -591,6 +622,7 @@ final class fsmaker
             . "$ fsmaker extension\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
+            . "$ fsmaker worker\n"
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"

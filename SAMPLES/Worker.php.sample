@@ -1,0 +1,16 @@
+<?php
+
+namespace FacturaScripts\Plugins\[[NAME_SPACE]]\Worker;
+
+use FacturaScripts\Core\Model\WorkEvent;
+use FacturaScripts\Core\Template\WorkerClass;
+
+class [[NAME]]Worker extends WorkerClass
+{
+    public function run(WorkEvent $event): bool
+    {
+        // tu código aquí
+
+        return $this->done();
+    }
+}
