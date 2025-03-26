@@ -462,7 +462,7 @@ final class fsmaker
             return;
         }
 
-        
+        $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             return;
         }
