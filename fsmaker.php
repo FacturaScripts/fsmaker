@@ -43,7 +43,7 @@ final class fsmaker
                 break;
             case 'cronjob':
                 $name = $this->findPluginName();
-                $this->createCronjob($name);
+                $this->createCronjob();
                 break;
             case 'extension':
                 $this->createExtensionAction();
@@ -243,29 +243,29 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Cron.php.sample");
-        $template = str_replace('[[NAME]]', $name, $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
 
-    private function createCronJob(string $name): void
+    private function createCronJob(): void
     {
         if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
-
+        $name = $this->prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         $folder = 'CronJob/';
         $this->createFolder($folder);
 
-        $fileName = $folder . "CronJob.php";
+        $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
             echo '* ' . $fileName . " YA EXISTE\n";
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/CronJob.php.sample");
-        $template = str_replace('[[NAME]]', $name, $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
@@ -462,7 +462,7 @@ final class fsmaker
             return;
         }
 
-        $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        
         if (empty($name)) {
             return;
         }

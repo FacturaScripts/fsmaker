@@ -3,6 +3,7 @@
 namespace FacturaScripts\Plugins\[[NAME]];
 
 use FacturaScripts\Core\Template\CronClass;
+use FacturaScripts\[[NAME_SPACE]]\CronJob\[[NAME]];
 
 /**
  * El cron de FacturaScripts ejecutará todos los procesos cron de los plugins activos,
@@ -16,12 +17,11 @@ class Cron extends CronClass
     public function run(): void
     {
         /*
-        $this->job('mi-trabajo')
+        $this->job('[[NAME]]')
             ->everyDayAt(8)
             ->run(function () {
-                // tu código aquí
-                // esto se ejecutará cada día a las 8h
-            });
+            [[NAME]]::run();
+        });
         */
     }
 }
