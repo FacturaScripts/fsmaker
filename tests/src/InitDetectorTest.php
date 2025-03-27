@@ -12,15 +12,10 @@ final class InitDetectorTest extends TestCase
     {
         $str = self::getFileContents('InitSample.txt');
 
-        $reflection = new ReflectionClass(InitDetector::class);
-        $removeSpaces = $reflection->getMethod('removeSpaces');
-        $removeSpaces->setAccessible(true);
-        $getSentenceMatches = $reflection->getMethod('getSentenceMatches');
-        $getSentenceMatches->setAccessible(true);
+        $result = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
 
-        $expected = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
 
-        $this->assertSame($expected, 1);
+        $this->assertSame(1, count($result));
     }
 
     // Comprobar si detecta correctamente las existencias
@@ -28,9 +23,9 @@ final class InitDetectorTest extends TestCase
     {
         $str = self::getFileContents('InitSample2.txt');
 
-        $expected = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
+        $result = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
 
-        $this->assertSame($expected, 5);
+        $this->assertSame(5, count($result));
     }
 
     // Comprobar si detecta correctamente las existencias
@@ -38,9 +33,9 @@ final class InitDetectorTest extends TestCase
     {
         $str = self::getFileContents('InitSample3.txt');
 
-        $expected = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
+        $result = $this->getSentenceMatches($this->removeSpaces($str), 'publicfunctioninit():void{');
 
-        $this->assertSame($expected, 0);
+        $this->assertSame(0, count($result));
     }
 
     // Comprobar si detecta correctamente las existencias
@@ -72,14 +67,115 @@ final class InitDetectorTest extends TestCase
         $this->assertFalse($this->isInvisibleChar('.'));
     }
 
-    // Comprobar si detecta correctamente el fichero
-//     public function test_detectValidInitFuntion_1(): void
-//     {
-//         // $staticProperty = $reflection->getProperty('INIT_PATH');
-//         // $staticProperty->setAccessible(true);
-//         // $staticProperty->setValue(null, 'new_static_value');
-//         //$out = InitDetector::detectValidInitFuntion();
-//     }
+    // Comprobar que consigue encontrar la localización en un ejemplo real
+    public function test_getRealStrPosFromNoSpaceStrPos_1(){
+
+        $str = self::getFileContents('InitSample.txt');
+
+        $expectedWords = 'public function init(): void';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals(json_encode($expected), json_encode($output));
+    }
+
+    // Comprobar que encuentra correctamente lo buscado aunque existan similitudes
+    public function test_getRealStrPosFromNoSpaceStrPos_2(){
+
+        $str = "string de prueba para ver prueba si de funciona de bien";
+
+        $expectedWords = 'de prueba';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals(json_encode($expected), json_encode($output));
+    }
+
+    // Comprobar que no tiene problemas con carácteres raros
+    public function test_getRealStrPosFromNoSpaceStrPos_3(){
+
+        $str = "prueba más sencilla";
+
+        $expectedWords = 'más';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals(json_encode($expected), json_encode($output));
+    }
+
+    // Comprobar que encuentra correctamente la palabra al final
+    public function test_getRealStrPosFromNoSpaceStrPos_4(){
+
+        $str = "esta vez en el final";
+
+        $expectedWords = 'el final';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals(json_encode($expected), json_encode($output));
+    }
+
+    // Comprobar que encuentra correctamente la palabra al principio
+    public function test_getRealStrPosFromNoSpaceStrPos_5(){
+
+        $str = "aquí sí que está";
+
+        $expectedWords = 'aquí sí';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals(json_encode($expected), json_encode($output));
+    }
 
 
     /*
@@ -115,5 +211,12 @@ final class InitDetectorTest extends TestCase
         $removeSpaces = new ReflectionClass(InitDetector::class)->getMethod('isInvisibleChar');
 
         return $removeSpaces->invoke(null, $char);
+    }
+
+    private function getRealStrPosFromNoSpaceStrPos(string $string, int $noSpacesPos, int $noSpaceWordsLength): mixed
+    {
+        $getRealStrPosFromNoSpaceStrPos = new ReflectionClass(InitDetector::class)->getMethod('getRealStrPosFromNoSpaceStrPos');
+
+        return $getRealStrPosFromNoSpaceStrPos->invoke(null, $string, $noSpacesPos, $noSpaceWordsLength);
     }
 }
