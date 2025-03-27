@@ -14,6 +14,7 @@ include __DIR__ . '/vendor/autoload.php';
 use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\FileUpdater;
+use fsmaker\InitDetector;
 
 final class fsmaker
 {
