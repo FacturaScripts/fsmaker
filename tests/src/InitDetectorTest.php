@@ -39,6 +39,28 @@ final class InitDetectorTest extends TestCase
     }
 
     // Comprobar si detecta correctamente las existencias
+    public function test_getSentenceMatches_4(): void
+    {
+        $str = 'Aquí hay 3 veces 3 y debería de detectar 3 veces eso.';
+
+        $result = $this->getSentenceMatches($str, '3');
+
+        $this->assertSame(3, count($result));
+    }
+
+    // Comprobar si detecta correctamente las existencias
+    public function test_getSentenceMatches_5(): void
+    {
+        $str = 'Aquí hay varias llaves({}) de este estilo { y pues espero que detecte { estas existencias {, debería}.';
+
+        $result = $this->getSentenceMatches($str, '{');
+        $result2 = $this->getSentenceMatches($str, '}');
+
+        $this->assertSame(4, count($result));
+        $this->assertSame(2, count($result2));
+    }
+
+    // Comprobar si detecta correctamente las existencias
     public function test_removeSpaces_(): void
     {
         $str1 = <<<'ENDL'
@@ -86,7 +108,7 @@ final class InitDetectorTest extends TestCase
 
         $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
 
-        $this->assertEquals(json_encode($expected), json_encode($output));
+        $this->assertEquals($expected, $output);
     }
 
     // Comprobar que encuentra correctamente lo buscado aunque existan similitudes
@@ -108,7 +130,7 @@ final class InitDetectorTest extends TestCase
 
         $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
 
-        $this->assertEquals(json_encode($expected), json_encode($output));
+        $this->assertEquals($expected, $output);
     }
 
     // Comprobar que no tiene problemas con carácteres raros
@@ -130,7 +152,7 @@ final class InitDetectorTest extends TestCase
 
         $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
 
-        $this->assertEquals(json_encode($expected), json_encode($output));
+        $this->assertEquals($expected, $output);
     }
 
     // Comprobar que encuentra correctamente la palabra al final
@@ -152,7 +174,7 @@ final class InitDetectorTest extends TestCase
 
         $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
 
-        $this->assertEquals(json_encode($expected), json_encode($output));
+        $this->assertEquals($expected, $output);
     }
 
     // Comprobar que encuentra correctamente la palabra al principio
@@ -174,7 +196,104 @@ final class InitDetectorTest extends TestCase
 
         $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
 
-        $this->assertEquals(json_encode($expected), json_encode($output));
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar casos complejos o donde puede haber fallos(palabras incompletas y carácteres complicados)
+    public function test_getRealStrPosFromNoSpaceStrPos_6(){
+
+        $str = "Esta es una prueba con poco sentido debe encontrar aquí y también esto";
+
+        $expectedWords = 'í y tambié';
+        $expectedMatches = $this->getSentenceMatches($str, $expectedWords);
+        $expected = [
+            "startPos" => $expectedMatches[0],
+            "endPos" => $expectedMatches[0] + mb_strlen($expectedWords),
+            "len" => mb_strlen($expectedWords),
+            "str" => $expectedWords
+        ];
+        
+        $words = $this->removeSpaces($expectedWords);
+        $matches = $this->getSentenceMatches($this->removeSpaces($str), $words);
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, $matches[0], mb_strlen($words));
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que tira error si realmente funciona mal
+    public function test_getRealStrPosFromNoSpaceStrPos_7(){
+
+        $this->expectException(ErrorException::class);
+
+        $str = "aquí no está";
+
+        $output = $this->getRealStrPosFromNoSpaceStrPos($str, 15, mb_strlen("nonoesta"));
+    }
+
+    // Comprobar que funciona correctamente la detección
+    public function test_getBracesAnalysis_1(){
+
+        $output = $this->getBracesAnalysis("{}{}{}");
+
+        $expected = [
+            'info' => 'OK',
+            'braces' => [
+                ['opened' => true, 'position' => 0],
+                ['opened' => false, 'position' => 1],
+                ['opened' => true, 'position' => 2],
+                ['opened' => false, 'position' => 3],
+                ['opened' => true, 'position' => 4],
+                ['opened' => false, 'position' => 5],
+            ]
+        ];
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que detecta cuando hay incongruencias de orden
+    public function test_getBracesAnalysis_2(){
+
+        $output = $this->getBracesAnalysis("}{}{}{");
+
+        $expected = [
+            'info' => 'ordenIncorrecto',
+            'braces' => [
+                ['opened' => false, 'position' => 0],
+                ['opened' => true, 'position' => 1],
+                ['opened' => false, 'position' => 2],
+                ['opened' => true, 'position' => 3],
+                ['opened' => false, 'position' => 4],
+                ['opened' => true, 'position' => 5],
+            ]
+        ];
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que detecta cuando están incompletos
+    public function test_getBracesAnalysis_3(){
+
+        $output = $this->getBracesAnalysis("}{}{}{}}}}}}");
+
+        $expected = [
+            'info' => 'malaSintaxis',
+            'braces' => []
+        ];
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que detecta cuando están incompletos
+    public function test_detectValidInitFuntion_1(){
+
+        $output = $this->detectValidInitFuntion('InitSample.txt');
+
+        $output = true;
+
+        $expected = true;
+
+        $this->assertEquals($expected, $output);
     }
 
 
@@ -218,5 +337,25 @@ final class InitDetectorTest extends TestCase
         $getRealStrPosFromNoSpaceStrPos = new ReflectionClass(InitDetector::class)->getMethod('getRealStrPosFromNoSpaceStrPos');
 
         return $getRealStrPosFromNoSpaceStrPos->invoke(null, $string, $noSpacesPos, $noSpaceWordsLength);
+    }
+
+    private function getBracesAnalysis(string $str): mixed
+    {
+        $getBracesAnalysis = new ReflectionClass(InitDetector::class)->getMethod('getBracesAnalysis');
+
+        return $getBracesAnalysis->invoke(null, $str);
+    }
+
+    private function detectValidInitFuntion(string $fileName): mixed
+    {
+        $reflection = new ReflectionClass(InitDetector::class);
+
+        $staticProperty = $reflection->getProperty('INIT_PATH');
+        //$staticProperty->setAccessible(true);
+        $staticProperty->setValue(null, __DIR__.'/../res/src/InitDetectorTest/'.$fileName);
+
+        $detectValidInitFuntion = $reflection->getMethod('detectValidInitFuntion');
+
+        return $detectValidInitFuntion->invoke(null);
     }
 }
