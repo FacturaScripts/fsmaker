@@ -4,10 +4,13 @@
 
 use fsmaker\InitDetector;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+
+#[CoversClass(InitDetector::class)]
 
 final class InitDetectorTest extends TestCase
 {
-    // Comprobar si detecta correctamente las existencias
+    // Comprobar si detecta correctamente 1 existencia
     public function test_getSentenceMatches_1(): void
     {
         $str = self::getFileContents('InitSample.txt');
@@ -18,7 +21,7 @@ final class InitDetectorTest extends TestCase
         $this->assertSame(1, count($result));
     }
 
-    // Comprobar si detecta correctamente las existencias
+    // Comprobar si detecta correctamente 5 existencias
     public function test_getSentenceMatches_2(): void
     {
         $str = self::getFileContents('InitSample2.txt');
@@ -28,7 +31,7 @@ final class InitDetectorTest extends TestCase
         $this->assertSame(5, count($result));
     }
 
-    // Comprobar si detecta correctamente las existencias
+    // Comprobar si detecta correctamente 0 existencias
     public function test_getSentenceMatches_3(): void
     {
         $str = self::getFileContents('InitSample3.txt');
@@ -284,14 +287,52 @@ final class InitDetectorTest extends TestCase
         $this->assertEquals($expected, $output);
     }
 
-    // Comprobar que detecta cuando están incompletos
+    // Comprobar que detecta el cuerpo de la función
     public function test_detectValidInitFuntion_1(){
 
-        $output = $this->detectValidInitFuntion('InitSample.txt');
+        $output = $this->detectValidInitFuntion('TestInitFunctionDetection.txt')['info']['substr'];
 
-        $output = true;
+        $expected = explode('[[Se debe detectar lo siguiente]]', self::getFileContents('TestInitFunctionDetection.txt'))[1];
 
-        $expected = true;
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que devuelve un estado de error cuando se le envía un fichero inexistente.
+    public function test_detectValidInitFuntion_2(){
+
+        $output = $this->detectValidInitFuntion('NoExisteEsteFichero.txt');
+
+        $expected = [
+            'isValid' => false, 
+            'info' => '* Error(Init.php): No se ha podido leer Init.php.\n'
+        ];
+
+        $this->assertEquals($expected, $output);
+        
+    }
+
+    // Comprobar que devuelve un estado de error cuando se encuentra demasiadas coincidencias.
+    public function test_detectValidInitFuntion_3(){
+
+        $output = $this->detectValidInitFuntion('InitSample2.txt');
+
+        $expected = [
+            'isValid' => false, 
+            'info' => '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function init(): void{".\n'
+        ];
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que devuelve un estado de error cuando se encuentra demasiadas coincidencias.
+    public function test_detectValidInitFuntion_4(){
+
+        $output = $this->detectValidInitFuntion('InitSample2.txt');
+
+        $expected = [
+            'isValid' => false, 
+            'info' => '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function init(): void{".\n'
+        ];
 
         $this->assertEquals($expected, $output);
     }
