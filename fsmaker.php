@@ -363,7 +363,7 @@ final class fsmaker
         }
 
         $fields = Column::askMulti(true);
-        FileGenerator::createTableXmlByFields($fileName, $name, $fields, true);
+        FileGenerator::createTableXmlByFields($fileName, $name, $fields);
         echo '* ' . $fileName . self::OK;
     }
 
