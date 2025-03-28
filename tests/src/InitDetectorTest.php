@@ -337,6 +337,30 @@ final class InitDetectorTest extends TestCase
         $this->assertEquals($expected, $output);
     }
 
+    // Comprobar que realiza correctamente la función de agregar código al fichero Init.php
+    public function test_putCodeLineInInitFunction_1(){
+
+        $output = $this->putCodeLineInInitFunction('Este texto debe estar incluido aquí para la prueba', false, 'InitSample.txt');
+
+        $expected = $this->getFileContents('InitSampleWithExtraFunction.txt');
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que cancela cuando ya existe esa linea en Init.php
+    public function test_putCodeLineInInitFunction_2(){
+
+        $output = $this->putCodeLineInInitFunction('Este texto debe estar incluido aquí para la prueba', true, 'InitSampleWithExtraFunction.txt');
+
+        $expected = false;
+
+        $this->assertEquals($expected, $output);
+    }
+
+
+
+
+
 
     /*
 
@@ -398,5 +422,18 @@ final class InitDetectorTest extends TestCase
         $detectValidInitFuntion = $reflection->getMethod('detectValidInitFuntion');
 
         return $detectValidInitFuntion->invoke(null);
+    }
+
+    private function putCodeLineInInitFunction(string $str, bool $bool, string $fileName): mixed
+    {
+        $reflection = new ReflectionClass(InitDetector::class);
+
+        $staticProperty = $reflection->getProperty('INIT_PATH');
+        //$staticProperty->setAccessible(true);
+        $staticProperty->setValue(null, __DIR__.'/../res/src/InitDetectorTest/'.$fileName);
+
+        $putCodeLineInInitFunction = $reflection->getMethod('putCodeLineInInitFunction');
+
+        return $putCodeLineInInitFunction->invoke(null, $str, $bool);
     }
 }
