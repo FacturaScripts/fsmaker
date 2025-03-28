@@ -2,13 +2,13 @@
 
 //namespace fsmaker\tests\src;
 
-use fsmaker\InitDetector;
+use fsmaker\InitEditor;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 
-#[CoversClass(InitDetector::class)]
+#[CoversClass(InitEditor::class)]
 
-final class InitDetectorTest extends TestCase
+final class InitEditorTest extends TestCase
 {
     // Comprobar si detecta correctamente 1 existencia
     public function test_getSentenceMatches_1(): void
@@ -369,7 +369,7 @@ final class InitDetectorTest extends TestCase
     */
     private static function getFileContents(string $fileName): string
     {
-        $filePath = __DIR__.'/../res/src/InitDetectorTest/'.$fileName;
+        $filePath = __DIR__.'/../res/src/InitEditorTest/'.$fileName;
 
         $contents = file_get_contents($filePath);
         return is_string($contents) ? $contents : throw new Error('Cannot read '.$filePath);
@@ -377,7 +377,7 @@ final class InitDetectorTest extends TestCase
 
     private function removeSpaces(string $char) : mixed
     {
-        $removeSpaces = new ReflectionClass(InitDetector::class)->getMethod('removeSpaces');
+        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('removeSpaces');
         //$removeSpaces->setAccessible(true);
 
         return $removeSpaces->invoke(null, $char);
@@ -385,39 +385,39 @@ final class InitDetectorTest extends TestCase
 
     private function getSentenceMatches(string $str, string $sentence) : mixed
     {
-        $removeSpaces = new ReflectionClass(InitDetector::class)->getMethod('getSentenceMatches');
+        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('getSentenceMatches');
 
         return $removeSpaces->invoke(null, $str, $sentence);
     }
 
     private function isInvisibleChar(string $char): mixed
     {
-        $removeSpaces = new ReflectionClass(InitDetector::class)->getMethod('isInvisibleChar');
+        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('isInvisibleChar');
 
         return $removeSpaces->invoke(null, $char);
     }
 
     private function getRealStrPosFromNoSpaceStrPos(string $string, int $noSpacesPos, int $noSpaceWordsLength): mixed
     {
-        $getRealStrPosFromNoSpaceStrPos = new ReflectionClass(InitDetector::class)->getMethod('getRealStrPosFromNoSpaceStrPos');
+        $getRealStrPosFromNoSpaceStrPos = new ReflectionClass(InitEditor::class)->getMethod('getRealStrPosFromNoSpaceStrPos');
 
         return $getRealStrPosFromNoSpaceStrPos->invoke(null, $string, $noSpacesPos, $noSpaceWordsLength);
     }
 
     private function getBracesAnalysis(string $str): mixed
     {
-        $getBracesAnalysis = new ReflectionClass(InitDetector::class)->getMethod('getBracesAnalysis');
+        $getBracesAnalysis = new ReflectionClass(InitEditor::class)->getMethod('getBracesAnalysis');
 
         return $getBracesAnalysis->invoke(null, $str);
     }
 
     private function detectValidInitFuntion(string $fileName): mixed
     {
-        $reflection = new ReflectionClass(InitDetector::class);
+        $reflection = new ReflectionClass(InitEditor::class);
 
         $staticProperty = $reflection->getProperty('INIT_PATH');
         //$staticProperty->setAccessible(true);
-        $staticProperty->setValue(null, __DIR__.'/../res/src/InitDetectorTest/'.$fileName);
+        $staticProperty->setValue(null, __DIR__.'/../res/src/InitEditorTest/'.$fileName);
 
         $detectValidInitFuntion = $reflection->getMethod('detectValidInitFuntion');
 
@@ -426,11 +426,11 @@ final class InitDetectorTest extends TestCase
 
     private function putCodeLineInInitFunction(string $str, bool $bool, string $fileName): mixed
     {
-        $reflection = new ReflectionClass(InitDetector::class);
+        $reflection = new ReflectionClass(InitEditor::class);
 
         $staticProperty = $reflection->getProperty('INIT_PATH');
         //$staticProperty->setAccessible(true);
-        $staticProperty->setValue(null, __DIR__.'/../res/src/InitDetectorTest/'.$fileName);
+        $staticProperty->setValue(null, __DIR__.'/../res/src/InitEditorTest/'.$fileName);
 
         $putCodeLineInInitFunction = $reflection->getMethod('putCodeLineInInitFunction');
 
