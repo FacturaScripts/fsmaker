@@ -1,4 +1,6 @@
 <?php
+
+use fsmaker\InitEditor;
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
@@ -309,7 +311,8 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->injectInstructionToInit('$this->loadExtension(new Extension\Controller\\' . $name . '())');
+        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '())');
+        InitEditor::setInitContent($newContent);
     }
 
     private function createExtensionModel(string $name): void
@@ -333,7 +336,8 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->injectInstructionToInit('$this->loadExtension(new Extension\Model\\' . $name . '())');
+        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '())');
+        InitEditor::setInitContent($newContent)
     }
 
     private function createExtensionTable(string $name): void
@@ -637,23 +641,6 @@ final class fsmaker
     private function isCoreFolder(): bool
     {
         return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
-    }
-
-    private function injectInstructionToInit(string $instruction): void
-    {
-        $fileName = "Init.php";
-
-        if (false === file_exists($fileName)) {
-            $this->createInit();
-        }
-
-        $fileStr = file_get_contents($fileName);
-        $toSearch = '// se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).';
-        $toChange = $toSearch . "\n" . '        ' . $instruction . ';';
-
-        $newFileStr = str_replace($toSearch, $toChange, $fileStr);
-        file_put_contents($fileName, $newFileStr);
-        echo '* ' . $fileName . self::OK;
     }
 
     private function isPluginFolder(): bool
