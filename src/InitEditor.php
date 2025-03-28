@@ -18,6 +18,8 @@ use ErrorException;
  *  - Finalmente si no existe la función que se desea agregar, la agrega
  */
 class InitEditor {
+    const OK = " -> OK.\n";
+
     private static $INIT_PATH = 'Init.php';
 
     public static function getInitContent() : string
@@ -30,6 +32,7 @@ class InitEditor {
     public static function setInitContent(string $content) : void
     {
         file_put_contents(self::$INIT_PATH, $content);
+        echo '* ' . self::$INIT_PATH . self::OK;
     }
 
     /**

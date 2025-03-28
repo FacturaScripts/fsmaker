@@ -312,7 +312,9 @@ final class fsmaker
         echo '* ' . $fileName . "\n";
 
         $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '())');
-        InitEditor::setInitContent($newContent);
+        if($newContent){
+            InitEditor::setInitContent($newContent);
+        }
     }
 
     private function createExtensionModel(string $name): void
@@ -336,8 +338,12 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '())');
-        InitEditor::setInitContent($newContent)
+        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '())', true);
+        
+        if($newContent){
+            InitEditor::setInitContent($newContent);
+        }
+
     }
 
     private function createExtensionTable(string $name): void
