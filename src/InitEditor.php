@@ -8,17 +8,21 @@ namespace fsmaker;
 use ErrorException;
 
 /**
- * InitDetector:
+ * InitEditor:
  * - Clase dedicada a ofrecer funciones para detectar y modificar Init.php
  * - Cosas a tener en cuenta:
- *   - Antes de usar esta clase debes de estar en PluginFolder, osea que `fsmaker->isPluginFolder() === true`
+ *  - Antes de usar esta clase debes de estar en PluginFolder, osea que `fsmaker->isPluginFolder() === true` y estar seguro de que existe Init.php
+ * - Modo de funcionar
+ *  - Para detectar las cosas, primero remueve los espacios y busca las coincidencias(para evitar que la sintaxis de php sea un problema)
+ *  - Después comprueba que las llaves de la función tenga tenga sentido
+ *  - Finalmente si no existe la función que se desea agregar, la agrega
  */
-class InitDetector {
+class InitEditor {
     private static $INIT_PATH = 'Init.php';
 
     public static function getInitContent() : string
     {
-        $contents = file_get_contents(self::$INIT_PATH);
+        $contents = @file_get_contents(self::$INIT_PATH);
 
         return $contents ? $contents : '';
     }
@@ -29,14 +33,57 @@ class InitDetector {
     }
 
     /**
+     * Devuelve el contenido del fichero agregandole la linea introducida por `str`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
+     *  - Esta función si que escribe comentarios en la terminal
+     * @param string $str la linea de código que se desea insertar
+     * @param bool $checkIfNotExists revisa si existe esa linea de código
+     * @return string|bool Si no ha sido exitosa la operación devuelve false si no pues el string modificado
+     */
+    public static function putCodeLineInInitFunction(string $str, bool $checkIfNotExists = false): string|bool
+    {
+        // obtener el diagnostico general
+        $analysis = self::detectValidInitFuntion();
+        
+        // si algo va mal
+        if(!$analysis['isValid']){
+            echo $analysis['info'];
+            return false;
+        }
+
+        $info = $analysis['info'];
+        $body = $info['substr'];
+
+        // en caso de estar activo si encuentra una coincidencia cancela la operación
+        if($checkIfNotExists){
+            $matches = self::getSentenceMatches(self::removeSpaces($body), self::removeSpaces($str));
+            if(count($matches) !== 0){
+                return false;
+            }
+        }
+
+        $body .= $str . "\n" . '    ';
+
+        $newStr = mb_substr($info['initContent'], 0, $info['functionStart']) . $body . mb_substr($info['initContent'], $info['functionEnd']);
+        
+        return $newStr;
+    }
+
+    /**
      * Esta función analiza el fichero y detecta si está correcto y se puede agregar funciones. Devuelve información útil.
      * @return array {isValid: bool, info: string|array}
      */
     public static function detectValidInitFuntion() : array
     {
         $str = self::getInitContent();
-        $error = '';
         
+        if($str === ''){
+            return [
+                'isValid' => false, 
+                'info' => '* Error(Init.php): No se ha podido leer Init.php.\n'
+            ];
+        }
+        
+        $error = '';
         $words = ['public', 'function', 'init', '(', ')', ':', 'void', '{'];
         
         // comprobar si solo existe una función init
@@ -93,9 +140,9 @@ class InitDetector {
             }
         }
 
-        echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
-        echo mb_substr($str, $bodyStartPos, $bodyEndPos - $bodyStartPos);
-        echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
+        // echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
+        // echo mb_substr($str, $bodyStartPos, $bodyEndPos - $bodyStartPos);
+        // echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
         return [
             'isValid' => true,
             'info' => [
@@ -103,7 +150,8 @@ class InitDetector {
                 'bracesData' => $bracesAnalysis,
                 'functionStart' => $bodyStartPos,
                 'functionEnd' => $bodyEndPos,
-                'substr' => mb_substr($str, $bodyStartPos, $bodyEndPos)
+                'substr' => mb_substr($str, $bodyStartPos, $bodyEndPos - $bodyStartPos),
+                'initContent' => $str
             ]
         ];
 
