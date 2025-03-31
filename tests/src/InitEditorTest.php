@@ -357,7 +357,14 @@ final class InitEditorTest extends TestCase
         $this->assertEquals($expected, $output);
     }
 
+    // Comprobar que agrega correctamente el Use a Init.php
+    public function test_putUseInstruction_1(){
+        $output = $this->putUseInstruction('use FacturaScripts\Core\Template\AnotherClass;', 'TestAddUseCaseSuccesfullBefore.txt');
 
+        $expected = $this->getFileContents('TestAddUseCaseSuccesfull.txt');
+
+        $this->assertEquals($expected, $output);
+    }
 
 
 
@@ -435,5 +442,18 @@ final class InitEditorTest extends TestCase
         $putCodeLineInInitFunction = $reflection->getMethod('putCodeLineInInitFunction');
 
         return $putCodeLineInInitFunction->invoke(null, $str, $bool);
+    }
+
+    private function putUseInstruction(string $str, string $fileName): mixed
+    {
+        $reflection = new ReflectionClass(InitEditor::class);
+
+        $staticProperty = $reflection->getProperty('INIT_PATH');
+        //$staticProperty->setAccessible(true);
+        $staticProperty->setValue(null, __DIR__.'/../res/src/InitEditorTest/'.$fileName);
+
+        $putUseInstruction = $reflection->getMethod('putUseInstruction');
+
+        return $putUseInstruction->invoke(null, $str);
     }
 }
