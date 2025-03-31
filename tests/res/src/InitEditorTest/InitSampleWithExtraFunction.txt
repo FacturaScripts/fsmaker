@@ -15,7 +15,7 @@ class Init extends InitClass
     public function init(): void
     {
         // se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).
-    Este texto debe estar incluido aquí para la prueba
+        Este texto debe estar incluido aquí para la prueba
     }
 
     public function uninstall(): void
