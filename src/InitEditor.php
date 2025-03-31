@@ -344,6 +344,11 @@ class InitEditor {
         return $positions;
     }
 
+    /**
+     * Simplemente remueve los espacios de un string
+     * @param mixed $str el string en el que remover los espacios
+     * @return string es tring sin espacios
+     */
     private static function removeSpaces($str): string
     {
         $out = '';
