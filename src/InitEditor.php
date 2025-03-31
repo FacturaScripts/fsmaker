@@ -70,7 +70,7 @@ class InitEditor {
      * @param bool $checkIfNotExists revisa si existe esa linea de código
      * @return string|bool Si no ha sido exitosa la operación devuelve false si no pues el string modificado
      */
-    public static function putCodeLineInInitFunction(string $str, bool $checkIfNotExists = false): string|bool
+    public static function putCodeLineInInitFunction(string $instructionStr, bool $checkIfNotExists = false): string|bool
     {
         // obtener el diagnostico general
         $analysis = self::detectValidInitFuntion();
@@ -86,14 +86,33 @@ class InitEditor {
 
         // en caso de estar activo si encuentra una coincidencia cancela la operación
         if($checkIfNotExists){
-            $matches = self::getSentenceMatches(self::removeSpaces($body), self::removeSpaces($str));
+            $matches = self::getSentenceMatches(self::removeSpaces($body), self::removeSpaces($instructionStr));
             if(count($matches) !== 0){
                 return false;
             }
         }
 
-        $body .= $str . "\n" . '    ';
-
+        $endIndents = '';
+        {// no ensuciar el entorno de variables
+            // remover los espacios que hay al final sobrantes(similar a trim)
+            $currentPos = mb_strlen($body) - 1;
+            while($currentPos !== -1){
+                $char = mb_substr($body, $currentPos, 1);
+                if($char === ' ' || $char === "\t"){
+                    $endIndents = $char . $endIndents;
+                    $currentPos--;
+                }else{
+                    break;
+                }
+            }
+            $body = mb_substr($body, 0, mb_strlen($body) - mb_strlen($endIndents));
+        }
+        
+        // agregar indentation
+        $indentation = self::getCurrentIndentation($body, mb_strlen($body) - 2);
+        $body .= self::formatTextWithIndentation($instructionStr, $indentation) . "\n" . $endIndents;
+        //echo PHP_EOL."-----------------------------".$indentation."-----------------------------".PHP_EOL;
+        
         $newStr = mb_substr($info['initContent'], 0, $info['functionStart']) . $body . mb_substr($info['initContent'], $info['functionEnd']);
         
         return $newStr;
@@ -166,7 +185,7 @@ class InitEditor {
             }
 
             if($level === 0){
-                $bodyEndPos = $brace['position'] - 1;
+                $bodyEndPos = $brace['position'];
                 break;
             }
         }
@@ -336,7 +355,7 @@ class InitEditor {
     {
         $offset = 0;
         $positions = [];
-        while (($pos = strpos($str, $sentence, $offset)) !== false) {
+        while (($pos = mb_strpos($str, $sentence, $offset)) !== false) {
             $positions[] = $pos;
             $offset = $pos + 1;
         }
@@ -378,5 +397,80 @@ class InitEditor {
     private static function isInvisibleChar(string $char): bool
     {
         return ctype_space($char) || $char === "\n" || $char === "\t" || $char === ' ';
+    }
+
+    /**
+     * Formatea el string insertado agregandole las indentation
+     * @param string $str
+     * @param string $indention
+     * @return string
+     */
+    private static function formatTextWithIndentation(string $str, string $indention): string
+    {
+        $startPos = 0;
+        $matches = self::getSentenceMatches($str, "\n");
+        $newStr = '';
+
+        foreach ($matches as $endPos) {
+            $newStr .= $indention . mb_substr($str, $startPos, $endPos - $startPos + 1);
+            $startPos = $endPos + 1;
+        }
+
+        $newStr .= $indention . mb_substr($str, $startPos);
+
+        return $newStr;
+    }
+
+    /**
+     * Simplemente hace "marcha atras" recogiendo las tabulaciones para recoger la indentación
+     * @param string $str el string en el que buscar
+     * @param int $indentEndPos donde comenzar a dar marcha atras para encontrar el string, se debe de colocar la posición del carácter posterior a la "indentation".
+     * @return string el "indentation" a agregar
+     */
+    private static function getCurrentIndentation(string $str, int $lineEndPos): string
+    {
+        $currentPos = $lineEndPos;
+        $indentStr = '';
+        // $foundedIndent = false;
+
+        // si el char es un salto de linea o se termina el string
+        while($currentPos !== -1){
+            $char = mb_substr($str, $currentPos, 1);
+            if($char === "\n"){
+                break;
+            }
+            $currentPos--;
+        }
+
+        // contar ahora los carácteres
+        $currentPos++;
+        while($currentPos !== mb_strlen($str)){
+            $char = mb_substr($str, $currentPos, 1);
+            if($char === ' ' || $char === "\t"){
+                $indentStr .= $char;
+                $currentPos++;
+            }else{
+                return $indentStr;
+            }
+        }
+
+        return $indentStr;
+        // while($currentPos !== -1){
+        //     $char = mb_substr($str, $currentPos, 1);
+        //     if(!$foundedIndent){
+        //         if($char === ' ' || $char === "\t"){
+        //             $foundedIndent = true;
+        //         }else{
+        //             $currentPos--;
+        //         }
+        //     }else{
+        //         if($char === ' ' || $char === "\t"){
+        //             $indentStr = $char . $indentStr;
+        //             $currentPos--;
+        //         }else{
+        //             return $indentStr;
+        //         }
+        //     }
+        // }
     }
 }
