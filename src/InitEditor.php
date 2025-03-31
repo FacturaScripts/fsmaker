@@ -36,6 +36,34 @@ class InitEditor {
     }
 
     /**
+     * Se encarga de agregar un módulo (use) que le indiques si este no existe dentro.
+     * Lo que realiza internamente es buscar el último `use` que encuentre y colocarlo debajo.
+     * @param string $str
+     * @return string|void
+     */
+    public static function putUseInstruction(string $useInstruction) : string|null
+    {
+        $str = self::getInitContent();
+
+        // comprobar si ya está introducido
+        $sameUseInstruction = self::getSentenceMatches(self::removeSpaces($str), self::removeSpaces($useInstruction));
+        if(count($sameUseInstruction) !== 0){
+            // ya existen coincidencias
+            return null;
+        }
+
+        //escojer el último de todos los use y donde termina
+        $matches = self::getSentenceMatches($str, 'use');
+        $lastUse = end($matches);
+        $endLastUse = strpos($str, "\n", $lastUse) + 1;
+
+        //colocar el nuevo use
+        $newStr = mb_substr($str, 0, $endLastUse) . $useInstruction . "\n" . mb_substr($str, $endLastUse);
+
+        return $newStr;
+    }
+
+    /**
      * Devuelve el contenido del fichero agregandole la linea introducida por `str`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
      *  - Esta función si que escribe comentarios en la terminal
      * @param string $str la linea de código que se desea insertar
