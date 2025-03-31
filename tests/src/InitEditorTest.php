@@ -366,6 +366,81 @@ final class InitEditorTest extends TestCase
         $this->assertEquals($expected, $output);
     }
 
+    // Comprobar que recoge correctamente la "indentation" donde se le indica
+    public function test_getCurrentIndentation_1(){
+        $output = $this->getCurrentIndentation("   aaaaa", 3);
+
+        $expected = '   ';
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que recoge correctamente la "indentation" donde se le indica en un string compuesto
+    public function test_getCurrentIndentation_2(){
+        $inputText = <<<"TXT"
+        Hola, esto es un texto obviamente me lo he inventado pero
+        aquí vamos a testear si encuentra correctamente la intentation.
+                    Debe de extraerla de aquí.
+        TXT;
+        
+        $output = $this->getCurrentIndentation($inputText, mb_strpos($inputText, 'Debe de extraerla de aquí.'));
+
+        $expected = '            ';
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que agrega la indentación correspondiente
+    public function test_formatTextWithIndentation_1(){
+
+        $inputText = <<<"TXT"
+        En este test debe de agregar la tabulación corresponiente a este texto.
+        Será multilinea para
+        verificar que funciona como corresponde.
+        Veamos si funciona.
+        TXT;
+
+        $output = $this->formatTextWithIndentation($inputText, '    ');
+
+        $expected = <<<"TXT"
+            En este test debe de agregar la tabulación corresponiente a este texto.
+            Será multilinea para
+            verificar que funciona como corresponde.
+            Veamos si funciona.
+        TXT;
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que agrega la indentación correspondiente en casos conflictivos
+    public function test_formatTextWithIndentation_2(){
+
+        $inputText = <<<"TXT"
+        En este test debe de agregar la tabulación corresponiente a este texto.
+
+        TXT;
+
+        $output = $this->formatTextWithIndentation($inputText, '    ');
+        
+        $expected = <<<"TXT"
+            En este test debe de agregar la tabulación corresponiente a este texto.
+            
+        TXT;
+
+        $this->assertEquals($expected, $output);
+    }
+
+    // Comprobar que agrega la indentación correspondiente en casos conflictivos
+    public function test_formatTextWithIndentation_3(){
+
+        $inputText = 'En este test debe de agregar la tabulación corresponiente a este texto.';
+
+        $output = $this->formatTextWithIndentation($inputText, '    ');
+        
+        $expected = '    En este test debe de agregar la tabulación corresponiente a este texto.';
+
+        $this->assertEquals($expected, $output);
+    }
 
 
 
@@ -455,5 +530,19 @@ final class InitEditorTest extends TestCase
         $putUseInstruction = $reflection->getMethod('putUseInstruction');
 
         return $putUseInstruction->invoke(null, $str);
+    }
+
+    private function getCurrentIndentation(string $str, int $indentEndPos): mixed
+    {
+        $getCurrentIndentation = new ReflectionClass(InitEditor::class)->getMethod('getCurrentIndentation');
+
+        return $getCurrentIndentation->invoke(null, $str, $indentEndPos);
+    }
+
+    private function formatTextWithIndentation(string $str, string $indention): mixed
+    {
+        $formatTextWithIndentation = new ReflectionClass(InitEditor::class)->getMethod('formatTextWithIndentation');
+
+        return $formatTextWithIndentation->invoke(null, $str, $indention);
     }
 }
