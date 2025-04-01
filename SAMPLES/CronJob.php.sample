@@ -1,5 +1,5 @@
 <?php
-namespace FacturaScripts\[[NAME_SPACE]];
+namespace FacturaScripts\[[NAME_SPACE]]\CronJob;
 
 use FacturaScripts\Core\Template\CronJobClass;
 
