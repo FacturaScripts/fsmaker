@@ -603,7 +603,7 @@ final class fsmaker
 
         $input = $this->prompt(<<<"PROMPT"
             ¿Qué eventos debe escuchar el worker(Ejemplo: 1 3 4)?
-                1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Ninguno
+                1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado, 7=Ninguno
         PROMPT);
 
         $options = $input ? explode(' ', $input) : [];
@@ -611,12 +611,12 @@ final class fsmaker
         // comprobar que son válidos
         foreach ($options as &$v) {
             $v = (int)$v;
-            if($v < 1 && $v > 6){
+            if($v < 1 && $v > 7){
                 echo "* Error(Input): Números mal introducidos.\n";
                 return;
             }
 
-            if($v === 6){
+            if($v === 7){
                 return;
             }
         }
@@ -655,6 +655,15 @@ final class fsmaker
                     break;
                 case 5:
                     $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.*\');', true);
+                    break;
+                case 6:
+                    $eventName = $this->prompt('Introduce el nombre del evento');
+                     if ($eventName === '' || $eventName === null) {
+                        echo "* Error(Input): No se ha introducido nada por entrada.\n";
+                        echo "* Aviso: Saltando al siguiente.\n";
+                    }else{
+                        $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.'.$eventName.'\');', true);
+                    }
                     break;
             }
             if($newContent){
