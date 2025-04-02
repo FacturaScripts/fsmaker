@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
@@ -14,6 +15,7 @@ include __DIR__ . '/vendor/autoload.php';
 use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\FileUpdater;
+use fsmaker\InitEditor;
 
 final class fsmaker
 {
@@ -74,6 +76,10 @@ final class fsmaker
 
             case 'upgrade':
                 $this->upgradeAction();
+                break;
+
+            case 'worker':
+                $this->createWorkerAction();
                 break;
 
             case 'zip':
@@ -341,7 +347,10 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->modifyInit($name, 1);
+        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '());');
+        if($newContent){
+            InitEditor::setInitContent($newContent);
+        }
     }
 
     private function createExtensionModel(string $name): void
@@ -365,7 +374,12 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->modifyInit($name, 0);
+        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '());', true);
+        
+        if($newContent){
+            InitEditor::setInitContent($newContent);
+        }
+
     }
 
     private function createExtensionTable(string $name): void
@@ -385,7 +399,7 @@ final class fsmaker
         }
 
         $fields = Column::askMulti(true);
-        FileGenerator::createTableXmlByFields($fileName, $name, $fields, true);
+        FileGenerator::createTableXmlByFields($fileName, $name, $fields);
         echo '* ' . $fileName . self::OK;
     }
 
@@ -598,6 +612,104 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
+    private function createWorkerAction(): void
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $name = $this->prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        if (empty($name)) {
+            return;
+        }
+
+        $filePath = 'Worker/';
+        $fileName = $filePath . $name . 'Worker.php';
+        $this->createFolder($filePath);
+        if (file_exists($fileName)) {
+            echo "* El worker " . $name . " YA EXISTE.\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/Worker.php.sample");
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        file_put_contents($fileName, $template);
+
+        echo '* ' . $fileName . self::OK;
+
+        $input = $this->prompt(<<<"PROMPT"
+            ¿Qué eventos debe escuchar el worker(Ejemplo: 1 3 4)?
+                1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado, 7=Ninguno
+        PROMPT);
+
+        $options = $input ? explode(' ', $input) : [];
+
+        // comprobar que son válidos
+        foreach ($options as &$v) {
+            $v = (int)$v;
+            if($v < 1 && $v > 7){
+                echo "* Error(Input): Números mal introducidos.\n";
+                return;
+            }
+
+            if($v === 7){
+                return;
+            }
+        }
+
+        $modelName = $this->prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
+        if ($modelName === '') {
+            // nombre mal introducido
+            return;
+        } else if ($modelName === null) {
+            // no se ha introducido nada
+            echo "* Error(Input): No se ha introducido nada por entrada.\n";
+            return;
+        }
+
+        //agregar la dependencia
+        $modifiedInit = InitEditor::putUseInstruction('use FacturaScripts\Core\WorkQueue;');
+        if($modifiedInit !== null){
+            InitEditor::setInitContent($modifiedInit);
+        }
+
+        //aplicar los eventos
+        foreach ($options as $option) {
+            $newContent = null;
+            switch ($option) {
+                case 1:
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Insert\');', true);
+                    break;
+                case 2:
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Update\');', true);
+                    break;
+                case 3:
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Save\');', true);
+                    break;
+                case 4:
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Delete\');', true);
+                    break;
+                case 5:
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.*\');', true);
+                    break;
+                case 6:
+                    $eventName = $this->prompt('Introduce el nombre del evento');
+                     if ($eventName === '' || $eventName === null) {
+                        echo "* Error(Input): No se ha introducido nada por entrada.\n";
+                        echo "* Aviso: Saltando al siguiente.\n";
+                    }else{
+                        $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.'.$eventName.'\');', true);
+                    }
+                    break;
+            }
+            if($newContent){
+                InitEditor::setInitContent($newContent);
+            }
+        }
+        
+    }
+
     private function findPluginName(): string
     {
         if ($this->isPluginFolder()) {
@@ -629,6 +741,7 @@ final class fsmaker
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
             . "$ fsmaker cronjob\n"
+            . "$ fsmaker worker\n"
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"
@@ -647,25 +760,6 @@ final class fsmaker
     private function isPluginFolder(): bool
     {
         return file_exists('facturascripts.ini');
-    }
-
-    private function modifyInit(string $name, int $modelOrController): void
-    {
-        $fileName = "Init.php";
-        if (false === file_exists($fileName)) {
-            $this->createInit();
-        }
-
-        $fileStr = file_get_contents($fileName);
-        $toSearch = '// se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).';
-        $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Controller\\' . $name . '());';
-        if ($modelOrController === 0) {
-            $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
-        }
-
-        $newFileStr = str_replace($toSearch, $toChange, $fileStr);
-        file_put_contents($fileName, $newFileStr);
-        echo '* ' . $fileName . self::OK;
     }
 
     private function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
