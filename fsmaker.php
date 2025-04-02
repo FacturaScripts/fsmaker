@@ -74,6 +74,10 @@ final class fsmaker
                 $this->upgradeAction();
                 break;
 
+            case 'worker':
+                $this->createWorkerAction();
+                break;
+
             case 'zip':
                 $this->zipAction();
                 break;
@@ -304,7 +308,7 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->modifyInit($name, 1);
+        $this->injectInstructionToInit('$this->loadExtension(new Extension\Controller\\' . $name . '())');
     }
 
     private function createExtensionModel(string $name): void
@@ -328,7 +332,7 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $this->modifyInit($name, 0);
+        $this->injectInstructionToInit('$this->loadExtension(new Extension\Model\\' . $name . '())');
     }
 
     private function createExtensionTable(string $name): void
@@ -561,6 +565,33 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
     }
 
+    private function createWorkerAction(): void
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
+        $name = $this->prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        if (empty($name)) {
+            return;
+        }
+
+        $filePath = 'Worker/';
+        $fileName = $filePath . $name . 'Worker.php';
+        $this->createFolder($filePath);
+        if (file_exists($fileName)) {
+            echo "* El worker " . $name . " YA EXISTE.\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/Worker.php.sample");
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        file_put_contents($fileName, $template);
+
+        echo '* ' . $fileName . self::OK;
+    }
+
     private function findPluginName(): string
     {
         if ($this->isPluginFolder()) {
@@ -591,6 +622,7 @@ final class fsmaker
             . "$ fsmaker extension\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
+            . "$ fsmaker worker\n"
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"
@@ -606,28 +638,26 @@ final class fsmaker
         return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
     }
 
-    private function isPluginFolder(): bool
-    {
-        return file_exists('facturascripts.ini');
-    }
-
-    private function modifyInit(string $name, int $modelOrController): void
+    private function injectInstructionToInit(string $instruction): void
     {
         $fileName = "Init.php";
+
         if (false === file_exists($fileName)) {
             $this->createInit();
         }
 
         $fileStr = file_get_contents($fileName);
         $toSearch = '// se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).';
-        $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Controller\\' . $name . '());';
-        if ($modelOrController === 0) {
-            $toChange = $toSearch . "\n" . '        $this->loadExtension(new Extension\Model\\' . $name . '());';
-        }
+        $toChange = $toSearch . "\n" . '        ' . $instruction . ';';
 
         $newFileStr = str_replace($toSearch, $toChange, $fileStr);
         file_put_contents($fileName, $newFileStr);
         echo '* ' . $fileName . self::OK;
+    }
+
+    private function isPluginFolder(): bool
+    {
+        return file_exists('facturascripts.ini');
     }
 
     private function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
