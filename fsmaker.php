@@ -43,7 +43,9 @@ final class fsmaker
                 $name = $this->findPluginName();
                 $this->createCron($name);
                 break;
-
+            case 'cronjob':
+                $this->createCronjob();
+                break;
             case 'extension':
                 $this->createExtensionAction();
                 break;
@@ -246,9 +248,44 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Cron.php.sample");
-        $template = str_replace('[[NAME]]', $name, $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
+    }
+
+    private function createCronJob(): void
+    {
+        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+        $name = $this->prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        if (empty($name)) {
+            echo "* No introdujo el nombre del CronJob.\n";
+            return;
+        }
+
+        $folder = 'CronJob/';
+        $plugin = $this->findPluginName();
+        $this->createFolder($folder);
+
+        $fileName = $folder . $name . '.php';
+        if (file_exists($fileName)) {
+            echo '* ' . $fileName . " YA EXISTE\n";
+            return;
+        }
+
+        $sample = file_get_contents(__DIR__ . "/SAMPLES/CronJob.php.sample");
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        file_put_contents($fileName, $template);
+        echo '* ' . $fileName . self::OK;
+        if (file_exists('Cron.php')) {
+            $this->updateCron($name);
+        }
+        else {
+            $this->createCron($plugin);
+            $this->updateCron($name);
+        }
     }
 
     private function createExtensionAction(): void
@@ -703,6 +740,7 @@ final class fsmaker
             . "$ fsmaker extension\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
+            . "$ fsmaker cronjob\n"
             . "$ fsmaker worker\n"
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
@@ -742,6 +780,37 @@ final class fsmaker
 
         return $value;
     }
+
+
+    private function updateCron(string $name): void
+    {
+        $fileStr = file_get_contents('Cron.php');
+        $newJob = <<<END
+        \n
+                \$this->job('$name')
+                    ->everyDayAt(8)
+                    ->run(function () {
+                        $name::run();
+                    });
+        \n
+        END;
+        $search = 'public function run(): void';
+        $position = strpos($fileStr, $search);
+        $nameSpace = $this->getNamespace();
+        if ($position !== false) {
+            $position = strpos($fileStr, '{', $position)+1;
+            $fileStr = substr_replace($fileStr, $newJob, $position, 0);
+            file_put_contents('Cron.php', $fileStr);
+            $usePosition = strpos($fileStr, 'use FacturaScripts\Core\Template\CronClass');
+            $usePosition = strpos($fileStr, ';', $usePosition)+1;
+            $fileStr = substr_replace($fileStr, "\nuse FacturaScripts\\$nameSpace\\CronJob\\$name;", $usePosition, 0);
+            file_put_contents('Cron.php', $fileStr);
+            echo '* ' . 'Cron.php' . " actualizado con el nuevo CronJob.\n";
+        } else {
+            echo "* No se encontró el método run() en " . 'Cron.php' . ".\n";
+        }
+    }
+
 
     private function updateTranslationsAction(): void
     {
