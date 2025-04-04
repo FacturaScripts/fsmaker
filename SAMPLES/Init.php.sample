@@ -18,9 +18,9 @@ class Init extends InitClass
     }
 
     public function uninstall(): void
-        {
-            // se ejecuta cada vez que se desinstale el plugin. Primero desinstala y luego ejecuta el uninstall.
-        }
+    {
+        // se ejecuta cada vez que se desinstale el plugin. Primero desinstala y luego ejecuta el uninstall.
+    }
 
     public function update(): void
     {

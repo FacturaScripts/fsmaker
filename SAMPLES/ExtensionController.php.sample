@@ -44,4 +44,12 @@ class [[NAME]]
             // loadData() se ejecuta tras el loadData() del controlador. Recibe los parámetros $viewName y $view.
         };
     }
+
+    public function selectAction(): Closure
+    {
+        return function($data, $required) {
+            // tu código aquí
+            // selectAction() se ejecuta antes de cargar datos en el widget select.
+        };
+    }
 }

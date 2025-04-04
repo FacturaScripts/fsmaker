@@ -50,6 +50,15 @@ class [[NAME]]
         };
     }
 
+    public function onChange(): Closure
+    {
+        return function($field) {
+            // tu código aquí
+            // onChange() se ejecuta antes de ejecutar el saveUpdate() del modelo.
+            // Si devolvemos false, impedimos el onChange().
+        };
+    }
+
     public function save(): Closure
     {
         return function() {

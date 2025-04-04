@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @author Carlos García Gómez            <carlos@facturascripts.com>
  * @author Daniel Fernández Giménez       <hola@danielfg.es>
@@ -19,7 +18,7 @@ use fsmaker\InitEditor;
 
 final class fsmaker
 {
-    const TRANSLATIONS = 'ca_ES,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pt_PT,va_ES';
+    const TRANSLATIONS = 'ca_ES,cs_CZ,de_DE,en_EN,es_AR,es_CL,es_CO,es_CR,es_DO,es_EC,es_ES,es_GT,es_MX,es_PA,es_PE,es_UY,eu_ES,fr_FR,gl_ES,it_IT,pl_PL,pt_BR,pt_PT,va_ES';
     const VERSION = 1.4;
     const OK = " -> OK.\n";
 
@@ -43,9 +42,11 @@ final class fsmaker
                 $name = $this->findPluginName();
                 $this->createCron($name);
                 break;
+
             case 'cronjob':
                 $this->createCronjob();
                 break;
+
             case 'extension':
                 $this->createExtensionAction();
                 break;
@@ -92,7 +93,7 @@ final class fsmaker
         }
     }
 
-    private function bootstrap5Action()
+    private function bootstrap5Action(): void
     {
         if (false === $this->isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
@@ -115,8 +116,9 @@ final class fsmaker
             return;
         }
 
+        $menu = $this->prompt('Menú');
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [$this->getNamespace(), $name, $menu], $sample);
         $this->createFolder($filePath);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -259,6 +261,7 @@ final class fsmaker
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
+
         $name = $this->prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             echo "* No introdujo el nombre del CronJob.\n";
@@ -281,8 +284,7 @@ final class fsmaker
         echo '* ' . $fileName . self::OK;
         if (file_exists('Cron.php')) {
             $this->updateCron($name);
-        }
-        else {
+        } else {
             $this->createCron($plugin);
             $this->updateCron($name);
         }
@@ -348,7 +350,7 @@ final class fsmaker
         echo '* ' . $fileName . "\n";
 
         $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '());');
-        if($newContent){
+        if ($newContent) {
             InitEditor::setInitContent($newContent);
         }
     }
@@ -375,8 +377,8 @@ final class fsmaker
         echo '* ' . $fileName . "\n";
 
         $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '());', true);
-        
-        if($newContent){
+
+        if ($newContent) {
             InitEditor::setInitContent($newContent);
         }
 
@@ -637,77 +639,75 @@ final class fsmaker
         file_put_contents($fileName, $template);
 
         echo '* ' . $fileName . self::OK;
-
-        $input = $this->prompt(<<<"PROMPT"
-            ¿Qué eventos debe escuchar el worker(Ejemplo: 1 3 4)?
-                1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado, 7=Ninguno
-        PROMPT);
-
+        $input = $this->prompt("¿Qué eventos debe escuchar el worker? 1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado");
         $options = $input ? explode(' ', $input) : [];
 
-        // comprobar que son válidos
-        foreach ($options as &$v) {
-            $v = (int)$v;
-            if($v < 1 && $v > 7){
-                echo "* Error(Input): Números mal introducidos.\n";
-                return;
-            }
-
-            if($v === 7){
-                return;
-            }
-        }
-
-        $modelName = $this->prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
-        if ($modelName === '') {
-            // nombre mal introducido
-            return;
-        } else if ($modelName === null) {
-            // no se ha introducido nada
-            echo "* Error(Input): No se ha introducido nada por entrada.\n";
+        // comprobamos si se han introducido opciones
+        if (count($options) === 0) {
+            echo "* No se han introducido opciones.\n";
             return;
         }
 
-        //agregar la dependencia
+        // si en las opciones esta algunos de los números del 1 al 5, preguntamos el modelo
+        // y lo añadimos a la lista de opciones
+        if (in_array(1, $options) || in_array(2, $options) || in_array(3, $options) || in_array(4, $options) || in_array(5, $options)) {
+            $event = $this->prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
+        } elseif (in_array(6, $options)) {
+            $event = $this->prompt('Introduce el nombre del evento');
+        } else {
+            echo "* Error(Input): Opción no válida.\n";
+            return;
+        }
+
+        // si el evento está vacío, no se ha introducido nada
+        if (empty($event)) {
+            echo "* El evento no puede estar vacío.\n";
+            return;
+        }
+
+        // agregar la dependencia
         $modifiedInit = InitEditor::putUseInstruction('use FacturaScripts\Core\WorkQueue;');
-        if($modifiedInit !== null){
+        if ($modifiedInit !== null) {
             InitEditor::setInitContent($modifiedInit);
         }
 
-        //aplicar los eventos
+        // aplicar los eventos
         foreach ($options as $option) {
             $newContent = null;
             switch ($option) {
                 case 1:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Insert\');', true);
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Insert\');', true);
                     break;
+
                 case 2:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Update\');', true);
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Update\');', true);
                     break;
+
                 case 3:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Save\');', true);
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Save\');', true);
                     break;
+
                 case 4:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.Delete\');', true);
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Delete\');', true);
                     break;
+
                 case 5:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.*\');', true);
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.*\');', true);
                     break;
+
                 case 6:
-                    $eventName = $this->prompt('Introduce el nombre del evento');
-                     if ($eventName === '' || $eventName === null) {
-                        echo "* Error(Input): No se ha introducido nada por entrada.\n";
-                        echo "* Aviso: Saltando al siguiente.\n";
-                    }else{
-                        $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\''. $name .'\', \'Model.' . $modelName . '.'.$eventName.'\');', true);
-                    }
+                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'' . $event . '\');', true);
                     break;
+
+                default:
+                    echo "* Error(Input): Opción no válida.\n";
+                    return;
             }
-            if($newContent){
+
+            if ($newContent) {
                 InitEditor::setInitContent($newContent);
             }
         }
-        
     }
 
     private function findPluginName(): string
@@ -781,7 +781,6 @@ final class fsmaker
         return $value;
     }
 
-
     private function updateCron(string $name): void
     {
         $fileStr = file_get_contents('Cron.php');
@@ -798,11 +797,11 @@ final class fsmaker
         $position = strpos($fileStr, $search);
         $nameSpace = $this->getNamespace();
         if ($position !== false) {
-            $position = strpos($fileStr, '{', $position)+1;
+            $position = strpos($fileStr, '{', $position) + 1;
             $fileStr = substr_replace($fileStr, $newJob, $position, 0);
             file_put_contents('Cron.php', $fileStr);
             $usePosition = strpos($fileStr, 'use FacturaScripts\Core\Template\CronClass');
-            $usePosition = strpos($fileStr, ';', $usePosition)+1;
+            $usePosition = strpos($fileStr, ';', $usePosition) + 1;
             $fileStr = substr_replace($fileStr, "\nuse FacturaScripts\\$nameSpace\\CronJob\\$name;", $usePosition, 0);
             file_put_contents('Cron.php', $fileStr);
             echo '* ' . 'Cron.php' . " actualizado con el nuevo CronJob.\n";
@@ -810,7 +809,6 @@ final class fsmaker
             echo "* No se encontró el método run() en " . 'Cron.php' . ".\n";
         }
     }
-
 
     private function updateTranslationsAction(): void
     {

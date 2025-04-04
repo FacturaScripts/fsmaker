@@ -229,12 +229,16 @@ final class Column
 
     public function getModelTest(): string
     {
-        if ($this->tipo === 'creation_date') {
+        if ($this->nombre === 'creation_date') {
             return '        $this->creation_date = $this->creation_date ?? Tools::dateTime();' . "\n";
         }
 
         if ($this->nombre === 'nick') {
             return '        $this->nick = $this->nick ?? Session::user()->nick;' . "\n";
+        }
+
+        if (in_array($this->nombre, ['last_nick', 'last_update'])) {
+            return '';
         }
 
         switch ($this->tipo) {
