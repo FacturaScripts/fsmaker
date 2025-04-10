@@ -11,6 +11,11 @@ final class FileUpdater
 
     public static function upgradeBootstrap5(): void
     {
+        if (false === Utils::isPluginFolder()) {
+            echo "* Esta no es la carpeta raíz del plugin.\n";
+            return;
+        }
+
         // Expresiones regulares y sus reemplazos
         $patterns = [
             '/([mp])l(-[0-5])/' => '$1s$2',

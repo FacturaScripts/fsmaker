@@ -15,6 +15,7 @@ use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\FileUpdater;
 use fsmaker\InitEditor;
+use fsmaker\Utils;
 
 final class fsmaker
 {
@@ -30,16 +31,12 @@ final class fsmaker
         }
 
         switch ($argv[1]) {
-            case 'bs5':
-                $this->bootstrap5Action();
-                break;
-
             case 'controller':
                 $this->createControllerAction();
                 break;
 
             case 'cron':
-                $name = $this->findPluginName();
+                $name = Utils::findPluginName();
                 $this->createCron($name);
                 break;
 
@@ -79,6 +76,10 @@ final class fsmaker
                 $this->upgradeAction();
                 break;
 
+            case 'upgrade-bs5':
+                FileUpdater::upgradeBootstrap5();
+                break;
+
             case 'worker':
                 $this->createWorkerAction();
                 break;
@@ -93,20 +94,10 @@ final class fsmaker
         }
     }
 
-    private function bootstrap5Action(): void
-    {
-        if (false === $this->isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
-        }
-
-        FileUpdater::upgradeBootstrap5();
-    }
-
     private function createController(): void
     {
-        $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
-        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $name = Utils::prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
+        $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . $name . '.php';
         if (file_exists($fileName)) {
             echo "* El controlador " . $name . " YA EXISTE.\n";
@@ -116,14 +107,14 @@ final class fsmaker
             return;
         }
 
-        $menu = $this->prompt('Menú');
+        $menu = Utils::prompt('Menú');
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [$this->getNamespace(), $name, $menu], $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         $this->createFolder($filePath);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $viewPath = $this->isCoreFolder() ? 'Core/View/' : 'View/';
+        $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
         $viewFilename = $viewPath . $name . '.html.twig';
         $this->createFolder($viewPath);
         if (file_exists($viewFilename)) {
@@ -139,25 +130,25 @@ final class fsmaker
 
     private function createControllerAction(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $option = (int)$this->prompt("Elija el tipo de controlador a crear\n1=Controller, 2=ListController, 3=EditController");
+        $option = (int)Utils::prompt("Elija el tipo de controlador a crear\n1=Controller, 2=ListController, 3=EditController");
         switch ($option) {
             case 1:
                 $this->createController();
                 return;
 
             case 2:
-                $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $modelName = Utils::prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $fields = Column::askMulti();
                 $this->createListController($modelName, $fields);
                 return;
 
             case 3:
-                $modelName = $this->prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $modelName = Utils::prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $fields = Column::askMulti();
                 $this->createEditController($modelName, $fields);
                 return;
@@ -168,7 +159,7 @@ final class fsmaker
 
     private function createEditController(string $modelName, array $fields): void
     {
-        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'Edit' . $modelName . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
@@ -178,17 +169,17 @@ final class fsmaker
             return;
         }
 
-        $menu = $this->prompt('Menú');
+        $menu = Utils::prompt('Menú');
         $sample = file_get_contents(__DIR__ . "/SAMPLES/EditController.php.sample");
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
-            [$this->getNamespace(), $modelName, $menu],
+            [Utils::getNamespace(), $modelName, $menu],
             $sample
         );
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $xmlPath = $this->isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
+        $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'Edit' . $modelName . '.xml';
         $this->createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
@@ -202,9 +193,9 @@ final class fsmaker
 
     private function createListController(string $modelName, array $fields): void
     {
-        $menu = $this->prompt('Menú');
-        $title = $this->prompt('Título');
-        $filePath = $this->isCoreFolder() ? 'Core/Controller/' : 'Controller/';
+        $menu = Utils::prompt('Menú');
+        $title = Utils::prompt('Título');
+        $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'List' . $modelName . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
@@ -218,13 +209,13 @@ final class fsmaker
         $sample = file_get_contents(__DIR__ . "/SAMPLES/ListController.php.sample");
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]'],
-            [$this->getNamespace(), $modelName, $title, $menu],
+            [Utils::getNamespace(), $modelName, $title, $menu],
             $sample
         );
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
-        $xmlPath = $this->isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
+        $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'List' . $modelName . '.xml';
         $this->createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
@@ -238,7 +229,7 @@ final class fsmaker
 
     private function createCron(string $name): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -250,26 +241,26 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Cron.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
 
     private function createCronJob(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             echo "* No introdujo el nombre del CronJob.\n";
             return;
         }
 
         $folder = 'CronJob/';
-        $plugin = $this->findPluginName();
+        $plugin = Utils::findPluginName();
         $this->createFolder($folder);
 
         $fileName = $folder . $name . '.php';
@@ -279,7 +270,7 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/CronJob.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
         if (file_exists('Cron.php')) {
@@ -292,35 +283,35 @@ final class fsmaker
 
     private function createExtensionAction(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $option = (int)$this->prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
+        $option = (int)Utils::prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
         switch ($option) {
             case 1:
-                $name = strtolower($this->prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
+                $name = strtolower(Utils::prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
                 $this->createExtensionTable($name);
                 return;
 
             case 2:
-                $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $this->createExtensionModel($name);
                 return;
 
             case 3:
-                $name = $this->prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $this->createExtensionController($name);
                 return;
 
             case 4:
-                $name = $this->prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
                 $this->createExtensionXMLView($name);
                 return;
 
             case 5:
-                $name = $this->prompt('Nombre de la vista html.twig', '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/');
+                $name = Utils::prompt('Nombre de la vista html.twig', '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/');
                 $this->createExtensionView($name);
                 return;
         }
@@ -345,7 +336,7 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionController.php.sample");
-        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
+        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
@@ -372,7 +363,7 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionModel.php.sample");
-        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, $this->getNamespace()], $sample);
+        $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
@@ -466,7 +457,7 @@ final class fsmaker
 
     private function createInit(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -478,29 +469,29 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Init.php.sample");
-        $template = str_replace('[[NAME]]', $this->findPluginName(), $sample);
+        $template = str_replace('[[NAME]]', Utils::findPluginName(), $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
     }
 
     private function createModelAction(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             return;
         }
 
-        $tableName = $this->prompt('Nombre de la tabla (plural)', '/^[a-z][a-z0-9_]*$/', 'empezar por letra, todo en minúsculas y sin espacios');
+        $tableName = Utils::prompt('Nombre de la tabla (plural)', '/^[a-z][a-z0-9_]*$/', 'empezar por letra, todo en minúsculas y sin espacios');
         if (empty($tableName)) {
             return;
         }
 
-        $filePath = $this->isCoreFolder() ? 'Core/Model/' : 'Model/';
+        $filePath = Utils::isCoreFolder() ? 'Core/Model/' : 'Model/';
         $fileName = $filePath . $name . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
@@ -509,10 +500,10 @@ final class fsmaker
         }
 
         $fields = Column::askMulti();
-        FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, $this->getNamespace());
+        FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, Utils::getNamespace());
         echo '* ' . $fileName . self::OK;
 
-        $tablePath = $this->isCoreFolder() ? 'Core/Table/' : 'Table/';
+        $tablePath = Utils::isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         $this->createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
@@ -523,12 +514,12 @@ final class fsmaker
         }
 
         echo "\n";
-        if ($this->prompt('¿Crear EditController? 0=No (predeterminado), 1=Si') === '1') {
+        if (Utils::prompt('¿Crear EditController? 0=No (predeterminado), 1=Si') === '1') {
             $this->createEditController($name, $fields);
         }
 
         echo "\n";
-        if ($this->prompt('¿Crear ListController? 0=No (predeterminado), 1=Si') === '1') {
+        if (Utils::prompt('¿Crear ListController? 0=No (predeterminado), 1=Si') === '1') {
             $this->createListController($name, $fields);
         }
     }
@@ -541,7 +532,7 @@ final class fsmaker
         }
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
-        $name = $this->prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             echo "* El plugin debe tener un nombre.\n";
             return;
@@ -580,12 +571,12 @@ final class fsmaker
 
     private function createTestAction(): void
     {
-        if ($this->isCoreFolder() || false === $this->isPluginFolder()) {
+        if (Utils::isCoreFolder() || false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/', 'empezar por mayúscula y terminar en Test');
+        $name = Utils::prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/', 'empezar por mayúscula y terminar en Test');
         if (empty($name)) {
             echo "* No introdujo el nombre del test o está mal escrito.\n";
             return;
@@ -608,7 +599,7 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Test.php.sample");
-        $nameSpace = $this->getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
+        $nameSpace = Utils::getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -616,12 +607,12 @@ final class fsmaker
 
     private function createWorkerAction(): void
     {
-        if (false === $this->isCoreFolder() && false === $this->isPluginFolder()) {
+        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
 
-        $name = $this->prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
             return;
         }
@@ -635,11 +626,11 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Worker.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$this->getNamespace(), $name], $sample);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
 
         echo '* ' . $fileName . self::OK;
-        $input = $this->prompt("¿Qué eventos debe escuchar el worker? 1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado");
+        $input = Utils::prompt("¿Qué eventos debe escuchar el worker? 1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado");
         $options = $input ? explode(' ', $input) : [];
 
         // comprobamos si se han introducido opciones
@@ -651,9 +642,9 @@ final class fsmaker
         // si en las opciones esta algunos de los números del 1 al 5, preguntamos el modelo
         // y lo añadimos a la lista de opciones
         if (in_array(1, $options) || in_array(2, $options) || in_array(3, $options) || in_array(4, $options) || in_array(5, $options)) {
-            $event = $this->prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
+            $event = Utils::prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
         } elseif (in_array(6, $options)) {
-            $event = $this->prompt('Introduce el nombre del evento');
+            $event = Utils::prompt('Introduce el nombre del evento');
         } else {
             echo "* Error(Input): Opción no válida.\n";
             return;
@@ -673,7 +664,6 @@ final class fsmaker
 
         // aplicar los eventos
         foreach ($options as $option) {
-            $newContent = null;
             switch ($option) {
                 case 1:
                     $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Insert\');', true);
@@ -710,26 +700,6 @@ final class fsmaker
         }
     }
 
-    private function findPluginName(): string
-    {
-        if ($this->isPluginFolder()) {
-            $ini = parse_ini_file('facturascripts.ini');
-            return $ini['name'] ?? '';
-        }
-
-        return '';
-    }
-
-    private function getNamespace(): string
-    {
-        if ($this->isCoreFolder()) {
-            return 'Core';
-        }
-
-        $ini = parse_ini_file('facturascripts.ini');
-        return 'Plugins\\' . $ini['name'];
-    }
-
     private function help(): void
     {
         echo 'FacturaScripts Maker v' . self::VERSION . "\n\n"
@@ -745,40 +715,11 @@ final class fsmaker
             . "$ fsmaker init\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"
-            . "$ fsmaker bs5\n\n"
+            . "$ fsmaker upgrade-bs5\n\n"
             . "descargar:\n"
             . "$ fsmaker translations\n\n"
             . "comprimir:\n"
-            . "$ fsmaker zip\n";
-    }
-
-    private function isCoreFolder(): bool
-    {
-        return file_exists('Core/Translation') && false === file_exists('facturascripts.ini');
-    }
-
-    private function isPluginFolder(): bool
-    {
-        return file_exists('facturascripts.ini');
-    }
-
-    private function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
-    {
-        echo $label . ': ';
-        $matches = [];
-        $value = trim(fgets(STDIN));
-
-        // si el valor esta vacío, devolvemos null
-        if ($value == '') {
-            return null;
-        }
-
-        if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            echo "Valor no válido. Debe " . $pattern_explain . "\n";
-            return '';
-        }
-
-        return $value;
+            . "$ fsmaker zip\n\n";
     }
 
     private function updateCron(string $name): void
@@ -795,7 +736,7 @@ final class fsmaker
         END;
         $search = 'public function run(): void';
         $position = strpos($fileStr, $search);
-        $nameSpace = $this->getNamespace();
+        $nameSpace = Utils::getNamespace();
         if ($position !== false) {
             $position = strpos($fileStr, '{', $position) + 1;
             $fileStr = substr_replace($fileStr, $newJob, $position, 0);
@@ -812,12 +753,12 @@ final class fsmaker
 
     private function updateTranslationsAction(): void
     {
-        if ($this->isPluginFolder()) {
+        if (Utils::isPluginFolder()) {
             $folder = 'Translation/';
             $this->createFolder($folder);
             $ini = parse_ini_file('facturascripts.ini');
             $project = $ini['name'] ?? '';
-        } elseif ($this->isCoreFolder()) {
+        } elseif (Utils::isCoreFolder()) {
             $folder = 'Core/Translation/';
             $this->createFolder($folder);
             $project = 'CORE';
@@ -848,7 +789,7 @@ final class fsmaker
 
     private function upgradeAction(): void
     {
-        if (false === $this->isPluginFolder()) {
+        if (false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -860,7 +801,7 @@ final class fsmaker
 
     private function zipAction(): void
     {
-        if (false === $this->isPluginFolder()) {
+        if (false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -872,7 +813,7 @@ final class fsmaker
             return;
         }
 
-        $customName = $this->prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
+        $customName = Utils::prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
         if (empty($customName)) {
             $zipName = $pluginName . '.zip';
         } else {
