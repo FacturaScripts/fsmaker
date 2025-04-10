@@ -14,7 +14,7 @@ use ErrorException;
  *  - Antes de usar esta clase debes de estar en PluginFolder, osea que `fsmaker->isPluginFolder() === true` y estar seguro de que existe Init.php
  * - Modo de funcionar
  *  - Para detectar las cosas, primero remueve los espacios y busca las coincidencias(para evitar que la sintaxis de php sea un problema)
- *  - Después comprueba que las llaves de la función tenga tenga sentido
+ *  - Después comprueba que las llaves de la función tenga sentido
  *  - Finalmente si no existe la función que se desea agregar, la agrega
  */
 class InitEditor
@@ -39,10 +39,10 @@ class InitEditor
     /**
      * Se encarga de agregar un módulo (use) que le indiques si este no existe dentro.
      * Lo que realiza internamente es buscar el último `use` que encuentre y colocarlo debajo.
-     * @param string $str
-     * @return string|void
+     * @param string $useInstruction
+     * @return ?string
      */
-    public static function putUseInstruction(string $useInstruction): string|null
+    public static function putUseInstruction(string $useInstruction): ?string
     {
         $str = self::getInitContent();
 
@@ -53,33 +53,31 @@ class InitEditor
             return null;
         }
 
-        //escojer el último de todos los use y donde termina
+        // escoger el último de todos los use y donde termina
         $matches = self::getSentenceMatches($str, 'use');
         $lastUse = end($matches);
         $endLastUse = strpos($str, "\n", $lastUse) + 1;
 
-        //colocar el nuevo use
-        $newStr = mb_substr($str, 0, $endLastUse) . $useInstruction . "\n" . mb_substr($str, $endLastUse);
-
-        return $newStr;
+        // colocar el nuevo use
+        return mb_substr($str, 0, $endLastUse) . $useInstruction . "\n" . mb_substr($str, $endLastUse);
     }
 
     /**
      * Devuelve el contenido del fichero agregandole la linea introducida por `str`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
      *  - Esta función si que escribe comentarios en la terminal
-     * @param string $str la linea de código que se desea insertar
+     * @param string $instructionStr
      * @param bool $checkIfNotExists revisa si existe esa linea de código
-     * @return string|bool Si no ha sido exitosa la operación devuelve false si no pues el string modificado
+     * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
      */
-    public static function putCodeLineInInitFunction(string $instructionStr, bool $checkIfNotExists = false): string|bool
+    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false): ?string
     {
         // obtener el diagnostico general
-        $analysis = self::detectValidInitFuntion();
+        $analysis = self::detectValidInitFunction();
 
         // si algo va mal
         if (!$analysis['isValid']) {
             echo $analysis['info'];
-            return false;
+            return null;
         }
 
         $info = $analysis['info'];
@@ -89,7 +87,7 @@ class InitEditor
         if ($checkIfNotExists) {
             $matches = self::getSentenceMatches(self::removeSpaces($body), self::removeSpaces($instructionStr));
             if (count($matches) !== 0) {
-                return false;
+                return null;
             }
         }
 
@@ -112,7 +110,6 @@ class InitEditor
         // agregar indentation
         $indentation = self::getCurrentIndentation($body, mb_strlen($body) - 2);
         $body .= self::formatTextWithIndentation($instructionStr, $indentation) . "\n" . $endIndents;
-        //echo PHP_EOL."-----------------------------".$indentation."-----------------------------".PHP_EOL;
 
         return mb_substr($info['initContent'], 0, $info['functionStart']) . $body . mb_substr($info['initContent'], $info['functionEnd']);
     }
@@ -121,7 +118,7 @@ class InitEditor
      * Esta función analiza el fichero y detecta si está correcto y se puede agregar funciones. Devuelve información útil.
      * @return array {isValid: bool, info: string|array}
      */
-    public static function detectValidInitFuntion(): array
+    public static function detectValidInitFunction(): array
     {
         $str = self::getInitContent();
 
@@ -189,9 +186,6 @@ class InitEditor
             }
         }
 
-        // echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
-        // echo mb_substr($str, $bodyStartPos, $bodyEndPos - $bodyStartPos);
-        // echo PHP_EOL.'--------------------------------------------------'.PHP_EOL;
         return [
             'isValid' => true,
             'info' => [
@@ -284,13 +278,12 @@ class InitEditor
      */
     private static function getRealStrPosFromNoSpaceStrPos(string $string, int $noSpacesPos, int $noSpaceWordsLength): array
     {
-
         $strArr = mb_str_split($string);
         $charsCount = 0;
         $arrPos = 0;
 
         $startPos = -1; // posición real en el string
-        $seachedStr = ''; // el string buscado
+        $searchedStr = ''; // el string buscado
 
 
         // loop a todo el texto
@@ -322,7 +315,7 @@ class InitEditor
         // Fase 2: buscar y encontrar la palabra
         while (is_string($currentChar)) {
 
-            $seachedStr .= $currentChar;
+            $searchedStr .= $currentChar;
 
             if (!self::isInvisibleChar($currentChar)) {
 
@@ -338,9 +331,9 @@ class InitEditor
 
         return [
             'startPos' => $startPos,
-            'endPos' => $startPos + mb_strlen($seachedStr),
-            'len' => mb_strlen($seachedStr),
-            'str' => $seachedStr
+            'endPos' => $startPos + mb_strlen($searchedStr),
+            'len' => mb_strlen($searchedStr),
+            'str' => $searchedStr
         ];
     }
 
@@ -365,7 +358,7 @@ class InitEditor
     /**
      * Simplemente remueve los espacios de un string
      * @param mixed $str el string en el que remover los espacios
-     * @return string es tring sin espacios
+     * @return string
      */
     private static function removeSpaces($str): string
     {
@@ -423,7 +416,7 @@ class InitEditor
     /**
      * Simplemente hace "marcha atras" recogiendo las tabulaciones para recoger la indentación
      * @param string $str el string en el que buscar
-     * @param int $indentEndPos donde comenzar a dar marcha atras para encontrar el string, se debe de colocar la posición del carácter posterior a la "indentation".
+     * @param int $lineEndPos
      * @return string el "indentation" a agregar
      */
     private static function getCurrentIndentation(string $str, int $lineEndPos): string
@@ -454,22 +447,5 @@ class InitEditor
         }
 
         return $indentStr;
-        // while($currentPos !== -1){
-        //     $char = mb_substr($str, $currentPos, 1);
-        //     if(!$foundedIndent){
-        //         if($char === ' ' || $char === "\t"){
-        //             $foundedIndent = true;
-        //         }else{
-        //             $currentPos--;
-        //         }
-        //     }else{
-        //         if($char === ' ' || $char === "\t"){
-        //             $indentStr = $char . $indentStr;
-        //             $currentPos--;
-        //         }else{
-        //             return $indentStr;
-        //         }
-        //     }
-        // }
     }
 }

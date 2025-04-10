@@ -340,7 +340,7 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '());');
+        $newContent = InitEditor::addToInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '());');
         if ($newContent) {
             InitEditor::setInitContent($newContent);
         }
@@ -367,7 +367,10 @@ final class fsmaker
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
 
-        $newContent = InitEditor::putCodeLineInInitFunction('$this->loadExtension(new Extension\Model\\' . $name . '());', true);
+        $newContent = InitEditor::addToInitFunction(
+            '$this->loadExtension(new Extension\Model\\' . $name . '());',
+            true
+        );
 
         if ($newContent) {
             InitEditor::setInitContent($newContent);
@@ -481,12 +484,20 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt(
+            'Nombre del modelo (singular)',
+            '/^[A-Z][a-zA-Z0-9_]*$/',
+            'empezar por mayúscula y sin espacios'
+        );
         if (empty($name)) {
             return;
         }
 
-        $tableName = Utils::prompt('Nombre de la tabla (plural)', '/^[a-z][a-z0-9_]*$/', 'empezar por letra, todo en minúsculas y sin espacios');
+        $tableName = Utils::prompt(
+            'Nombre de la tabla (plural)',
+            '/^[a-z][a-z0-9_]*$/',
+            'empezar por letra, todo en minúsculas y sin espacios'
+        );
         if (empty($tableName)) {
             return;
         }
@@ -545,9 +556,9 @@ final class fsmaker
         echo '* ' . $name . self::OK;
 
         $folders = [
-            'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES', 'Extension/Controller',
-            'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Extension/View', 'Model/Join', 'Table', 'Translation', 'View', 'XMLView',
-            'Test/main', 'CronJob', 'Mod', 'Worker'
+            'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES',
+            'Extension/Controller', 'Extension/Model', 'Extension/Table', 'Extension/XMLView', 'Extension/View',
+            'Model/Join', 'Table', 'Translation', 'View', 'XMLView', 'Test/main', 'CronJob', 'Mod', 'Worker'
         ];
         foreach ($folders as $folder) {
             $this->createFolder($name . '/' . $folder);
@@ -576,7 +587,11 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::prompt('Nombre del test (singular)', '/^[A-Z][a-zA-Z0-9_]*Test$/', 'empezar por mayúscula y terminar en Test');
+        $name = Utils::prompt(
+            'Nombre del test (singular)',
+            '/^[A-Z][a-zA-Z0-9_]*Test$/',
+            'empezar por mayúscula y terminar en Test'
+        );
         if (empty($name)) {
             echo "* No introdujo el nombre del test o está mal escrito.\n";
             return;
@@ -612,7 +627,11 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::prompt('Nombre del worker', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        $name = Utils::prompt(
+            'Nombre del worker',
+            '/^[A-Z][a-zA-Z0-9_]*$/',
+            'empezar por mayúscula y sin espacios'
+        );
         if (empty($name)) {
             return;
         }
@@ -641,7 +660,11 @@ final class fsmaker
 
         // si en las opciones esta algunos de los números del 1 al 5, preguntamos el modelo
         // y lo añadimos a la lista de opciones
-        if (in_array(1, $options) || in_array(2, $options) || in_array(3, $options) || in_array(4, $options) || in_array(5, $options)) {
+        if (in_array(1, $options)
+            || in_array(2, $options)
+            || in_array(3, $options)
+            || in_array(4, $options)
+            || in_array(5, $options)) {
             $event = Utils::prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
         } elseif (in_array(6, $options)) {
             $event = Utils::prompt('Introduce el nombre del evento');
@@ -666,27 +689,27 @@ final class fsmaker
         foreach ($options as $option) {
             switch ($option) {
                 case 1:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Insert\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Insert\');', true);
                     break;
 
                 case 2:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Update\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Update\');', true);
                     break;
 
                 case 3:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Save\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Save\');', true);
                     break;
 
                 case 4:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Delete\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.Delete\');', true);
                     break;
 
                 case 5:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.*\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'Model.' . $event . '.*\');', true);
                     break;
 
                 case 6:
-                    $newContent = InitEditor::putCodeLineInInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'' . $event . '\');', true);
+                    $newContent = InitEditor::addToInitFunction('WorkQueue::addWorker(\'' . $name . '\', \'' . $event . '\');', true);
                     break;
 
                 default:

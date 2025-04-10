@@ -16,8 +16,10 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": ">=7.3",
-    "ext-zip": "*"
+    "php": ">=7.4",
+    "ext-zip": "*",
+    "ext-mbstring": "*",
+    "ext-ctype": "*"
   },
   "bin": ["bin/fsmaker"],
   "version": "1.4.0",
