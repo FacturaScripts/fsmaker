@@ -36,7 +36,7 @@ class ApiGenerator
             return;
         }
 
-        $sample = file_get_contents(Utils::getFolder() . "/SAMPLES/ApiController.php.sample");
+        $sample = file_get_contents(Utils::getFolder() . "/samples/ApiController.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         Utils::createFolder('Controller');
         file_put_contents($file_path, $template);

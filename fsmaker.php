@@ -115,7 +115,7 @@ final class fsmaker
         }
 
         $menu = Utils::prompt('Menú');
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/Controller.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         Utils::createFolder($filePath);
         file_put_contents($fileName, $template);
@@ -129,7 +129,7 @@ final class fsmaker
             return;
         }
 
-        $sample2 = file_get_contents(__DIR__ . "/SAMPLES/View.html.twig.sample");
+        $sample2 = file_get_contents(__DIR__ . "/samples/View.html.twig.sample");
         $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
         file_put_contents($viewFilename, $template2);
         echo '* ' . $viewFilename . self::OK;
@@ -177,7 +177,7 @@ final class fsmaker
         }
 
         $menu = Utils::prompt('Menú');
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/EditController.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/EditController.php.sample");
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
             [Utils::getNamespace(), $modelName, $menu],
@@ -213,7 +213,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/ListController.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/ListController.php.sample");
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[TITLE]]', '[[MENU]]'],
             [Utils::getNamespace(), $modelName, $title, $menu],
@@ -247,7 +247,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/Cron.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/Cron.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -276,7 +276,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/CronJob.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/CronJob.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -342,7 +342,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionController.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/ExtensionController.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
@@ -369,7 +369,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/ExtensionModel.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/ExtensionModel.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . "\n";
@@ -467,7 +467,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/Init.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/Init.php.sample");
         $template = str_replace('[[NAME]]', Utils::findPluginName(), $sample);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
@@ -609,7 +609,7 @@ final class fsmaker
             echo '* ' . $txtFile . self::OK;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/Test.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/Test.php.sample");
         $nameSpace = Utils::getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
         file_put_contents($fileName, $template);
@@ -640,7 +640,7 @@ final class fsmaker
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/SAMPLES/Worker.php.sample");
+        $sample = file_get_contents(__DIR__ . "/samples/Worker.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
 
