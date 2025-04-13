@@ -5,7 +5,7 @@ namespace FacturaScripts\Plugins\[[NAME_SPACE]]\Worker;
 use FacturaScripts\Core\Model\WorkEvent;
 use FacturaScripts\Core\Template\WorkerClass;
 
-class [[NAME]]Worker extends WorkerClass
+class [[NAME]] extends WorkerClass
 {
     public function run(WorkEvent $event): bool
     {

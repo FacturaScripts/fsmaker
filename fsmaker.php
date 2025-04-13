@@ -637,7 +637,7 @@ final class fsmaker
         }
 
         $filePath = 'Worker/';
-        $fileName = $filePath . $name . 'Worker.php';
+        $fileName = $filePath . $name . '.php';
         $this->createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El worker " . $name . " YA EXISTE.\n";
