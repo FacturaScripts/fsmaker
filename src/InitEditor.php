@@ -42,7 +42,7 @@ class InitEditor
      * @param string $useInstruction
      * @return ?string
      */
-    public static function putUseInstruction(string $useInstruction): ?string
+    public static function addUse(string $useInstruction): ?string
     {
         $str = self::getInitContent();
 

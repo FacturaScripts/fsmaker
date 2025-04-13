@@ -7,6 +7,23 @@ namespace fsmaker;
 
 class Utils
 {
+    /** @var string */
+    private static $folder;
+
+    public static function createFolder(string $path): bool
+    {
+        if (empty($path) || file_exists($path)) {
+            return true;
+        }
+
+        if (mkdir($path, 0755, true)) {
+            echo '* ' . $path . " -> OK.\n";
+            return true;
+        }
+
+        return false;
+    }
+
     public static function findPluginName(): string
     {
         if (self::isPluginFolder()) {
@@ -15,6 +32,11 @@ class Utils
         }
 
         return '';
+    }
+
+    public static function getFolder(): string
+    {
+        return self::$folder;
     }
 
     public static function getNamespace(): string
@@ -54,5 +76,10 @@ class Utils
         }
 
         return $value;
+    }
+
+    public static function setFolder(string $folder): void
+    {
+        self::$folder = $folder;
     }
 }

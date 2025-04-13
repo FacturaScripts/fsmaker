@@ -11,6 +11,7 @@ if (php_sapi_name() !== 'cli') {
 
 include __DIR__ . '/vendor/autoload.php';
 
+use fsmaker\ApiGenerator;
 use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\FileUpdater;
@@ -30,7 +31,13 @@ final class fsmaker
             return;
         }
 
+        Utils::setFolder(__DIR__);
+
         switch ($argv[1]) {
+            case 'api':
+                ApiGenerator::generate();
+                break;
+
             case 'controller':
                 $this->createControllerAction();
                 break;
@@ -110,13 +117,13 @@ final class fsmaker
         $menu = Utils::prompt('Menú');
         $sample = file_get_contents(__DIR__ . "/SAMPLES/Controller.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
 
         $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
         $viewFilename = $viewPath . $name . '.html.twig';
-        $this->createFolder($viewPath);
+        Utils::createFolder($viewPath);
         if (file_exists($viewFilename)) {
             echo '* ' . $viewFilename . " YA EXISTE.\n";
             return;
@@ -161,7 +168,7 @@ final class fsmaker
     {
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'Edit' . $modelName . '.php';
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         if (file_exists($fileName)) {
             echo "El controlador " . $fileName . " YA EXISTE.\n";
             return;
@@ -181,7 +188,7 @@ final class fsmaker
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'Edit' . $modelName . '.xml';
-        $this->createFolder($xmlPath);
+        Utils::createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
             echo '* ' . $xmlFilename . " YA EXISTE\n";
             return;
@@ -197,7 +204,7 @@ final class fsmaker
         $title = Utils::prompt('Título');
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'List' . $modelName . '.php';
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El controlador " . $fileName . " YA EXISTE.\n";
             return;
@@ -217,7 +224,7 @@ final class fsmaker
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'List' . $modelName . '.xml';
-        $this->createFolder($xmlPath);
+        Utils::createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
             echo '* ' . $xmlFilename . " YA EXISTE\n";
             return;
@@ -261,7 +268,7 @@ final class fsmaker
 
         $folder = 'CronJob/';
         $plugin = Utils::findPluginName();
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
@@ -327,7 +334,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Controller/';
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
@@ -354,7 +361,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Model/';
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
@@ -386,7 +393,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/Table/';
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
@@ -407,7 +414,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/XMLView/';
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
@@ -435,7 +442,7 @@ final class fsmaker
         }
 
         $folder = 'Extension/View/';
-        $this->createFolder($folder);
+        Utils::createFolder($folder);
 
         $fileName = $folder . $name . '.html.twig';
         if (file_exists($fileName)) {
@@ -445,17 +452,6 @@ final class fsmaker
 
         file_put_contents($fileName, '');
         echo '* ' . $fileName . self::OK;
-    }
-
-    private function createFolder(string $path): void
-    {
-        if (file_exists($path)) {
-            return;
-        }
-
-        if (mkdir($path, 0755, true)) {
-            echo '* ' . $path . self::OK;
-        }
     }
 
     private function createInit(): void
@@ -504,7 +500,7 @@ final class fsmaker
 
         $filePath = Utils::isCoreFolder() ? 'Core/Model/' : 'Model/';
         $fileName = $filePath . $name . '.php';
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El modelo " . $name . " YA EXISTE.\n";
             return;
@@ -516,7 +512,7 @@ final class fsmaker
 
         $tablePath = Utils::isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
-        $this->createFolder($tablePath);
+        Utils::createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
             FileGenerator::createTableXmlByFields($tableFilename, $tableName, $fields);
             echo '* ' . $tableFilename . self::OK;
@@ -561,7 +557,7 @@ final class fsmaker
             'Model/Join', 'Table', 'Translation', 'View', 'XMLView', 'Test/main', 'CronJob', 'Mod', 'Worker'
         ];
         foreach ($folders as $folder) {
-            $this->createFolder($name . '/' . $folder);
+            Utils::createFolder($name . '/' . $folder);
             touch($name . '/' . $folder . '/.gitignore');
         }
 
@@ -599,7 +595,7 @@ final class fsmaker
 
         $filePath = 'Test/main/';
         $fileName = $filePath . $name . '.php';
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El test " . $name . " YA EXISTE.\n";
             return;
@@ -622,7 +618,7 @@ final class fsmaker
 
     private function createWorkerAction(): void
     {
-        if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
+        if (false === Utils::isPluginFolder()) {
             echo "* Esta no es la carpeta raíz del plugin.\n";
             return;
         }
@@ -638,7 +634,7 @@ final class fsmaker
 
         $filePath = 'Worker/';
         $fileName = $filePath . $name . '.php';
-        $this->createFolder($filePath);
+        Utils::createFolder($filePath);
         if (file_exists($fileName)) {
             echo "* El worker " . $name . " YA EXISTE.\n";
             return;
@@ -680,7 +676,7 @@ final class fsmaker
         }
 
         // agregar la dependencia
-        $modifiedInit = InitEditor::putUseInstruction('use FacturaScripts\Core\WorkQueue;');
+        $modifiedInit = InitEditor::addUse('use FacturaScripts\Core\WorkQueue;');
         if ($modifiedInit !== null) {
             InitEditor::setInitContent($modifiedInit);
         }
@@ -728,17 +724,18 @@ final class fsmaker
         echo 'FacturaScripts Maker v' . self::VERSION . "\n\n"
             . "crear:\n"
             . "$ fsmaker plugin\n"
-            . "$ fsmaker model\n"
+            . "$ fsmaker api\n"
             . "$ fsmaker controller\n"
-            . "$ fsmaker extension\n"
-            . "$ fsmaker gitignore\n"
             . "$ fsmaker cron\n"
             . "$ fsmaker cronjob\n"
-            . "$ fsmaker worker\n"
+            . "$ fsmaker extension\n"
+            . "$ fsmaker gitignore\n"
             . "$ fsmaker init\n"
+            . "$ fsmaker model\n"
             . "$ fsmaker test\n"
             . "$ fsmaker upgrade\n"
-            . "$ fsmaker upgrade-bs5\n\n"
+            . "$ fsmaker upgrade-bs5\n"
+            . "$ fsmaker worker\n\n"
             . "descargar:\n"
             . "$ fsmaker translations\n\n"
             . "comprimir:\n"
@@ -778,12 +775,12 @@ final class fsmaker
     {
         if (Utils::isPluginFolder()) {
             $folder = 'Translation/';
-            $this->createFolder($folder);
+            Utils::createFolder($folder);
             $ini = parse_ini_file('facturascripts.ini');
             $project = $ini['name'] ?? '';
         } elseif (Utils::isCoreFolder()) {
             $folder = 'Core/Translation/';
-            $this->createFolder($folder);
+            Utils::createFolder($folder);
             $project = 'CORE';
         } else {
             echo "* Esta no es la carpeta raíz del plugin.\n";
