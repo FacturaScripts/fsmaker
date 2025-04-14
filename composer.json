@@ -1,7 +1,7 @@
 {
   "name": "facturascripts/fsmaker",
   "description": "Herramienta de creación de plugin para FacturaScripts.",
-  "type": "project",
+  "type": "library",
   "license": "LGPL-3.0-or-later",
   "authors": [
     {
@@ -22,7 +22,7 @@
     "ext-ctype": "*"
   },
   "bin": ["bin/fsmaker"],
-  "version": "1.4.0",
+  "version": "1.4.1",
   "require-dev": {
     "phpunit/phpunit": "^12"
   }
