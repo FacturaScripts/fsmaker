@@ -18,6 +18,7 @@ use fsmaker\FileUpdater;
 use fsmaker\InitEditor;
 use fsmaker\UpdateTranslations;
 use fsmaker\Utils;
+use fsmaker\ZipGenerator;
 
 final class fsmaker
 {
@@ -92,7 +93,7 @@ final class fsmaker
                 break;
 
             case 'zip':
-                $this->zipAction();
+                ZipGenerator::generate();
                 break;
 
             default:
@@ -775,56 +776,6 @@ final class fsmaker
         FileUpdater::upgradePhpFiles();
         FileUpdater::upgradeXmlFiles();
         FileUpdater::upgradeTwigFiles();
-    }
-
-    private function zipAction(): void
-    {
-        if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
-            return;
-        }
-
-        $ini = parse_ini_file('facturascripts.ini');
-        $pluginName = $ini['name'] ?? '';
-        if (empty($pluginName)) {
-            echo "* No se ha encontrado el nombre del plugin.\n";
-            return;
-        }
-
-        $customName = Utils::prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
-        if (empty($customName)) {
-            $zipName = $pluginName . '.zip';
-        } else {
-            $zipName = $customName . '.zip';
-        }
-
-        $zip = new ZipArchive();
-        if (true !== $zip->open($zipName, ZipArchive::CREATE)) {
-            echo "* Error al crear el archivo zip.\n";
-            return;
-        }
-
-        $zip->addEmptyDir($pluginName);
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator('.'),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $name => $file) {
-            if (
-                $file->getFilename() === '.' ||
-                $file->getFilename() === '..' ||
-                $file->getFilename()[0] === '.' ||
-                substr($name, 0, 3) === './.'
-            ) {
-                continue;
-            }
-            $path = str_replace('./', $pluginName . '/', $name);
-            $zip->addFile($name, $path);
-        }
-
-        $zip->close();
-        echo "* " . $zipName . self::OK;
     }
 }
 
