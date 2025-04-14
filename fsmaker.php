@@ -9,7 +9,7 @@ if (php_sapi_name() !== 'cli') {
     die("Usar: php fsmaker.php");
 }
 
-include __DIR__ . '/vendor/autoload.php';
+include $_composer_autoload_path ?? __DIR__ . '/vendor/autoload.php';
 
 use fsmaker\ApiGenerator;
 use fsmaker\Column;
