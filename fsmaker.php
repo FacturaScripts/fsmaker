@@ -16,6 +16,7 @@ use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\FileUpdater;
 use fsmaker\InitEditor;
+use fsmaker\RunTests;
 use fsmaker\UpdateTranslations;
 use fsmaker\Utils;
 use fsmaker\ZipGenerator;
@@ -70,6 +71,10 @@ final class fsmaker
 
             case 'plugin':
                 $this->createPluginAction();
+                break;
+
+            case 'run-tests':
+                RunTests::run($argv[2]);
                 break;
 
             case 'test':
@@ -733,6 +738,8 @@ final class fsmaker
             . "$ fsmaker worker\n\n"
             . "descargar:\n"
             . "$ fsmaker translations\n\n"
+            . "ejecutar:\n"
+            . "$ fsmaker run-tests [ruta carpeta FacturaScripts]\n\n"
             . "comprimir:\n"
             . "$ fsmaker zip\n\n";
     }
