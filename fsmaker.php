@@ -749,7 +749,7 @@ final class fsmaker
         $fileStr = file_get_contents('Cron.php');
         $newJob = <<<END
         \n
-                \$this->job('$name')
+                \$this->job($name::JOB_NAME)
                     ->everyDayAt(8)
                     ->run(function () {
                         $name::run();
