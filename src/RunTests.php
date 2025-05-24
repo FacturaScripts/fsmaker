@@ -65,6 +65,38 @@ class RunTests
             return;
         }
 
+        // Get Plugin Details
+        $currentPluginName = basename(getcwd());
+        $currentPluginPath = realpath(getcwd());
+        $rawFsPluginPath = $fs_folder . 'Plugins' . DIRECTORY_SEPARATOR . $currentPluginName;
+        $fsPluginPath = realpath($rawFsPluginPath);
+
+        // Implement Path Comparison Logic
+        echo "\n=== Sincronizando plugin con FacturaScripts en " . $fs_folder . "Plugins/ ===\n";
+        if ($fsPluginPath === false) {
+            // plugin does not exist in FacturaScripts Plugins directory
+            echo "   - Plugin '" . $currentPluginName . "' no encontrado en FacturaScripts. Copiando plugin completo a: " . $rawFsPluginPath . "\n";
+            self::copyDirectory($currentPluginPath, $rawFsPluginPath);
+        } else {
+            // plugin exists in FacturaScripts Plugins directory
+            if ($fsPluginPath !== $currentPluginPath) {
+                // plugin in FS is different from the current one
+                echo "   - Encontrada una versión diferente del plugin '" . $currentPluginName . "' en FacturaScripts. Reemplazando con la versión actual.\n";
+                echo "     - Eliminando contenido de: " . $fsPluginPath . "\n";
+                self::deleteDirectoryContents($fsPluginPath);
+                // Asegurarse de que el directorio base exista después de deleteDirectoryContents si este lo elimina
+                if (!is_dir($fsPluginPath)) {
+                    mkdir($fsPluginPath, 0777, true);
+                }
+                echo "     - Copiando plugin actual a: " . $fsPluginPath . "\n";
+                self::copyDirectory($currentPluginPath, $fsPluginPath);
+            } else {
+                // plugin in FS is the same as the current one
+                echo "   - El plugin '" . $currentPluginName . "' ya está en su sitio en FacturaScripts y es el que se está probando. No se necesita copiar.\n";
+            }
+        }
+        echo "=== Sincronización de plugin finalizada ===\n\n";
+
         echo "Buscando carpetas de tests dentro de 'Test/'...\n";
         $foundTests = false;
         // recorremos las carpetas dentro de Test
