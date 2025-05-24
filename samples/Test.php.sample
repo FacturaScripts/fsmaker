@@ -9,6 +9,11 @@ final class [[NAME]] extends TestCase
 {
     use LogErrorsTrait;
 
+    public function testCreate(): void
+    {
+        // tu código aquí
+    }
+
     protected function tearDown(): void
     {
         $this->logErrors();
