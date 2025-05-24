@@ -66,7 +66,7 @@ class RunTests
         }
 
         // obtenemos las rutas
-        $currentPluginName = basename(getcwd());
+        $currentPluginName = Utils::findPluginName();
         $currentPluginPath = realpath(getcwd());
         $rawFsPluginPath = $fs_folder . 'Plugins' . DIRECTORY_SEPARATOR . $currentPluginName;
         $fsPluginPath = realpath($rawFsPluginPath);
