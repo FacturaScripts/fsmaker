@@ -27,7 +27,7 @@ class RunTests
         // si no hay segundo parámetro o no es una ruta que exista, terminamos
         if (empty($fs_folder) || !is_dir($fs_folder)) {
             echo "* Debes indicar como segundo parámetro la ruta a la carpeta de FacturasScripts.\n";
-            echo "* Ejemplo: php fsmaker.phar run-tests ../facturascripts\n";
+            echo "* Ejemplo: fsmaker run-tests ../facturascripts\n";
             return;
         }
 
@@ -65,39 +65,26 @@ class RunTests
             return;
         }
 
-        // Get Plugin Details
+        // obtenemos las rutas
         $currentPluginName = basename(getcwd());
         $currentPluginPath = realpath(getcwd());
         $rawFsPluginPath = $fs_folder . 'Plugins' . DIRECTORY_SEPARATOR . $currentPluginName;
         $fsPluginPath = realpath($rawFsPluginPath);
 
-        // Implement Path Comparison Logic
-        echo "\n=== Sincronizando plugin con FacturaScripts en " . $fs_folder . "Plugins/ ===\n";
         if ($fsPluginPath === false) {
-            // plugin does not exist in FacturaScripts Plugins directory
-            echo "   - Plugin '" . $currentPluginName . "' no encontrado en FacturaScripts. Copiando plugin completo a: " . $rawFsPluginPath . "\n";
+            // el plugin no existe en la carpeta de Plugins de FacturaScripts
             self::copyDirectory($currentPluginPath, $rawFsPluginPath);
-        } else {
-            // plugin exists in FacturaScripts Plugins directory
-            if ($fsPluginPath !== $currentPluginPath) {
-                // plugin in FS is different from the current one
-                echo "   - Encontrada una versión diferente del plugin '" . $currentPluginName . "' en FacturaScripts. Reemplazando con la versión actual.\n";
-                echo "     - Eliminando contenido de: " . $fsPluginPath . "\n";
-                self::deleteDirectoryContents($fsPluginPath);
-                // Asegurarse de que el directorio base exista después de deleteDirectoryContents si este lo elimina
-                if (!is_dir($fsPluginPath)) {
-                    mkdir($fsPluginPath, 0777, true);
-                }
-                echo "     - Copiando plugin actual a: " . $fsPluginPath . "\n";
-                self::copyDirectory($currentPluginPath, $fsPluginPath);
-            } else {
-                // plugin in FS is the same as the current one
-                echo "   - El plugin '" . $currentPluginName . "' ya está en su sitio en FacturaScripts y es el que se está probando. No se necesita copiar.\n";
+        } else if ($fsPluginPath !== $currentPluginPath) {
+            // la ruta del plugin no está en la carpeta Plugins de FacturaScripts
+            self::deleteDirectoryContents($fsPluginPath);
+            // Asegurarse de que el directorio base exista después de deleteDirectoryContents si este lo elimina
+            if (!is_dir($fsPluginPath)) {
+                mkdir($fsPluginPath, 0777, true);
             }
+            // copiamos el plugin a la carpeta Plugins
+            self::copyDirectory($currentPluginPath, $fsPluginPath);
         }
-        echo "=== Sincronización de plugin finalizada ===\n\n";
 
-        echo "Buscando carpetas de tests dentro de 'Test/'...\n";
         $foundTests = false;
         // recorremos las carpetas dentro de Test
         foreach (scandir('Test/') as $item) {
@@ -108,17 +95,21 @@ class RunTests
             $testSubFolder = 'Test' . DIRECTORY_SEPARATOR . $item;
             // si es una carpeta, la ejecutamos
             if (is_dir($testSubFolder)) {
-                echo "\n=== Procesando carpeta de tests: " . $testSubFolder . " ===\n";
                 self::runFolder($testSubFolder, $fs_folder);
                 $foundTests = true;
             }
         }
-
         if (!$foundTests) {
             echo "* No se encontraron subcarpetas con tests dentro de la carpeta 'Test'.\n";
         }
 
-        echo "\n=== Proceso de tests finalizado ===\n";
+        // eliminamos el plugin de la carpeta Plugins (si fuese necesario)
+        if ($fsPluginPath !== $currentPluginPath) {
+            self::deleteDirectoryContents($fsPluginPath);
+            if (is_dir($fsPluginPath)) {
+                rmdir($fsPluginPath);
+            }
+        }
     }
 
     /**
@@ -138,8 +129,6 @@ class RunTests
         // Definimos la carpeta destino dentro de la instalación de FacturaScripts
         $dest_folder = $fs_folder . 'Test' . DIRECTORY_SEPARATOR . 'Plugins';
 
-        echo "1. Preparando entorno de tests en FacturaScripts...\n";
-        echo "   - Limpiando directorio destino: " . $dest_folder . "\n";
         self::deleteDirectoryContents($dest_folder);
 
         // Creamos el directorio destino si no existe (deleteDirectoryContents no lo borra)
@@ -147,7 +136,6 @@ class RunTests
             mkdir($dest_folder, 0777, true);
         }
 
-        echo "   - Copiando archivos de tests desde: " . $test_folder . "\n";
         self::copyDirectory($test_folder, $dest_folder);
 
         // Guardamos el directorio actual para poder volver
@@ -165,9 +153,7 @@ class RunTests
             return;
         }
 
-        echo "2. Ejecutando script de instalación de plugins...\n";
         $installCommand = 'php Test' . DIRECTORY_SEPARATOR . 'install-plugins.php';
-        echo "   $ " . $installCommand . " (en " . $fs_folder . ")\n";
         passthru($installCommand, $installResult);
 
         if ($installResult !== 0) {
@@ -179,7 +165,6 @@ class RunTests
             return;
         }
 
-        echo "3. Ejecutando PHPUnit...\n";
         // Rutas relativas desde $fs_folder
         $phpunitPath = 'vendor' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'phpunit';
         $phpunitConfig = 'phpunit-plugins.xml'; // Archivo de config estándar en FS para tests de plugins
@@ -202,23 +187,12 @@ class RunTests
         }
 
         $phpunitCommand = $phpunitPath . ' -c ' . $phpunitConfig;
-        echo "   $ " . $phpunitCommand . " (en " . $fs_folder . ")\n";
-        passthru($phpunitCommand, $phpunitResult);
+        passthru($phpunitCommand);
 
-        if ($phpunitResult !== 0) {
-            echo "* PHPUnit finalizó con errores (Código de salida: " . $phpunitResult . ").\n";
-        } else {
-            echo "* PHPUnit finalizó correctamente.\n";
-        }
-
-        echo "4. Limpiando entorno de tests...\n";
-        echo "   - Limpiando directorio destino: " . $dest_folder . "\n";
         self::deleteDirectoryContents($dest_folder);
 
         // Volvemos al directorio original
         chdir($originalDir);
-
-        echo "=== Fin del procesamiento de: " . $test_folder . " ===\n";
     }
 
     /**

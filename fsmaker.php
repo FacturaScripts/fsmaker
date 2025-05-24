@@ -23,7 +23,7 @@ use fsmaker\ZipGenerator;
 
 final class fsmaker
 {
-    const VERSION = 1.4;
+    const VERSION = 1.5;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -74,7 +74,7 @@ final class fsmaker
                 break;
 
             case 'run-tests':
-                RunTests::run($argv[2]);
+                RunTests::run($argv[2] ?? '');
                 break;
 
             case 'test':
