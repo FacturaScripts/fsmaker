@@ -521,9 +521,9 @@ final class InitEditorTest extends TestCase
         //$staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
-        $detectValidInitFuntion = $reflection->getMethod('detectValidInitFuntion');
+        $detectValidInitFunction = $reflection->getMethod('detectValidInitFunction');
 
-        return $detectValidInitFuntion->invoke(null);
+        return $detectValidInitFunction->invoke(null);
     }
 
     private function putCodeLineInInitFunction(string $str, bool $bool, string $fileName): mixed
@@ -534,9 +534,9 @@ final class InitEditorTest extends TestCase
         //$staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
-        $putCodeLineInInitFunction = $reflection->getMethod('putCodeLineInInitFunction');
+        $addToInitFunction = $reflection->getMethod('addToInitFunction');
 
-        return $putCodeLineInInitFunction->invoke(null, $str, $bool);
+        return $addToInitFunction->invoke(null, $str, $bool);
     }
 
     private function putUseInstruction(string $str, string $fileName): mixed
@@ -547,9 +547,9 @@ final class InitEditorTest extends TestCase
         //$staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
-        $putUseInstruction = $reflection->getMethod('putUseInstruction');
+        $addUse = $reflection->getMethod('addUse');
 
-        return $putUseInstruction->invoke(null, $str);
+        return $addUse->invoke(null, $str);
     }
 
     private function getCurrentIndentation(string $str, int $indentEndPos): mixed
