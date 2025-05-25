@@ -474,7 +474,10 @@ final class InitEditorTest extends TestCase
         $filePath = __DIR__ . '/../res/src/InitEditorTest/' . $fileName;
 
         $contents = file_get_contents($filePath);
-        return is_string($contents) ? $contents : throw new Error('Cannot read ' . $filePath);
+        if (!is_string($contents)) {
+            throw new Error('Cannot read ' . $filePath);
+        }
+        return $contents;
     }
 
     private function removeSpaces(string $char): mixed
