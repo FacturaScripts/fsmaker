@@ -4,9 +4,10 @@
 
 use fsmaker\InitEditor;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\CoversClass;
 
-#[CoversClass(InitEditor::class)]
+/**
+ * @covers \fsmaker\InitEditor
+ */
 final class InitEditorTest extends TestCase
 {
     // Comprobar si detecta correctamente 1 existencia
@@ -507,14 +508,16 @@ final class InitEditorTest extends TestCase
 
     private function getRealStrPosFromNoSpaceStrPos(string $string, int $noSpacesPos, int $noSpaceWordsLength): mixed
     {
-        $getRealStrPosFromNoSpaceStrPos = new ReflectionClass(InitEditor::class)->getMethod('getRealStrPosFromNoSpaceStrPos');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $getRealStrPosFromNoSpaceStrPos = $reflection->getMethod('getRealStrPosFromNoSpaceStrPos');
 
         return $getRealStrPosFromNoSpaceStrPos->invoke(null, $string, $noSpacesPos, $noSpaceWordsLength);
     }
 
     private function getBracesAnalysis(string $str): mixed
     {
-        $getBracesAnalysis = new ReflectionClass(InitEditor::class)->getMethod('getBracesAnalysis');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $getBracesAnalysis = $reflection->getMethod('getBracesAnalysis');
 
         return $getBracesAnalysis->invoke(null, $str);
     }
@@ -560,14 +563,16 @@ final class InitEditorTest extends TestCase
 
     private function getCurrentIndentation(string $str, int $indentEndPos): mixed
     {
-        $getCurrentIndentation = new ReflectionClass(InitEditor::class)->getMethod('getCurrentIndentation');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $getCurrentIndentation = $reflection->getMethod('getCurrentIndentation');
 
         return $getCurrentIndentation->invoke(null, $str, $indentEndPos);
     }
 
     private function formatTextWithIndentation(string $str, string $indention): mixed
     {
-        $formatTextWithIndentation = new ReflectionClass(InitEditor::class)->getMethod('formatTextWithIndentation');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $formatTextWithIndentation = $reflection->getMethod('formatTextWithIndentation');
 
         return $formatTextWithIndentation->invoke(null, $str, $indention);
     }
