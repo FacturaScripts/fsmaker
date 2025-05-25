@@ -24,6 +24,6 @@
   "bin": ["bin/fsmaker"],
   "version": "1.4.2",
   "require-dev": {
-    "phpunit/phpunit": "^12"
+    "phpunit/phpunit": "^9.6 || ^10.5 || ^11.0 || ^12.0"
   }
 }

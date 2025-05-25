@@ -12,6 +12,15 @@ jobs:
     strategy:
       matrix:
         php-versions: ['8.0', '8.1', '8.2', '8.3']
+        include:
+          - php-versions: '8.0'
+            phpunit-version: '^9.6'
+          - php-versions: '8.1'
+            phpunit-version: '^10.5'
+          - php-versions: '8.2'
+            phpunit-version: '^10.5'
+          - php-versions: '8.3'
+            phpunit-version: '^12.0'
       fail-fast: false
         
     name: PHP ${{ matrix.php-versions }} Test
@@ -39,6 +48,7 @@ jobs:
           
     - name: Install dependencies
       run: |
+        composer require --no-update phpunit/phpunit ${{ matrix.phpunit-version }}
         composer update --no-interaction --prefer-dist
         composer install --prefer-dist --no-progress
       
