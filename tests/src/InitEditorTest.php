@@ -485,7 +485,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $removeSpaces = $reflection->getMethod('removeSpaces');
-        //$removeSpaces->setAccessible(true);
+        $removeSpaces->setAccessible(true);
 
         return $removeSpaces->invoke(null, $char);
     }
@@ -494,6 +494,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $removeSpaces = $reflection->getMethod('getSentenceMatches');
+        $removeSpaces->setAccessible(true);
 
         return $removeSpaces->invoke(null, $str, $sentence);
     }
@@ -502,6 +503,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $removeSpaces = $reflection->getMethod('isInvisibleChar');
+        $removeSpaces->setAccessible(true);
 
         return $removeSpaces->invoke(null, $char);
     }
@@ -510,6 +512,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $getRealStrPosFromNoSpaceStrPos = $reflection->getMethod('getRealStrPosFromNoSpaceStrPos');
+        $getRealStrPosFromNoSpaceStrPos->setAccessible(true);
 
         return $getRealStrPosFromNoSpaceStrPos->invoke(null, $string, $noSpacesPos, $noSpaceWordsLength);
     }
@@ -518,6 +521,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $getBracesAnalysis = $reflection->getMethod('getBracesAnalysis');
+        $getBracesAnalysis->setAccessible(true);
 
         return $getBracesAnalysis->invoke(null, $str);
     }
@@ -527,10 +531,11 @@ final class InitEditorTest extends TestCase
         $reflection = new ReflectionClass(InitEditor::class);
 
         $staticProperty = $reflection->getProperty('INIT_PATH');
-        //$staticProperty->setAccessible(true);
+        $staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
         $detectValidInitFunction = $reflection->getMethod('detectValidInitFunction');
+        $detectValidInitFunction->setAccessible(true);
 
         return $detectValidInitFunction->invoke(null);
     }
@@ -540,10 +545,11 @@ final class InitEditorTest extends TestCase
         $reflection = new ReflectionClass(InitEditor::class);
 
         $staticProperty = $reflection->getProperty('INIT_PATH');
-        //$staticProperty->setAccessible(true);
+        $staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
         $addToInitFunction = $reflection->getMethod('addToInitFunction');
+        $addToInitFunction->setAccessible(true);
 
         return $addToInitFunction->invoke(null, $str, $bool);
     }
@@ -553,10 +559,11 @@ final class InitEditorTest extends TestCase
         $reflection = new ReflectionClass(InitEditor::class);
 
         $staticProperty = $reflection->getProperty('INIT_PATH');
-        //$staticProperty->setAccessible(true);
+        $staticProperty->setAccessible(true);
         $staticProperty->setValue(null, __DIR__ . '/../res/src/InitEditorTest/' . $fileName);
 
         $addUse = $reflection->getMethod('addUse');
+        $addUse->setAccessible(true);
 
         return $addUse->invoke(null, $str);
     }
@@ -565,6 +572,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $getCurrentIndentation = $reflection->getMethod('getCurrentIndentation');
+        $getCurrentIndentation->setAccessible(true);
 
         return $getCurrentIndentation->invoke(null, $str, $indentEndPos);
     }
@@ -573,6 +581,7 @@ final class InitEditorTest extends TestCase
     {
         $reflection = new ReflectionClass(InitEditor::class);
         $formatTextWithIndentation = $reflection->getMethod('formatTextWithIndentation');
+        $formatTextWithIndentation->setAccessible(true);
 
         return $formatTextWithIndentation->invoke(null, $str, $indention);
     }
