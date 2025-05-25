@@ -482,7 +482,8 @@ final class InitEditorTest extends TestCase
 
     private function removeSpaces(string $char): mixed
     {
-        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('removeSpaces');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $removeSpaces = $reflection->getMethod('removeSpaces');
         //$removeSpaces->setAccessible(true);
 
         return $removeSpaces->invoke(null, $char);
@@ -490,14 +491,16 @@ final class InitEditorTest extends TestCase
 
     private function getSentenceMatches(string $str, string $sentence): mixed
     {
-        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('getSentenceMatches');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $removeSpaces = $reflection->getMethod('getSentenceMatches');
 
         return $removeSpaces->invoke(null, $str, $sentence);
     }
 
     private function isInvisibleChar(string $char): mixed
     {
-        $removeSpaces = new ReflectionClass(InitEditor::class)->getMethod('isInvisibleChar');
+        $reflection = new ReflectionClass(InitEditor::class);
+        $removeSpaces = $reflection->getMethod('isInvisibleChar');
 
         return $removeSpaces->invoke(null, $char);
     }
