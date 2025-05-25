@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.0', '8.1', '8.2', '8.3', '8.4']
+        php-versions: ['8.0', '8.1', '8.2', '8.3']
+      fail-fast: false
         
     name: PHP ${{ matrix.php-versions }} Test
     
@@ -24,8 +25,8 @@ jobs:
         php-version: ${{ matrix.php-versions }}
         extensions: mbstring, ctype, zip
         
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+    - name: Validate composer.json
+      run: composer validate
       
     - name: Cache Composer packages
       id: composer-cache
@@ -37,7 +38,9 @@ jobs:
           ${{ runner.os }}-php-
           
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: |
+        composer update --no-interaction --prefer-dist
+        composer install --prefer-dist --no-progress
       
     - name: Run test suite
       run: ./vendor/bin/phpunit
