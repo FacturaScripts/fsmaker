@@ -71,6 +71,16 @@ class RunTests
         $rawFsPluginPath = $fs_folder . 'Plugins' . DIRECTORY_SEPARATOR . $currentPluginName;
         $fsPluginPath = realpath($rawFsPluginPath);
 
+        // eliminamos el plugin de la carpeta Plugins (si fuese necesario)
+        if ($fsPluginPath !== $currentPluginPath) {
+            var_dump($fsPluginPath);
+            var_dump($currentPluginPath);
+            self::deleteDirectoryContents($fsPluginPath);
+            if (is_dir($fsPluginPath)) {
+                rmdir($fsPluginPath);
+            }
+        }
+
         if ($fsPluginPath === false) {
             // el plugin no existe en la carpeta de Plugins de FacturaScripts
             self::copyDirectory($currentPluginPath, $rawFsPluginPath);
@@ -101,15 +111,7 @@ class RunTests
         }
         if (!$foundTests) {
             echo "* No se encontraron subcarpetas con tests dentro de la carpeta 'Test'.\n";
-        }
-
-        // eliminamos el plugin de la carpeta Plugins (si fuese necesario)
-        if ($fsPluginPath !== $currentPluginPath) {
-            self::deleteDirectoryContents($fsPluginPath);
-            if (is_dir($fsPluginPath)) {
-                rmdir($fsPluginPath);
-            }
-        }
+        } 
     }
 
     /**
@@ -257,7 +259,10 @@ class RunTests
             );
 
             foreach ($iterator as $item) {
-                $destPath = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+                $sourcePath = $item->getPathname();
+                // Obtiene la ruta relativa al directorio source
+                $relativePath = substr($sourcePath, strlen($source) + 1);
+                $destPath = $dest . DIRECTORY_SEPARATOR . $relativePath;
                 try {
                     if ($item->isDir()) {
                         if (!is_dir($destPath)) {
