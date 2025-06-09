@@ -1,6 +1,6 @@
 <?php
 
-namespace FacturaScripts\Plugins\[[NAME_SPACE]]\Worker;
+namespace FacturaScripts\[[NAME_SPACE]]\Worker;
 
 use FacturaScripts\Core\Model\WorkEvent;
 use FacturaScripts\Core\Template\WorkerClass;
