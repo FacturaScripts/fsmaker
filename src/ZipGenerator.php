@@ -25,11 +25,10 @@ class ZipGenerator
             return;
         }
 
-        $customName = Utils::prompt("¿Cuál es el nombre del zip?, dejar en blanco para usar el nombre del plugin.\n");
-        if (empty($customName)) {
-            $zipName = $pluginName . '.zip';
-        } else {
-            $zipName = $customName . '.zip';
+        $zipName = $pluginName . '.zip';
+
+        if (file_exists($zipName)) {
+            unlink($zipName);
         }
 
         $zip = new ZipArchive();
