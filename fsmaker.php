@@ -23,7 +23,7 @@ use fsmaker\ZipGenerator;
 
 final class fsmaker
 {
-    const VERSION = 1.5;
+    const VERSION = 1.6;
     const OK = " -> OK.\n";
 
     public function __construct($argv)
@@ -607,7 +607,7 @@ final class fsmaker
         if (false === file_exists($txtFile)) {
             // Creamos el fichero install-plugins.txt con el nombre del plugin
             $ini = parse_ini_file('facturascripts.ini');
-            file_put_contents($txtFile, $ini['name']);
+            file_put_contents($txtFile, $ini['name'] ?? '');
             echo '* ' . $txtFile . self::OK;
         }
 

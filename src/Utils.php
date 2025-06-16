@@ -45,8 +45,12 @@ class Utils
             return 'Core';
         }
 
-        $ini = parse_ini_file('facturascripts.ini');
-        return 'Plugins\\' . $ini['name'];
+        if (self::isPluginFolder()) {
+            $ini = parse_ini_file('facturascripts.ini');
+            return 'Plugins\\' . ($ini['name'] ?? '');
+        }
+
+        return '';
     }
 
     public static function isCoreFolder(): bool
