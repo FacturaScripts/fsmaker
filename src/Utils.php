@@ -78,6 +78,14 @@ class Utils
         return $value;
     }
 
+    /**
+     * Convierte CamelCase/PascalCase en kebab-case.
+     */
+    public static function kebab(string $string): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $string));
+    }
+
     public static function setFolder(string $folder): void
     {
         self::$folder = $folder;

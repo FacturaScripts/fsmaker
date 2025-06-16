@@ -5,7 +5,7 @@ use FacturaScripts\Core\Template\CronJobClass;
 
 class [[NAME]] extends CronJobClass
 {
-    const JOB_NAME = '[[NAME]]';
+    const JOB_NAME = '[[JOB_NAME]]';
 
     public static function run(): void
     {

@@ -283,7 +283,9 @@ final class fsmaker
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/CronJob.php.sample");
-        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
+        $jobName = Utils::kebab($name);
+        $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[JOB_NAME]]'], [Utils::getNamespace(), $name, $jobName], $sample);
+
         file_put_contents($fileName, $template);
         echo '* ' . $fileName . self::OK;
         if (file_exists('Cron.php')) {
