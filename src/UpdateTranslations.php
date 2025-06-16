@@ -41,8 +41,11 @@ class UpdateTranslations
             return;
         }
 
-        // download json from facturascripts.com
+        // descargamos el json de facturascripts.com
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
+            // esperamos medio segundo entre peticiones
+            usleep(500000);
+
             echo "D " . $folder . $filename . ".json";
             $url = "https://facturascripts.com/EditLanguage?action=json&project=" . $project . "&code=" . $filename;
             $json = file_get_contents($url);
