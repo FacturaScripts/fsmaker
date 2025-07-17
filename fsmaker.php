@@ -23,7 +23,7 @@ use fsmaker\ZipGenerator;
 
 final class fsmaker
 {
-    const VERSION = 1.6;
+    const VERSION = 1.7;
     const OK = " -> OK.\n";
 
     public function __construct($argv)

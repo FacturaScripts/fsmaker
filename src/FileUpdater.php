@@ -350,7 +350,7 @@ final class FileUpdater
         $content = scandir($folder);
 
         // añadimos las carpetas excluidas
-        $excludeDir = array('.', '..', '.git', 'idea', 'vendor', 'node_modules');
+        $excludeDir = array('.', '..', '.git', '.idea', 'vendor', 'node_modules');
 
         // recorre la lista de archivos
         foreach ($content as $item) {
