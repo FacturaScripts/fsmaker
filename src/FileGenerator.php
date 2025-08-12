@@ -65,7 +65,7 @@ final class FileGenerator
 
         $sample = '<?php' . "\n\n"
             . 'namespace FacturaScripts\\' . $namespace . '\Model;' . "\n\n"
-            . "use FacturaScripts\Core\Template\ModelClass;\n\n"
+            . "use FacturaScripts\Core\Template\ModelClass;\n"
             . "use FacturaScripts\Core\Template\ModelTrait;\n"
             . "use FacturaScripts\Core\Tools;\n"
             . "use FacturaScripts\Core\Session;\n\n"
@@ -73,7 +73,7 @@ final class FileGenerator
             . "{\n"
             . '    use ModelTrait;' . "\n\n"
             . $properties
-            . "    public function clear() \n"
+            . "    public function clear(): void \n"
             . "    {\n"
             . "        parent::clear();\n"
             . $clear
