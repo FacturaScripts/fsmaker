@@ -132,7 +132,8 @@ final class FileUpdater
                 strpos($fileStr, 'fat ') === false &&
                 strpos($fileStr, 'fad ') === false &&
                 strpos($fileStr, 'HttpFoundation') === false &&
-                strpos($fileStr, 'FacturaScripts\Core\Base') === false
+                strpos($fileStr, 'FacturaScripts\Core\Base') === false &&
+                strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false
             ) {
                 continue;
             }
@@ -206,6 +207,10 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingLineHTML;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingModalHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingModalHTML;', $fileStr);
 
+            // reemplazamos modelos
+            $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
+            
             // reemplazamos contratos
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\CalculatorModInterface;', 'use FacturaScripts\Core\Contract\CalculatorModInterface;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\PurchasesLineModInterface;', 'use FacturaScripts\Core\Contract\PurchasesLineModInterface;', $fileStr);
