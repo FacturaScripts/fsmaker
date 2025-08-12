@@ -133,7 +133,8 @@ final class FileUpdater
                 strpos($fileStr, 'fad ') === false &&
                 strpos($fileStr, 'HttpFoundation') === false &&
                 strpos($fileStr, 'FacturaScripts\Core\Base') === false &&
-                strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false
+                strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false &&
+                strpos($fileStr, 'function clear()') === false
             ) {
                 continue;
             }
@@ -223,6 +224,9 @@ final class FileUpdater
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Response;', 'use FacturaScripts\Core\Response;', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Cookie;', '', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\File\UploadedFile;', 'use FacturaScripts\Core\UploadedFile;', $fileStr);
+
+            // reemplazamos Clear
+            $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
 
             if (strpos($fileStr, 'HttpFoundation\RedirectResponse') !== false && strpos($fileStr, 'FacturaScripts\Core\Response') !== false) {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', '', $fileStr);
