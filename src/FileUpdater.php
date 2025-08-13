@@ -24,6 +24,7 @@ final class FileUpdater
             '/([mp])r(-[0-5])/' => '$1e$2',
             '/no-gutters/' => 'g-0',
             '/"close"/' => '"btn-close"',
+            '/btn-block/' => 'w-100',
             '/left(-[0-9]*)/' => 'start$1',
             '/right(-[0-9]*)/' => 'end$1',
             '/(float|border|rounded|text)-left/' => '$1-start',
@@ -213,7 +214,7 @@ final class FileUpdater
             // reemplazamos modelos
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
-            
+
             // reemplazamos contratos
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\CalculatorModInterface;', 'use FacturaScripts\Core\Contract\CalculatorModInterface;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\PurchasesLineModInterface;', 'use FacturaScripts\Core\Contract\PurchasesLineModInterface;', $fileStr);
