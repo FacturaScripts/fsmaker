@@ -1,10 +1,10 @@
 name = '[[NAME]]'
 description = '[[NAME]]'
 version = 0.1
-min_version = 2024.93
+min_version = 2025
 
 ;Campos opcionales:
-;min_php = 7.4
+;min_php = 8.2
 ;require = 'TPVneo'
 ;require_php = 'soap'
 ;compatible = 'Tickets'

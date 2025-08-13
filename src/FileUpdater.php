@@ -362,6 +362,57 @@ final class FileUpdater
         }
     }
 
+    public static function upgradeIniFile(): void
+    {
+        $iniFile = 'facturascripts.ini';
+        
+        // verificamos que el archivo existe
+        if (false === file_exists($iniFile)) {
+            echo "* No se encontró el archivo facturascripts.ini.\n";
+            return;
+        }
+
+        // leemos el contenido del archivo
+        $fileContent = file_get_contents($iniFile);
+        
+        // parseamos el archivo ini para obtener los valores actuales
+        $iniArray = parse_ini_file($iniFile);
+        
+        // verificamos si ya tiene min_version definido
+        if (isset($iniArray['min_version'])) {
+            $currentMinVersion = (float) $iniArray['min_version'];
+            
+            // si ya es 2025 o superior, no hacemos nada
+            if ($currentMinVersion >= 2025) {
+                echo "* facturascripts.ini ya tiene min_version = " . $currentMinVersion . " (no requiere actualización).\n";
+                return;
+            }
+        }
+
+        // actualizamos min_version a 2025
+        $pattern = '/^(\s*min_version\s*=\s*)[\d\.]+(.*)$/m';
+        if (preg_match($pattern, $fileContent)) {
+            // si existe min_version, lo reemplazamos
+            $newContent = preg_replace($pattern, '${1}2025${2}', $fileContent);
+        } else {
+            // si no existe min_version, lo agregamos después de version
+            $versionPattern = '/^(\s*version\s*=\s*[\d\.]+.*\n)/m';
+            if (preg_match($versionPattern, $fileContent)) {
+                $newContent = preg_replace($versionPattern, '${1}min_version = 2025' . "\n", $fileContent);
+            } else {
+                // si no hay version, agregamos al final
+                $newContent = rtrim($fileContent) . "\nmin_version = 2025\n";
+            }
+        }
+
+        // guardamos el archivo actualizado
+        if (file_put_contents($iniFile, $newContent)) {
+            echo '* ' . $iniFile . self::OK;
+        } else {
+            echo "* Error al actualizar el archivo " . $iniFile . "\n";
+        }
+    }
+
     private static function getFilesByExtension(string $folder, string $extension, &$files = array()): array
     {
         // obtenemos la lista de archivos y carpetas
