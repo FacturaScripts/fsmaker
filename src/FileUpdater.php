@@ -195,7 +195,12 @@ final class FileUpdater
             $fileStr = str_replace($oldIcons, $newIcons, $fileStr);
 
             // reemplazamos Core/Base
-            $fileStr = str_replace('use FacturaScripts\Core\Base\Calculator;', 'use FacturaScripts\Core\Lib\Calculator;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingFooterHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingFooterHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingHeaderHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingHeaderHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingLineHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingModalHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingModalHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\CommonLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\CommonLineHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\CommonSalesPurchases;', 'use FacturaScripts\Core\Lib\AjaxForms\CommonSalesPurchases;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\PurchasesFooterHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\PurchasesFooterHTML;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\PurchasesHeaderHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\PurchasesHeaderHTML;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\PurchasesLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\PurchasesLineHTML;', $fileStr);
@@ -204,12 +209,9 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\SalesHeaderHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\SalesHeaderHTML;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\SalesLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\SalesLineHTML;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\SalesModalHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\SalesModalHTML;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\CommonLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\CommonLineHTML;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\CommonSalesPurchases;', 'use FacturaScripts\Core\Lib\AjaxForms\CommonSalesPurchases;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingFooterHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingFooterHTML;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingHeaderHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingHeaderHTML;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingLineHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingLineHTML;', $fileStr);
-            $fileStr = str_replace('use FacturaScripts\Core\Base\AjaxForms\AccountingModalHTML;', 'use FacturaScripts\Core\Lib\AjaxForms\AccountingModalHTML;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\Calculator;', 'use FacturaScripts\Core\Lib\Calculator;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\CronClass;', 'use FacturaScripts\Core\Template\CronClass;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Base\InitClass;', 'use FacturaScripts\Core\Template\InitClass;', $fileStr);
 
             // reemplazamos modelos
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
@@ -223,21 +225,21 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\SalesModInterface;', 'use FacturaScripts\Core\Contract\SalesModInterface;', $fileStr);
 
             // reemplazamos HttpFoundation
-            $fileStr = str_replace('use Symfony\Component\HttpFoundation\Request;', 'use FacturaScripts\Core\Request;', $fileStr);
-            $fileStr = str_replace('use Symfony\Component\HttpFoundation\Response;', 'use FacturaScripts\Core\Response;', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Cookie;', '', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\File\UploadedFile;', 'use FacturaScripts\Core\UploadedFile;', $fileStr);
-
-            // reemplazamos Clear
-            $namePlugin = Utils::findPluginName();
-            if (strpos($pathFile, "$namePlugin/Model/") !== false) {
-                $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
-            }
+            $fileStr = str_replace('use Symfony\Component\HttpFoundation\Request;', 'use FacturaScripts\Core\Request;', $fileStr);
+            $fileStr = str_replace('use Symfony\Component\HttpFoundation\Response;', 'use FacturaScripts\Core\Response;', $fileStr);
 
             if (strpos($fileStr, 'HttpFoundation\RedirectResponse') !== false && strpos($fileStr, 'FacturaScripts\Core\Response') !== false) {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', '', $fileStr);
             } else {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', 'use FacturaScripts\Core\Response;', $fileStr);
+            }
+
+            // reemplazamos Clear
+            $namePlugin = Utils::findPluginName();
+            if (strpos($pathFile, "$namePlugin/Model/") !== false) {
+                $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
             }
 
             // buscamos si tiene él use de Tools, si no lo añadimos
