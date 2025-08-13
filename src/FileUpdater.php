@@ -5,6 +5,8 @@
 
 namespace fsmaker;
 
+use FacturaScripts\Core\Tools;
+
 final class FileUpdater
 {
     const OK = " -> OK.\n";
@@ -226,7 +228,8 @@ final class FileUpdater
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\File\UploadedFile;', 'use FacturaScripts\Core\UploadedFile;', $fileStr);
 
             // reemplazamos Clear
-            if (strpos($fileStr, 'function clear():') === false && strpos($fileStr, 'function clear() :') === false) {
+            $namePlugin = Utils::findPluginName();
+            if (strpos($pathFile, $namePlugin . '/Model/') !== false) {
                 $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
             }
 
