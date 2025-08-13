@@ -220,7 +220,7 @@ final class FileGenerator
             return;
         }
 
-        $template = file_get_contents(__DIR__ . '/../samples/tests.yml.sample');
+        $template = file_get_contents(__DIR__ . '/../samples/github-action.yml.sample');
         $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
         if (file_put_contents($filePath, $content)) {
             echo '* ' . $filePath . self::OK;

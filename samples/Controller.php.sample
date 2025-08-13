@@ -2,7 +2,7 @@
 
 namespace FacturaScripts\[[NAME_SPACE]]\Controller;
 
-use FacturaScripts\Core\Base\Controller;
+use FacturaScripts\Core\Template\Controller;
 
 /**
  * Un controlador es básicamente una página o una opción del menú de FacturaScripts.
@@ -23,19 +23,9 @@ class [[NAME]] extends Controller
     /**
      * Ejecuta la lógica privada del controlador.
      */
-    public function privateCore(&$response, $user, $permissions): void
+    public function run(): void
     {
-        parent::privateCore($response, $user, $permissions);
-
-        // tu código aquí
-    }
-
-    /**
-     * Ejecuta la lógica pública del controlador.
-     */
-    public function publicCore(&$response): void
-    {
-        parent::publicCore($response);
+        parent::run();
 
         // tu código aquí
     }
