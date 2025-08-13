@@ -226,7 +226,9 @@ final class FileUpdater
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\File\UploadedFile;', 'use FacturaScripts\Core\UploadedFile;', $fileStr);
 
             // reemplazamos Clear
-            $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
+            if (strpos($fileStr, 'function clear():') === false && strpos($fileStr, 'function clear() :') === false) {
+                $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
+            }
 
             if (strpos($fileStr, 'HttpFoundation\RedirectResponse') !== false && strpos($fileStr, 'FacturaScripts\Core\Response') !== false) {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', '', $fileStr);
