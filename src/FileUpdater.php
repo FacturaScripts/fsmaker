@@ -5,8 +5,6 @@
 
 namespace fsmaker;
 
-use FacturaScripts\Core\Tools;
-
 final class FileUpdater
 {
     const OK = " -> OK.\n";
@@ -239,7 +237,10 @@ final class FileUpdater
             // reemplazamos Clear
             $namePlugin = Utils::findPluginName();
             if (strpos($pathFile, "$namePlugin/Model/") !== false) {
-                $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
+                // Solo añadir ": void" si no existe ya
+                if (strpos($fileStr, 'function clear(): void') === false) {
+                    $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
+                }
             }
 
             // buscamos si tiene él use de Tools, si no lo añadimos
