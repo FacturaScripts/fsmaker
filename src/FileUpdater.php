@@ -229,7 +229,7 @@ final class FileUpdater
 
             // reemplazamos Clear
             $namePlugin = Utils::findPluginName();
-            if (strpos($pathFile, $namePlugin . '/Model/') !== false) {
+            if (strpos($pathFile, "$namePlugin/Model/") !== false) {
                 $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
             }
 
@@ -385,7 +385,7 @@ final class FileUpdater
                 $info = pathinfo($rute);
                 if (isset($info['extension']) && strtolower($info['extension']) == strtolower($extension)) {
                     // agregar el archivo al array de resultados
-                    $files[] = $rute;
+                    $files[] = realpath($rute);
                 }
             }
         }
