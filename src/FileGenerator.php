@@ -195,4 +195,35 @@ final class FileGenerator
 
         file_put_contents($xmlFilename, $sample);
     }
+
+    public static function createGithubAction(): void
+    {
+        if(!Utils::isPluginFolder()){
+            echo '* No se encuentra en un plugin';
+            return;
+        }
+
+        $pluginName = Utils::findPluginName();
+        if (empty($pluginName)) {
+            echo '* No se pudo obtener el nombre del plugin';
+            return;
+        }
+
+        $filePath = ".github/workflows/tests.yml";
+        if (file_exists($filePath)) {
+            echo '* ' . $filePath . " YA EXISTE\n";
+            return;
+        }
+
+        if (false === Utils::createFolder(dirname($filePath))) {
+            echo '* No se pudo crear la carpeta ' . dirname($filePath);
+            return;
+        }
+
+        $template = file_get_contents(__DIR__ . '/../samples/tests.yml.sample');
+        $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
+        if (file_put_contents($filePath, $content)) {
+            echo '* ' . $filePath . self::OK;
+        }
+    }
 }

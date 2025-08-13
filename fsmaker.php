@@ -57,6 +57,10 @@ final class fsmaker
                 $this->createExtensionAction();
                 break;
 
+            case 'github-action':
+                FileGenerator::createGithubAction();
+                break;
+
             case 'gitignore':
                 FileGenerator::createGitIgnore();
                 break;
@@ -731,6 +735,7 @@ final class fsmaker
             . "$ fsmaker cron\n"
             . "$ fsmaker cronjob\n"
             . "$ fsmaker extension\n"
+            . "$ fsmaker github-action\n"
             . "$ fsmaker gitignore\n"
             . "$ fsmaker init\n"
             . "$ fsmaker model\n"
