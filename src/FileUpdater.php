@@ -214,6 +214,18 @@ final class FileUpdater
             // reemplazamos modelos
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
+            $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelOnChange;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
+            
+            // manejamos el caso especial de "use FacturaScripts\Core\Model\Base;"
+            if (strpos($fileStr, 'use FacturaScripts\Core\Model\Base;') !== false) {
+                // reemplazamos el use general por los uses específicos
+                $fileStr = str_replace('use FacturaScripts\Core\Model\Base;', "use FacturaScripts\Core\Template\ModelClass;\nuse FacturaScripts\Core\Template\ModelTrait;", $fileStr);
+                
+                // reemplazamos las referencias Base\ModelClass, Base\ModelTrait y Base\ModelOnChange
+                $fileStr = str_replace('Base\ModelClass', 'ModelClass', $fileStr);
+                $fileStr = str_replace('Base\ModelTrait', 'ModelTrait', $fileStr);
+                $fileStr = str_replace('Base\ModelOnChange', 'ModelClass', $fileStr);
+            }
 
             // reemplazamos contratos
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\CalculatorModInterface;', 'use FacturaScripts\Core\Contract\CalculatorModInterface;', $fileStr);
@@ -240,6 +252,45 @@ final class FileUpdater
                 // Solo añadir ": void" si no existe ya
                 if (strpos($fileStr, 'function clear(): void') === false) {
                     $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
+                }
+            }
+
+            // reemplazamos loadFromCode('', $where) por loadWhere($where)
+            $fileStr = preg_replace('/->loadFromCode\(\s*[\'\"]\s*\'\s*,\s*([^)]+)\)/', '->loadWhere($1)', $fileStr);
+            
+            // reemplazamos loadFromCode($code) por load($code)
+            $fileStr = str_replace('->loadFromCode($', '->load($', $fileStr);
+            
+            // reemplazamos $this->request->request->get('code', []) por $this->request->request->getArray('codes')
+            $fileStr = str_replace('$this->request->request->get(\'code\', [])', '$this->request->request->getArray(\'codes\')', $fileStr);
+            $fileStr = str_replace('$this->request->request->get("code", [])', '$this->request->request->getArray("codes")', $fileStr);
+            
+            // reemplazamos ->primaryColumnValue() por ->id()
+            $fileStr = str_replace('->primaryColumnValue()', '->id()', $fileStr);
+            
+            // reemplazamos $this->previousData['xxx'] por $this->getOriginal('xxx')
+            $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
+            
+            // reemplazamos protected function onChange($field) por protected function onChange(string $field): bool
+            $fileStr = str_replace('protected function onChange($field)', 'protected function onChange(string $field): bool', $fileStr);
+
+            // manejamos el archivo Init.php específicamente
+            if (basename($pathFile) === 'Init.php') {
+                // añadimos tipo de retorno void a init() y update()
+                $fileStr = preg_replace('/public function init\(\)(\s*)({)/', 'public function init(): void$1$2', $fileStr);
+                $fileStr = preg_replace('/public function update\(\)(\s*)({)/', 'public function update(): void$1$2', $fileStr);
+                
+                // verificamos si existe el método uninstall, si no lo añadimos
+                if (strpos($fileStr, 'function uninstall()') === false && strpos($fileStr, 'function uninstall(): void') === false) {
+                    // buscamos el final de la clase para añadir el método
+                    $lastBrace = strrpos($fileStr, '}');
+                    if ($lastBrace !== false) {
+                        $uninstallMethod = "\n\n    public function uninstall(): void\n    {\n        // código de desinstalación aquí\n    }\n";
+                        $fileStr = substr_replace($fileStr, $uninstallMethod, $lastBrace, 0);
+                    }
+                } else {
+                    // si existe, asegurar que tenga el tipo de retorno void
+                    $fileStr = str_replace('public function uninstall()', 'public function uninstall(): void', $fileStr);
                 }
             }
 
