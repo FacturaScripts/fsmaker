@@ -253,6 +253,9 @@ final class FileUpdater
                 if (strpos($fileStr, 'function clear(): void') === false) {
                     $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
                 }
+                
+                // reemplazamos self::$dataBase con self::db()
+                $fileStr = str_replace('self::$dataBase', 'self::db()', $fileStr);
             }
 
             // reemplazamos loadFromCode('', $where) por loadWhere($where)
