@@ -4,7 +4,6 @@ package-lock.json
 .DS_Store
 .htaccess
 composer.phar
-package-lock.json
 *.cache
 *.lock
 
