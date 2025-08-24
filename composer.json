@@ -22,7 +22,7 @@
     "ext-ctype": "*"
   },
   "bin": ["bin/fsmaker"],
-  "version": "1.8",
+  "version": "1.9",
   "require-dev": {
     "phpunit/phpunit": "^9.6"
   }
