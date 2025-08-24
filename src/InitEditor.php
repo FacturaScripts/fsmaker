@@ -33,7 +33,7 @@ class InitEditor
     public static function setInitContent(string $content): void
     {
         file_put_contents(self::$INIT_PATH, $content);
-        echo '* ' . self::$INIT_PATH . self::OK;
+        Utils::echo('* ' . self::$INIT_PATH . self::OK);
     }
 
     /**
@@ -76,7 +76,7 @@ class InitEditor
 
         // si algo va mal
         if (!$analysis['isValid']) {
-            echo $analysis['info'];
+            Utils::echo($analysis['info']);
             return null;
         }
 

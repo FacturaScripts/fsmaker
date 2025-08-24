@@ -117,10 +117,10 @@ final class fsmaker
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . $name . '.php';
         if (file_exists($fileName)) {
-            echo "* El controlador " . $name . " YA EXISTE.\n";
+            Utils::echo("* El controlador " . $name . " YA EXISTE.\n");
             return;
         } elseif (empty($name)) {
-            echo "* No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n";
+            Utils::echo("* No has introducido el nombre del controlador, por lo que no seguimos con su creación.\n");
             return;
         }
 
@@ -129,26 +129,26 @@ final class fsmaker
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         Utils::createFolder($filePath);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
 
         $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
         $viewFilename = $viewPath . $name . '.html.twig';
         Utils::createFolder($viewPath);
         if (file_exists($viewFilename)) {
-            echo '* ' . $viewFilename . " YA EXISTE.\n";
+            Utils::echo('* ' . $viewFilename . " YA EXISTE.\n");
             return;
         }
 
         $sample2 = file_get_contents(__DIR__ . "/samples/View.html.twig.sample");
         $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
         file_put_contents($viewFilename, $template2);
-        echo '* ' . $viewFilename . self::OK;
+        Utils::echo('* ' . $viewFilename . self::OK);
     }
 
     private function createControllerAction(): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -171,7 +171,7 @@ final class fsmaker
                 return;
         }
 
-        echo "Opción no válida.\n";
+        Utils::echo("Opción no válida.\n");
     }
 
     private function createEditController(string $modelName, array $fields): void
@@ -180,7 +180,7 @@ final class fsmaker
         $fileName = $filePath . 'Edit' . $modelName . '.php';
         Utils::createFolder($filePath);
         if (file_exists($fileName)) {
-            echo "El controlador " . $fileName . " YA EXISTE.\n";
+            Utils::echo("El controlador " . $fileName . " YA EXISTE.\n");
             return;
         } elseif (empty($modelName)) {
             return;
@@ -194,18 +194,18 @@ final class fsmaker
             $sample
         );
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'Edit' . $modelName . '.xml';
         Utils::createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
-            echo '* ' . $xmlFilename . " YA EXISTE\n";
+            Utils::echo('* ' . $xmlFilename . " YA EXISTE\n");
             return;
         }
 
         FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit');
-        echo '* ' . $xmlFilename . self::OK;
+        Utils::echo('* ' . $xmlFilename . self::OK);
     }
 
     private function createListController(string $modelName, array $fields): void
@@ -216,10 +216,10 @@ final class fsmaker
         $fileName = $filePath . 'List' . $modelName . '.php';
         Utils::createFolder($filePath);
         if (file_exists($fileName)) {
-            echo "* El controlador " . $fileName . " YA EXISTE.\n";
+            Utils::echo("* El controlador " . $fileName . " YA EXISTE.\n");
             return;
         } elseif (empty($modelName)) {
-            echo '* No introdujo el nombre del Controlador';
+            Utils::echo('* No introdujo el nombre del Controlador');
             return;
         }
 
@@ -230,49 +230,49 @@ final class fsmaker
             $sample
         );
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'List' . $modelName . '.xml';
         Utils::createFolder($xmlPath);
         if (file_exists($xmlFilename)) {
-            echo '* ' . $xmlFilename . " YA EXISTE\n";
+            Utils::echo('* ' . $xmlFilename . " YA EXISTE\n");
             return;
         }
 
         FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list');
-        echo '* ' . $xmlFilename . self::OK;
+        Utils::echo('* ' . $xmlFilename . self::OK);
     }
 
     private function createCron(string $name): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         $fileName = "Cron.php";
         if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
+            Utils::echo('* ' . $fileName . " YA EXISTE\n");
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/Cron.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createCronJob(): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         $name = Utils::prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
-            echo "* No introdujo el nombre del CronJob.\n";
+            Utils::echo("* No introdujo el nombre del CronJob.\n");
             return;
         }
 
@@ -282,7 +282,7 @@ final class fsmaker
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
+            Utils::echo('* ' . $fileName . " YA EXISTE\n");
             return;
         }
 
@@ -291,7 +291,7 @@ final class fsmaker
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[JOB_NAME]]'], [Utils::getNamespace(), $name, $jobName], $sample);
 
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
         if (file_exists('Cron.php')) {
             $this->updateCron($name);
         } else {
@@ -303,7 +303,7 @@ final class fsmaker
     private function createExtensionAction(): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -335,13 +335,13 @@ final class fsmaker
                 return;
         }
 
-        echo "* Opción no válida.\n";
+        Utils::echo("* Opción no válida.\n");
     }
 
     private function createExtensionController(string $name): void
     {
         if (empty($name)) {
-            echo "* No introdujo el nombre del controlador a extender.\n";
+            Utils::echo("* No introdujo el nombre del controlador a extender.\n");
             return;
         }
 
@@ -350,14 +350,14 @@ final class fsmaker
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
-            echo "* La extensión del controlador " . $name . " YA EXISTE.\n";
+            Utils::echo("* La extensión del controlador " . $name . " YA EXISTE.\n");
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/ExtensionController.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . "\n";
+        Utils::echo('* ' . $fileName . "\n");
 
         $newContent = InitEditor::addToInitFunction('$this->loadExtension(new Extension\Controller\\' . $name . '());');
         if ($newContent) {
@@ -368,7 +368,7 @@ final class fsmaker
     private function createExtensionModel(string $name): void
     {
         if (empty($name)) {
-            echo "* No introdujo el nombre del modelo a extender.\n";
+            Utils::echo("* No introdujo el nombre del modelo a extender.\n");
             return;
         }
 
@@ -377,14 +377,14 @@ final class fsmaker
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
-            echo "* La extensión del modelo " . $name . " YA EXISTE.\n";
+            Utils::echo("* La extensión del modelo " . $name . " YA EXISTE.\n");
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/ExtensionModel.php.sample");
         $template = str_replace(['[[NAME]]', '[[NAME_SPACE]]'], [$name, Utils::getNamespace()], $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . "\n";
+        Utils::echo('* ' . $fileName . "\n");
 
         $newContent = InitEditor::addToInitFunction(
             '$this->loadExtension(new Extension\Model\\' . $name . '());',
@@ -400,7 +400,7 @@ final class fsmaker
     private function createExtensionTable(string $name): void
     {
         if (empty($name)) {
-            echo "* No introdujo el nombre de la tabla a extender.\n";
+            Utils::echo("* No introdujo el nombre de la tabla a extender.\n");
             return;
         }
 
@@ -409,19 +409,19 @@ final class fsmaker
 
         $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
-            echo "* La extensión de la tabla " . $name . " YA EXISTE.\n";
+            Utils::echo("* La extensión de la tabla " . $name . " YA EXISTE.\n");
             return;
         }
 
         $fields = Column::askMulti(true);
         FileGenerator::createTableXmlByFields($fileName, $name, $fields);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createExtensionXMLView(string $name): void
     {
         if (empty($name)) {
-            echo "* No introdujo el nombre del XMLView a extender.\n";
+            Utils::echo("* No introdujo el nombre del XMLView a extender.\n");
             return;
         }
 
@@ -430,7 +430,7 @@ final class fsmaker
 
         $fileName = $folder . $name . '.xml';
         if (file_exists($fileName)) {
-            echo "* El fichero " . $fileName . " YA EXISTE.\n";
+            Utils::echo("* El fichero " . $fileName . " YA EXISTE.\n");
             return;
         }
 
@@ -443,13 +443,13 @@ final class fsmaker
 
         $fields = Column::askMulti(true);
         FileGenerator::createXMLViewByFields($fileName, $fields, $type, true);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createExtensionView(string $name): void
     {
         if (empty($name)) {
-            echo "* No introdujo el nombre de la vista a extender.\n";
+            Utils::echo("* No introdujo el nombre de la vista a extender.\n");
             return;
         }
 
@@ -458,37 +458,37 @@ final class fsmaker
 
         $fileName = $folder . $name . '.html.twig';
         if (file_exists($fileName)) {
-            echo "* El fichero " . $fileName . " YA EXISTE.\n";
+            Utils::echo("* El fichero " . $fileName . " YA EXISTE.\n");
             return;
         }
 
         file_put_contents($fileName, '');
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createInit(): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         $fileName = "Init.php";
         if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
+            Utils::echo('* ' . $fileName . " YA EXISTE\n");
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/Init.php.sample");
         $template = str_replace('[[NAME]]', Utils::findPluginName(), $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createModelAction(): void
     {
         if (false === Utils::isCoreFolder() && false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -514,30 +514,30 @@ final class fsmaker
         $fileName = $filePath . $name . '.php';
         Utils::createFolder($filePath);
         if (file_exists($fileName)) {
-            echo "* El modelo " . $name . " YA EXISTE.\n";
+            Utils::echo("* El modelo " . $name . " YA EXISTE.\n");
             return;
         }
 
         $fields = Column::askMulti();
         FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, Utils::getNamespace());
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
 
         $tablePath = Utils::isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         Utils::createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
             FileGenerator::createTableXmlByFields($tableFilename, $tableName, $fields);
-            echo '* ' . $tableFilename . self::OK;
+            Utils::echo('* ' . $tableFilename . self::OK);
         } else {
-            echo "\n" . '* ' . $tableFilename . " YA EXISTE";
+            Utils::echo("\n" . '* ' . $tableFilename . " YA EXISTE");
         }
 
-        echo "\n";
+        Utils::echo("\n");
         if (Utils::prompt('¿Crear EditController? 0=No (predeterminado), 1=Si') === '1') {
             $this->createEditController($name, $fields);
         }
 
-        echo "\n";
+        Utils::echo("\n");
         if (Utils::prompt('¿Crear ListController? 0=No (predeterminado), 1=Si') === '1') {
             $this->createListController($name, $fields);
         }
@@ -546,22 +546,22 @@ final class fsmaker
     private function createPluginAction(): void
     {
         if (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
-            echo "* No se puede crear un plugin en esta carpeta.\n";
+            Utils::echo("* No se puede crear un plugin en esta carpeta.\n");
             return;
         }
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
         $name = Utils::prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
         if (empty($name)) {
-            echo "* El plugin debe tener un nombre.\n";
+            Utils::echo("* El plugin debe tener un nombre.\n");
             return;
         } elseif (file_exists($name)) {
-            echo "* El plugin " . $name . " YA EXISTE.\n";
+            Utils::echo("* El plugin " . $name . " YA EXISTE.\n");
             return;
         }
 
         mkdir($name, 0755);
-        echo '* ' . $name . self::OK;
+        Utils::echo('* ' . $name . self::OK);
 
         $folders = [
             'Assets/CSS', 'Assets/Images', 'Assets/JS', 'Controller', 'Data/Codpais/ESP', 'Data/Lang/ES',
@@ -585,7 +585,7 @@ final class fsmaker
     private function createTestAction(): void
     {
         if (Utils::isCoreFolder() || false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -595,7 +595,7 @@ final class fsmaker
             'empezar por mayúscula y terminar en Test'
         );
         if (empty($name)) {
-            echo "* No introdujo el nombre del test o está mal escrito.\n";
+            Utils::echo("* No introdujo el nombre del test o está mal escrito.\n");
             return;
         }
 
@@ -603,7 +603,7 @@ final class fsmaker
         $fileName = $filePath . $name . '.php';
         Utils::createFolder($filePath);
         if (file_exists($fileName)) {
-            echo "* El test " . $name . " YA EXISTE.\n";
+            Utils::echo("* El test " . $name . " YA EXISTE.\n");
             return;
         }
 
@@ -612,20 +612,20 @@ final class fsmaker
             // Creamos el fichero install-plugins.txt con el nombre del plugin
             $ini = parse_ini_file('facturascripts.ini');
             file_put_contents($txtFile, $ini['name'] ?? '');
-            echo '* ' . $txtFile . self::OK;
+            Utils::echo('* ' . $txtFile . self::OK);
         }
 
         $sample = file_get_contents(__DIR__ . "/samples/Test.php.sample");
         $nameSpace = Utils::getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     private function createWorkerAction(): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -642,7 +642,7 @@ final class fsmaker
         $fileName = $filePath . $name . '.php';
         Utils::createFolder($filePath);
         if (file_exists($fileName)) {
-            echo "* El worker " . $name . " YA EXISTE.\n";
+            Utils::echo("* El worker " . $name . " YA EXISTE.\n");
             return;
         }
 
@@ -650,13 +650,13 @@ final class fsmaker
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         file_put_contents($fileName, $template);
 
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
         $input = Utils::prompt("¿Qué eventos debe escuchar el worker? 1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado");
         $options = $input ? explode(' ', $input) : [];
 
         // comprobamos si se han introducido opciones
         if (count($options) === 0) {
-            echo "* No se han introducido opciones.\n";
+            Utils::echo("* No se han introducido opciones.\n");
             return;
         }
 
@@ -671,13 +671,13 @@ final class fsmaker
         } elseif (in_array(6, $options)) {
             $event = Utils::prompt('Introduce el nombre del evento');
         } else {
-            echo "* Error(Input): Opción no válida.\n";
+            Utils::echo("* Error(Input): Opción no válida.\n");
             return;
         }
 
         // si el evento está vacío, no se ha introducido nada
         if (empty($event)) {
-            echo "* El evento no puede estar vacío.\n";
+            Utils::echo("* El evento no puede estar vacío.\n");
             return;
         }
 
@@ -715,7 +715,7 @@ final class fsmaker
                     break;
 
                 default:
-                    echo "* Error(Input): Opción no válida.\n";
+                    Utils::echo("* Error(Input): Opción no válida.\n");
                     return;
             }
 
@@ -727,7 +727,7 @@ final class fsmaker
 
     private function help(): void
     {
-        echo 'FacturaScripts Maker v' . self::VERSION . "\n\n"
+        Utils::echo('FacturaScripts Maker v' . self::VERSION . "\n\n"
             . "crear:\n"
             . "$ fsmaker plugin\n"
             . "$ fsmaker api\n"
@@ -748,7 +748,7 @@ final class fsmaker
             . "ejecutar:\n"
             . "$ fsmaker run-tests [ruta carpeta FacturaScripts]\n\n"
             . "comprimir:\n"
-            . "$ fsmaker zip\n\n";
+            . "$ fsmaker zip\n\n");
     }
 
     private function updateCron(string $name): void
@@ -774,16 +774,16 @@ final class fsmaker
             $usePosition = strpos($fileStr, ';', $usePosition) + 1;
             $fileStr = substr_replace($fileStr, "\nuse FacturaScripts\\$nameSpace\\CronJob\\$name;", $usePosition, 0);
             file_put_contents('Cron.php', $fileStr);
-            echo '* ' . 'Cron.php' . " actualizado con el nuevo CronJob.\n";
+            Utils::echo('* ' . 'Cron.php' . " actualizado con el nuevo CronJob.\n");
         } else {
-            echo "* No se encontró el método run() en " . 'Cron.php' . ".\n";
+            Utils::echo("* No se encontró el método run() en " . 'Cron.php' . ".\n");
         }
     }
 
     private function upgradeAction(): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -794,5 +794,9 @@ final class fsmaker
     }
 }
 
-$argv = $_SERVER['argv'] ?? [];
-new fsmaker($argv);
+// Only auto-execute if this file is run directly, not when required by tests
+if (!defined('PHPUNIT_COMPOSER_INSTALL') && !defined('__PHPUNIT_PHAR__') &&
+    basename($_SERVER['SCRIPT_FILENAME'] ?? '') === basename(__FILE__)) {
+    $argv = $_SERVER['argv'] ?? [];
+    new fsmaker($argv);
+}

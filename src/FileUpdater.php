@@ -12,7 +12,7 @@ final class FileUpdater
     public static function upgradeBootstrap5(): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -62,11 +62,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($phpFile, $updatedContent)) {
-                echo '* ' . $phpFile . self::OK;
+                Utils::echo('* ' . $phpFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $phpFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $phpFile . "\n");
         }
 
         // actualizamos los archivos twig
@@ -79,11 +79,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($twigFile, $updatedContent)) {
-                echo '* ' . $twigFile . self::OK;
+                Utils::echo('* ' . $twigFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $twigFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $twigFile . "\n");
         }
 
         // actualizamos los archivos js
@@ -96,11 +96,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($jsFile, $updatedContent)) {
-                echo '* ' . $jsFile . self::OK;
+                Utils::echo('* ' . $jsFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $jsFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $jsFile . "\n");
         }
     }
 
@@ -111,7 +111,7 @@ final class FileUpdater
 
         // si está vacía, salimos
         if (empty($pathFiles)) {
-            echo "* No se han encontrado archivos php.\n";
+            Utils::echo("* No se han encontrado archivos php.\n");
             return;
         }
 
@@ -339,11 +339,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($pathFile, $fileStr)) {
-                echo '* ' . $pathFile . self::OK;
+                Utils::echo('* ' . $pathFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $pathFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $pathFile . "\n");
         }
     }
 
@@ -354,7 +354,7 @@ final class FileUpdater
 
         // si está vacía, salimos
         if (empty($pathFiles)) {
-            echo "* No se han encontrado archivos html.twig.\n";
+            Utils::echo("* No se han encontrado archivos html.twig.\n");
             return;
         }
 
@@ -376,11 +376,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($pathFile, $fileStr)) {
-                echo '* ' . $pathFile . self::OK;
+                Utils::echo('* ' . $pathFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $pathFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $pathFile . "\n");
         }
     }
 
@@ -391,7 +391,7 @@ final class FileUpdater
 
         // si está vacía, salimos
         if (empty($pathFiles)) {
-            echo "* No se han encontrado archivos xml.\n";
+            Utils::echo("* No se han encontrado archivos xml.\n");
             return;
         }
 
@@ -412,11 +412,11 @@ final class FileUpdater
 
             // guardamos el archivo
             if (file_put_contents($pathFile, $fileStr)) {
-                echo '* ' . $pathFile . self::OK;
+                Utils::echo('* ' . $pathFile . self::OK);
                 continue;
             }
 
-            echo "* Error al guardar el archivo " . $pathFile . "\n";
+            Utils::echo("* Error al guardar el archivo " . $pathFile . "\n");
         }
     }
 
@@ -426,7 +426,7 @@ final class FileUpdater
 
         // verificamos que el archivo existe
         if (false === file_exists($iniFile)) {
-            echo "* No se encontró el archivo facturascripts.ini.\n";
+            Utils::echo("* No se encontró el archivo facturascripts.ini.\n");
             return;
         }
 
@@ -442,7 +442,7 @@ final class FileUpdater
 
             // si ya es 2025 o superior, no hacemos nada
             if ($currentMinVersion >= 2025) {
-                echo "* facturascripts.ini ya tiene min_version = " . $currentMinVersion . " (no requiere actualización).\n";
+                Utils::echo("* facturascripts.ini ya tiene min_version = " . $currentMinVersion . " (no requiere actualización).\n");
                 return;
             }
         }
@@ -465,9 +465,9 @@ final class FileUpdater
 
         // guardamos el archivo actualizado
         if (file_put_contents($iniFile, $newContent)) {
-            echo '* ' . $iniFile . self::OK;
+            Utils::echo('* ' . $iniFile . self::OK);
         } else {
-            echo "* Error al actualizar el archivo " . $iniFile . "\n";
+            Utils::echo("* Error al actualizar el archivo " . $iniFile . "\n");
         }
     }
 

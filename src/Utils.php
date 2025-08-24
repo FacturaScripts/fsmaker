@@ -10,6 +10,9 @@ class Utils
     /** @var string */
     private static $folder;
 
+    /** @var bool */
+    private static $silent = false;
+
     public static function createFolder(string $path): bool
     {
         if (empty($path) || file_exists($path)) {
@@ -17,7 +20,7 @@ class Utils
         }
 
         if (mkdir($path, 0755, true)) {
-            echo '* ' . $path . " -> OK.\n";
+            self::echo('* ' . $path . " -> OK.\n");
             return true;
         }
 
@@ -65,7 +68,7 @@ class Utils
 
     public static function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
     {
-        echo $label . ': ';
+        self::echo($label . ': ');
         $matches = [];
         $value = trim(fgets(STDIN));
 
@@ -75,7 +78,7 @@ class Utils
         }
 
         if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            echo "Valor no válido. Debe " . $pattern_explain . "\n";
+            self::echo("Valor no válido. Debe " . $pattern_explain . "\n");
             return '';
         }
 
@@ -93,5 +96,23 @@ class Utils
     public static function setFolder(string $folder): void
     {
         self::$folder = $folder;
+    }
+
+    /**
+     * Sets silent mode for output control (useful in tests).
+     */
+    public static function setSilent(bool $silent): void
+    {
+        self::$silent = $silent;
+    }
+
+    /**
+     * Outputs a message unless silent mode is enabled.
+     */
+    public static function echo(string $message): void
+    {
+        if (!self::$silent) {
+            echo $message;
+        }
     }
 }

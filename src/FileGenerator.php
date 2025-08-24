@@ -13,27 +13,27 @@ final class FileGenerator
     {
         $fileName = '.gitignore';
         if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
+            Utils::echo('* ' . $fileName . " YA EXISTE\n");
             return;
         }
 
         $template = file_get_contents(__DIR__ . "/../samples/gitignore.sample");
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     public static function createIni(string $name): void
     {
         $fileName = "facturascripts.ini";
         if (file_exists($fileName)) {
-            echo '* ' . $fileName . " YA EXISTE\n";
+            Utils::echo('* ' . $fileName . " YA EXISTE\n");
             return;
         }
 
         $sample = file_get_contents(__DIR__ . "/../samples/facturascripts.ini.sample");
         $template = str_replace('[[NAME]]', $name, $sample);
         file_put_contents($fileName, $template);
-        echo '* ' . $fileName . self::OK;
+        Utils::echo('* ' . $fileName . self::OK);
     }
 
     /**
@@ -198,32 +198,32 @@ final class FileGenerator
 
     public static function createGithubAction(): void
     {
-        if(!Utils::isPluginFolder()){
-            echo '* No se encuentra en un plugin';
+        if (!Utils::isPluginFolder()) {
+            Utils::echo('* No se encuentra en un plugin');
             return;
         }
 
         $pluginName = Utils::findPluginName();
         if (empty($pluginName)) {
-            echo '* No se pudo obtener el nombre del plugin';
+            Utils::echo('* No se pudo obtener el nombre del plugin');
             return;
         }
 
         $filePath = ".github/workflows/tests.yml";
         if (file_exists($filePath)) {
-            echo '* ' . $filePath . " YA EXISTE\n";
+            Utils::echo('* ' . $filePath . " YA EXISTE\n");
             return;
         }
 
         if (false === Utils::createFolder(dirname($filePath))) {
-            echo '* No se pudo crear la carpeta ' . dirname($filePath);
+            Utils::echo('* No se pudo crear la carpeta ' . dirname($filePath));
             return;
         }
 
         $template = file_get_contents(__DIR__ . '/../samples/github-action.yml.sample');
         $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
         if (file_put_contents($filePath, $content)) {
-            echo '* ' . $filePath . self::OK;
+            Utils::echo('* ' . $filePath . self::OK);
         }
     }
 }

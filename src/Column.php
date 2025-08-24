@@ -63,7 +63,7 @@ final class Column
             if ($type === 1) {
                 foreach ($previous as $column) {
                     if ($column->tipo === 'serial' || $column->primary) {
-                        echo "\nYa hay un campo de tipo serial o primary key.\n";
+                        Utils::echo("\nYa hay un campo de tipo serial o primary key.\n");
                         continue 2;
                     }
                 }
@@ -73,7 +73,7 @@ final class Column
                 break;
             }
 
-            echo "\nOpción incorrecta.\n";
+            Utils::echo("\nOpción incorrecta.\n");
         }
     }
 
@@ -133,7 +133,7 @@ final class Column
             }
 
             if (in_array($name, explode(',', self::FORBIDDEN_WORDS))) {
-                echo "\n" . self::FORBIDDEN_WORDS . " son nombres no permitidos.\n";
+                Utils::echo("\n" . self::FORBIDDEN_WORDS . " son nombres no permitidos.\n");
                 continue;
             }
 
@@ -430,7 +430,7 @@ final class Column
             return;
         }
 
-        echo "\nLongitud incorrecta. Se establecerá a 30.\n";
+        Utils::echo("\nLongitud incorrecta. Se establecerá a 30.\n");
         $this->longitud = 30;
     }
 
@@ -468,7 +468,7 @@ final class Column
         // indicamos que campo es la clave primaria
         while (true) {
             foreach ($fields as $index => $field) {
-                echo $index . " - " . $field->nombre . "\n";
+                Utils::echo($index . " - " . $field->nombre . "\n");
             }
 
             $pos = self::prompt('No estableció ninguna clave primaria, seleccione una de las anteriores', '/^[0-9]*$/');
@@ -503,7 +503,7 @@ final class Column
 
     private static function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
     {
-        echo $label . ': ';
+        Utils::echo($label . ': ');
         $matches = [];
         $value = trim(fgets(STDIN));
 
@@ -513,7 +513,7 @@ final class Column
         }
 
         if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            echo "Valor no válido. Debe " . $pattern_explain . "\n";
+            Utils::echo("Valor no válido. Debe " . $pattern_explain . "\n");
             return '';
         }
 

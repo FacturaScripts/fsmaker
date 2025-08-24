@@ -20,21 +20,21 @@ class RunTests
     public static function run(?string $fs_folder = null): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         // si no hay segundo parámetro o no es una ruta que exista, terminamos
         if (empty($fs_folder) || !is_dir($fs_folder)) {
-            echo "* Debes indicar como segundo parámetro la ruta a la carpeta de FacturasScripts.\n";
-            echo "* Ejemplo: fsmaker run-tests ../facturascripts\n";
+            Utils::echo("* Debes indicar como segundo parámetro la ruta a la carpeta de FacturasScripts.\n");
+            Utils::echo("* Ejemplo: fsmaker run-tests ../facturascripts\n");
             return;
         }
 
         // Aseguramos que la ruta sea absoluta y exista
         $fs_folder_realpath = realpath($fs_folder);
         if ($fs_folder_realpath === false) {
-            echo "* La ruta a FacturasScripts proporcionada no es válida o no existe: " . $fs_folder . "\n";
+            Utils::echo("* La ruta a FacturasScripts proporcionada no es válida o no existe: " . $fs_folder . "\n");
             return;
         }
         $fs_folder = $fs_folder_realpath;
@@ -46,22 +46,22 @@ class RunTests
 
         // comprobamos si es el core
         if (!file_exists($fs_folder . 'Core/Kernel.php')) {
-            echo "* La ruta indicada ('" . $fs_folder . "') no corresponde a una instalación de FacturasScripts. Falta el Kernel.\n";
+            Utils::echo("* La ruta indicada ('" . $fs_folder . "') no corresponde a una instalación de FacturasScripts. Falta el Kernel.\n");
             return;
         } elseif (!file_exists($fs_folder . 'config.php')) {
-            echo "* La ruta indicada ('" . $fs_folder . "') no corresponde a una instalación de FacturasScripts. Falta el config.php.\n";
+            Utils::echo("* La ruta indicada ('" . $fs_folder . "') no corresponde a una instalación de FacturasScripts. Falta el config.php.\n");
             return;
         }
 
         // comprobamos si tiene phpunit y la estructura de Tests necesaria
         if (!file_exists($fs_folder . 'Test/install-plugins.php') || !file_exists($fs_folder . 'vendor/bin/phpunit')) {
-            echo "* La instalación de FacturaScripts no contiene la carpeta Test completa o PHPUnit. Por favor, descarga FacturaScripts mediante git y ejecuta 'composer install' en su raíz.\n";
+            Utils::echo("* La instalación de FacturaScripts no contiene la carpeta Test completa o PHPUnit. Por favor, descarga FacturaScripts mediante git y ejecuta 'composer install' en su raíz.\n");
             return;
         }
 
         // si este plugin no tiene Tests, terminamos
         if (!is_dir('Test')) {
-            echo "* El plugin no tiene tests unitarios (carpeta 'Test') a ejecutar.\n";
+            Utils::echo("* El plugin no tiene tests unitarios (carpeta 'Test') a ejecutar.\n");
             return;
         }
 
@@ -100,7 +100,7 @@ class RunTests
             }
         }
         if (!$foundTests) {
-            echo "* No se encontraron subcarpetas con tests dentro de la carpeta 'Test'.\n";
+            Utils::echo("* No se encontraron subcarpetas con tests dentro de la carpeta 'Test'.\n");
         }
 
         // eliminamos el plugin de la carpeta Plugins (si fuese necesario)
@@ -122,7 +122,7 @@ class RunTests
     {
         // si no hay un archivo install-plugins.txt, terminamos
         if (!file_exists($test_folder . DIRECTORY_SEPARATOR . 'install-plugins.txt')) {
-            echo "* Falta el archivo " . $test_folder . DIRECTORY_SEPARATOR . "install-plugins.txt. Saltando esta carpeta.\n";
+            Utils::echo("* Falta el archivo " . $test_folder . DIRECTORY_SEPARATOR . "install-plugins.txt. Saltando esta carpeta.\n");
             return;
         }
 
@@ -141,13 +141,13 @@ class RunTests
         // Guardamos el directorio actual para poder volver
         $originalDir = getcwd();
         if ($originalDir === false) {
-            echo "* Error: No se pudo obtener el directorio de trabajo actual.\n";
+            Utils::echo("* Error: No se pudo obtener el directorio de trabajo actual.\n");
             return;
         }
 
         // Cambiamos al directorio de FacturaScripts para ejecutar los comandos
         if (!chdir($fs_folder)) {
-            echo "* Error: No se pudo cambiar al directorio de FacturaScripts: " . $fs_folder . "\n";
+            Utils::echo("* Error: No se pudo cambiar al directorio de FacturaScripts: " . $fs_folder . "\n");
             // Intentamos volver al directorio original por si acaso
             chdir($originalDir);
             return;
@@ -157,9 +157,9 @@ class RunTests
         passthru($installCommand, $installResult);
 
         if ($installResult !== 0) {
-            echo "* Error durante la ejecución de install-plugins.php (Código de salida: " . $installResult . ").\n";
+            Utils::echo("* Error durante la ejecución de install-plugins.php (Código de salida: " . $installResult . ").\n");
             // Limpiamos y volvemos al directorio original antes de salir
-            echo "   - Limpiando directorio destino: " . $dest_folder . "\n";
+            Utils::echo("   - Limpiando directorio destino: " . $dest_folder . "\n");
             self::deleteDirectoryContents($dest_folder);
             chdir($originalDir);
             return;
@@ -170,17 +170,17 @@ class RunTests
         $phpunitConfig = 'phpunit-plugins.xml'; // Archivo de config estándar en FS para tests de plugins
 
         if (!file_exists($phpunitPath)) {
-            echo "* Error: Ejecutable PHPUnit no encontrado en '" . $fs_folder . $phpunitPath . "'. Ejecuta 'composer install'.\n";
+            Utils::echo("* Error: Ejecutable PHPUnit no encontrado en '" . $fs_folder . $phpunitPath . "'. Ejecuta 'composer install'.\n");
             // Limpiamos y volvemos
-            echo "   - Limpiando directorio destino: " . $dest_folder . "\n";
+            Utils::echo("   - Limpiando directorio destino: " . $dest_folder . "\n");
             self::deleteDirectoryContents($dest_folder);
             chdir($originalDir);
             return;
         }
         if (!file_exists($phpunitConfig)) {
-            echo "* Error: Archivo de configuración '" . $phpunitConfig . "' no encontrado en '" . $fs_folder . "'.\n";
+            Utils::echo("* Error: Archivo de configuración '" . $phpunitConfig . "' no encontrado en '" . $fs_folder . "'.\n");
             // Limpiamos y volvemos
-            echo "   - Limpiando directorio destino: " . $dest_folder . "\n";
+            Utils::echo("   - Limpiando directorio destino: " . $dest_folder . "\n");
             self::deleteDirectoryContents($dest_folder);
             chdir($originalDir);
             return;
@@ -216,17 +216,17 @@ class RunTests
                 if ($file->isDir()) {
                     // Comprobamos si se puede borrar (puede fallar por permisos)
                     if (!@rmdir($file->getRealPath())) {
-                        echo "* Aviso: No se pudo eliminar el directorio: " . $file->getRealPath() . "\n";
+                        Utils::echo("* Aviso: No se pudo eliminar el directorio: " . $file->getRealPath() . "\n");
                     }
                 } else {
                     // Comprobamos si se puede borrar
                     if (!@unlink($file->getRealPath())) {
-                        echo "* Aviso: No se pudo eliminar el archivo: " . $file->getRealPath() . "\n";
+                        Utils::echo("* Aviso: No se pudo eliminar el archivo: " . $file->getRealPath() . "\n");
                     }
                 }
             }
         } catch (Exception $e) {
-            echo "* Error al intentar limpiar el directorio $dir: " . $e->getMessage() . "\n";
+            Utils::echo("* Error al intentar limpiar el directorio $dir: " . $e->getMessage() . "\n");
         }
     }
 
@@ -239,13 +239,13 @@ class RunTests
     private static function copyDirectory(string $source, string $dest): void
     {
         if (!is_dir($source)) {
-            echo "* Error: El directorio fuente no existe: $source\n";
+            Utils::echo("* Error: El directorio fuente no existe: $source\n");
             return;
         }
 
         if (!is_dir($dest)) {
             if (!mkdir($dest, 0777, true)) {
-                echo "* Error: No se pudo crear el directorio destino: $dest\n";
+                Utils::echo("* Error: No se pudo crear el directorio destino: $dest\n");
                 return;
             }
         }
@@ -262,24 +262,24 @@ class RunTests
                     if ($item->isDir()) {
                         if (!is_dir($destPath)) {
                             if (!mkdir($destPath, 0777, true)) {
-                                echo "* Error: No se pudo crear el subdirectorio destino: $destPath\n";
+                                Utils::echo("* Error: No se pudo crear el subdirectorio destino: $destPath\n");
                                 // Podríamos optar por parar aquí o continuar con otros archivos
                                 continue;
                             }
                         }
                     } else {
                         if (!copy($item->getRealPath(), $destPath)) {
-                            echo "* Error: No se pudo copiar el archivo: " . $item->getRealPath() . " a " . $destPath . "\n";
+                            Utils::echo("* Error: No se pudo copiar el archivo: " . $item->getRealPath() . " a " . $destPath . "\n");
                             // Continuar con otros archivos
                             continue;
                         }
                     }
                 } catch (Exception $e) {
-                    echo "* Error al procesar " . ($item->isDir() ? "directorio" : "archivo") . " " . $item->getRealPath() . ": " . $e->getMessage() . "\n";
+                    Utils::echo("* Error al procesar " . ($item->isDir() ? "directorio" : "archivo") . " " . $item->getRealPath() . ": " . $e->getMessage() . "\n");
                 }
             }
         } catch (Exception $e) {
-            echo "* Error al intentar copiar el directorio $source a $dest: " . $e->getMessage() . "\n";
+            Utils::echo("* Error al intentar copiar el directorio $source a $dest: " . $e->getMessage() . "\n");
         }
     }
 }

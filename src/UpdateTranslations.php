@@ -16,7 +16,7 @@ class UpdateTranslations
                 $name . '/Translation/' . $filename . '.json',
                 '{"' . strtolower($name) . '": "' . $name . '"}'
             );
-            echo '* ' . $name . '/Translation/' . $filename . ".json -> OK.\n";
+            Utils::echo('* ' . $name . '/Translation/' . $filename . ".json -> OK.\n");
         }
     }
 
@@ -32,12 +32,12 @@ class UpdateTranslations
             Utils::createFolder($folder);
             $project = 'CORE';
         } else {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         if (empty($project)) {
-            echo "Proyecto desconocido.\n";
+            Utils::echo("Proyecto desconocido.\n");
             return;
         }
 
@@ -46,16 +46,16 @@ class UpdateTranslations
             // esperamos medio segundo entre peticiones
             usleep(500000);
 
-            echo "D " . $folder . $filename . ".json";
+            Utils::echo("D " . $folder . $filename . ".json");
             $url = "https://facturascripts.com/EditLanguage?action=json&project=" . $project . "&code=" . $filename;
             $json = file_get_contents($url);
             if (!empty($json) && strlen($json) > 10) {
                 file_put_contents($folder . $filename . '.json', $json);
-                echo "\n";
+                Utils::echo("\n");
                 continue;
             }
 
-            echo " - vacío\n";
+            Utils::echo(" - vacío\n");
         }
     }
 }

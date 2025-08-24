@@ -14,14 +14,14 @@ class ZipGenerator
     public static function generate(): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
         $ini = parse_ini_file('facturascripts.ini');
         $pluginName = $ini['name'] ?? '';
         if (empty($pluginName)) {
-            echo "* No se ha encontrado el nombre del plugin.\n";
+            Utils::echo("* No se ha encontrado el nombre del plugin.\n");
             return;
         }
 
@@ -33,7 +33,7 @@ class ZipGenerator
 
         $zip = new ZipArchive();
         if (true !== $zip->open($zipName, ZipArchive::CREATE)) {
-            echo "* Error al crear el archivo zip.\n";
+            Utils::echo("* Error al crear el archivo zip.\n");
             return;
         }
 
@@ -74,6 +74,6 @@ class ZipGenerator
         }
 
         $zip->close();
-        echo "* " . $zipName . " -> OK.\n";
+        Utils::echo("* " . $zipName . " -> OK.\n");
     }
 }

@@ -10,7 +10,7 @@ class ApiGenerator
     public static function generate(): void
     {
         if (false === Utils::isPluginFolder()) {
-            echo "* Esta no es la carpeta raíz del plugin.\n";
+            Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return;
         }
 
@@ -23,7 +23,7 @@ class ApiGenerator
         if (empty($name)) {
             return;
         } elseif (file_exists($file_path)) {
-            echo "* El controlador " . $name . " YA EXISTE.\n";
+            Utils::echo("* El controlador " . $name . " YA EXISTE.\n");
             return;
         }
 
@@ -40,7 +40,7 @@ class ApiGenerator
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         Utils::createFolder('Controller');
         file_put_contents($file_path, $template);
-        echo '* ' . $file_path . " -> OK.\n";
+        Utils::echo('* ' . $file_path . " -> OK.\n");
 
         $use = "use FacturaScripts\Core\Controller\ApiRoot;\n"
             . "use FacturaScripts\Core\Kernel;";
