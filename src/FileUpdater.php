@@ -215,12 +215,12 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelOnChange;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
-            
+
             // manejamos el caso especial de "use FacturaScripts\Core\Model\Base;"
             if (strpos($fileStr, 'use FacturaScripts\Core\Model\Base;') !== false) {
                 // reemplazamos el use general por los uses específicos
                 $fileStr = str_replace('use FacturaScripts\Core\Model\Base;', "use FacturaScripts\Core\Template\ModelClass;\nuse FacturaScripts\Core\Template\ModelTrait;", $fileStr);
-                
+
                 // reemplazamos las referencias Base\ModelClass, Base\ModelTrait y Base\ModelOnChange
                 $fileStr = str_replace('Base\ModelClass', 'ModelClass', $fileStr);
                 $fileStr = str_replace('Base\ModelTrait', 'ModelTrait', $fileStr);
@@ -253,27 +253,27 @@ final class FileUpdater
                 if (strpos($fileStr, 'function clear(): void') === false) {
                     $fileStr = str_replace('function clear()', 'function clear(): void', $fileStr);
                 }
-                
-                // reemplazamos self::$dataBase con self::db()
-                $fileStr = str_replace('self::$dataBase', 'self::db()', $fileStr);
+
+                // reemplazamos self::$dataBase y static::$dataBase con static::db()
+                $fileStr = str_replace(['self::$dataBase', 'static::$dataBase'], 'static::db()', $fileStr);
             }
 
             // reemplazamos loadFromCode('', $where) por loadWhere($where)
             $fileStr = preg_replace('/->loadFromCode\(\s*[\'\"]\s*\'\s*,\s*([^)]+)\)/', '->loadWhere($1)', $fileStr);
-            
+
             // reemplazamos loadFromCode($code) por load($code)
             $fileStr = str_replace('->loadFromCode($', '->load($', $fileStr);
-            
+
             // reemplazamos $this->request->request->get('code', []) por $this->request->request->getArray('codes')
             $fileStr = str_replace('$this->request->request->get(\'code\', [])', '$this->request->request->getArray(\'codes\')', $fileStr);
             $fileStr = str_replace('$this->request->request->get("code", [])', '$this->request->request->getArray("codes")', $fileStr);
-            
+
             // reemplazamos ->primaryColumnValue() por ->id()
             $fileStr = str_replace('->primaryColumnValue()', '->id()', $fileStr);
-            
+
             // reemplazamos $this->previousData['xxx'] por $this->getOriginal('xxx')
             $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
-            
+
             // reemplazamos protected function onChange($field) por protected function onChange(string $field): bool
             $fileStr = str_replace('protected function onChange($field)', 'protected function onChange(string $field): bool', $fileStr);
 
@@ -282,7 +282,7 @@ final class FileUpdater
                 // añadimos tipo de retorno void a init() y update()
                 $fileStr = preg_replace('/public function init\(\)(\s*)({)/', 'public function init(): void$1$2', $fileStr);
                 $fileStr = preg_replace('/public function update\(\)(\s*)({)/', 'public function update(): void$1$2', $fileStr);
-                
+
                 // verificamos si existe el método uninstall, si no lo añadimos
                 if (strpos($fileStr, 'function uninstall()') === false && strpos($fileStr, 'function uninstall(): void') === false) {
                     // buscamos el final de la clase para añadir el método
@@ -419,7 +419,7 @@ final class FileUpdater
     public static function upgradeIniFile(): void
     {
         $iniFile = 'facturascripts.ini';
-        
+
         // verificamos que el archivo existe
         if (false === file_exists($iniFile)) {
             echo "* No se encontró el archivo facturascripts.ini.\n";
@@ -428,14 +428,14 @@ final class FileUpdater
 
         // leemos el contenido del archivo
         $fileContent = file_get_contents($iniFile);
-        
+
         // parseamos el archivo ini para obtener los valores actuales
         $iniArray = parse_ini_file($iniFile);
-        
+
         // verificamos si ya tiene min_version definido
         if (isset($iniArray['min_version'])) {
-            $currentMinVersion = (float) $iniArray['min_version'];
-            
+            $currentMinVersion = (float)$iniArray['min_version'];
+
             // si ya es 2025 o superior, no hacemos nada
             if ($currentMinVersion >= 2025) {
                 echo "* facturascripts.ini ya tiene min_version = " . $currentMinVersion . " (no requiere actualización).\n";
