@@ -8,7 +8,6 @@
 Herramienta de creación y actualización de plugins para FacturaScripts.
 
 - 🌐 **Web oficial**: https://facturascripts.com/fsmaker
-- 📦 **Versión**: 1.7
 
 ## 📥 Instalación
 
