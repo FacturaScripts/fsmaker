@@ -275,8 +275,12 @@ final class FileUpdater
             $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
 
             // reemplazamos llamadas al método all() con 3 parámetros añadiendo el 4º parámetro (50)
-            $fileStr = preg_replace('/->all\(([^,]+),\s*([^,]+),\s*([^)]+)\)/', '->all($1, $2, $3, 50)', $fileStr);
-            $fileStr = preg_replace('/::all\(([^,]+),\s*([^,]+),\s*([^)]+)\)/', '::all($1, $2, $3, 50)', $fileStr);
+            // añade ", 50" solo cuando hay exactamente 3 argumentos
+            $fileStr = preg_replace(
+                '/(->|::)all\(\s*([^,()]+)\s*,\s*([^,()]+)\s*,\s*([^,()]+)\s*\)/',
+                '$1all($2, $3, $4, 50)',
+                $fileStr
+            );
 
             // reemplazamos protected function onChange($field) por protected function onChange(string $field): bool
             $fileStr = str_replace('protected function onChange($field)', 'protected function onChange(string $field): bool', $fileStr);
