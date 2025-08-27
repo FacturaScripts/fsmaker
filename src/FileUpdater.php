@@ -52,6 +52,11 @@ final class FileUpdater
         $twigFiles = self::getFilesByExtension('.', 'twig');
         $jsFiles = self::getFilesByExtension('.', 'js');
 
+        // filtramos archivos que no queremos procesar
+        $phpFiles = self::filterTableFiles($phpFiles);
+        $twigFiles = self::filterTableFiles($twigFiles);
+        $jsFiles = self::filterTableFiles($jsFiles);
+
         // actualizamos los archivos php
         foreach ($phpFiles as $phpFile) {
             // leemos el contenido del archivo
@@ -508,5 +513,18 @@ final class FileUpdater
         }
 
         return $files;
+    }
+
+    private static function filterTableFiles(array $files): array
+    {
+        return array_filter($files, function ($file) {
+            // convertir a ruta relativa para verificar más fácilmente
+            $relativePath = str_replace(realpath('.') . DIRECTORY_SEPARATOR, '', $file);
+            $relativePath = str_replace('\\', '/', $relativePath);
+
+            // excluir archivos en carpetas Table y Extension/Table
+            return !preg_match('#(^|/)Table/#', $relativePath) &&
+                !preg_match('#(^|/)Extension/Table/#', $relativePath);
+        });
     }
 }
