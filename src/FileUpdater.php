@@ -297,8 +297,10 @@ final class FileUpdater
                 }
             }
 
-            // buscamos si tiene él use de Tools, si no lo añadimos
-            if (strpos($fileStr, 'use FacturaScripts\Core\Tools;') === false) {
+            // buscamos si se está usando la clase Tools y si la usa, añadimos el use de Tools
+            $classToolIsUsed = str_contains($fileStr, 'Tools::');
+            $useToolIsPresent = str_contains($fileStr, 'use FacturaScripts\Core\Tools;');
+            if ($classToolIsUsed && !$useToolIsPresent) {
 
                 // pueden existir varios use, obtenemos todos los use del core
                 $uses = [];
@@ -326,10 +328,10 @@ final class FileUpdater
 
                 // si la posición del use de Tools es 0, añadimos él use después del namespace
                 if ($pos === 0) {
-                    $fileStr = str_replace($namespace, $namespace . "\n\n" . $uses[$pos] . "\n", $fileStr);
+                    $fileStr = str_replace($namespace, $namespace . "\n\n" . $uses[$pos], $fileStr);
                 } else {
                     // si la posición es mayor que 0, añadimos él use antes de la posición obtenida
-                    $fileStr = str_replace($uses[$pos - 1], $uses[$pos - 1] . "\n" . $uses[$pos] . "\n", $fileStr);
+                    $fileStr = str_replace($uses[$pos - 1], $uses[$pos - 1] . "\n" . $uses[$pos], $fileStr);
                 }
             }
 
