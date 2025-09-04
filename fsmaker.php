@@ -543,7 +543,7 @@ final class fsmaker
         }
     }
 
-    private function createPluginAction(): void
+    public function createPluginAction(): void
     {
         if (file_exists('.git') || file_exists('.gitignore') || file_exists('facturascripts.ini')) {
             Utils::echo("* No se puede crear un plugin en esta carpeta.\n");
