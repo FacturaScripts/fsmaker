@@ -551,7 +551,25 @@ final class fsmaker
         }
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
-        $name = Utils::prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
+        // promptear por el nombre del controlador y validar que sea un nombre válido
+        $name = text(
+            'Nombre del plugin',
+            'Ej: MiPlugin',
+            '',
+            true,
+            function ($value) {
+                $matches = [];
+                if (1 !== preg_match('/^[A-Z][a-zA-Z0-9_]*$/', $value, $matches)) {
+                    // si no es válido entonces devolver el porqué no es válido
+                    return "Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.";
+                }
+
+                // si es válido devolver null
+                return null;
+            },
+            'El nombre del plugin debe empezar por mayúscula, sin espacios y sin caracteres especiales.'
+        );
+
         if (empty($name)) {
             Utils::echo("* El plugin debe tener un nombre.\n");
             return;
