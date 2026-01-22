@@ -1,0 +1,29 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Mod;
+
+use FacturaScripts\Core\Contract\SalesModInterface;
+use FacturaScripts\Core\Model\Base\SalesDocument;
+use FacturaScripts\Core\Model\User;
+
+class SalesHeaderHTMLMod implements SalesModInterface
+{
+    /**
+     * @param SalesDocument $model
+     * @param array $formData
+     * @param User $user
+     */
+    public function apply(SalesDocument &$model, array $formData, User $user)
+    {
+    }
+
+    /**
+     * @param SalesDocument $model
+     * @param array $formData
+     * @param User $user
+     */
+    public function applyBefore(SalesDocument &$model, array $formData, User $user)
+    {
+    }
+}
+

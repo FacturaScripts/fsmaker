@@ -243,6 +243,21 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\SalesLineModInterface;', 'use FacturaScripts\Core\Contract\SalesLineModInterface;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\SalesModInterface;', 'use FacturaScripts\Core\Contract\SalesModInterface;', $fileStr);
 
+            // normalizamos firmas de mods para ventas y compras
+            $signaturePatterns = [
+                '/(public\s+(?:static\s+)?function\s+apply\s*\(\s*SalesDocument\s*&?\s*\$model\s*,\s*array\s*&?\s*\$formData(?:\s*=\s*[^,\)]*)?)\s*,\s*User\s*\$user(?:\s*=\s*[^,\)]*)?\s*\)(\s*:\s*void)?/i' => '$1): void',
+                '/(public\s+(?:static\s+)?function\s+applyBefore\s*\(\s*SalesDocument\s*&?\s*\$model\s*,\s*array\s*&?\s*\$formData(?:\s*=\s*[^,\)]*)?)\s*,\s*User\s*\$user(?:\s*=\s*[^,\)]*)?\s*\)(\s*:\s*void)?/i' => '$1): void',
+                '/(public\s+(?:static\s+)?function\s+apply\s*\(\s*PurchaseDocument\s*&?\s*\$model\s*,\s*array\s*&?\s*\$formData(?:\s*=\s*[^,\)]*)?)\s*,\s*User\s*\$user(?:\s*=\s*[^,\)]*)?\s*\)(\s*:\s*void)?/i' => '$1): void',
+                '/(public\s+(?:static\s+)?function\s+applyBefore\s*\(\s*PurchaseDocument\s*&?\s*\$model\s*,\s*array\s*&?\s*\$formData(?:\s*=\s*[^,\)]*)?)\s*,\s*User\s*\$user(?:\s*=\s*[^,\)]*)?\s*\)(\s*:\s*void)?/i' => '$1): void',
+            ];
+
+            foreach ($signaturePatterns as $pattern => $replacement) {
+                $fileStr = preg_replace($pattern, $replacement, $fileStr);
+            }
+
+            // eliminamos referencias de phpdoc al parámetro User
+            $fileStr = preg_replace('/^\s*\*\s*@param\s+User\s+\$user[^\n\r]*\R/m', '', $fileStr);
+
             // reemplazamos HttpFoundation
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Cookie;', '', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\File\UploadedFile;', 'use FacturaScripts\Core\UploadedFile;', $fileStr);
