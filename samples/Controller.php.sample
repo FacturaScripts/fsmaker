@@ -27,6 +27,8 @@ class [[NAME]] extends Controller
     {
         parent::run();
 
+        $this->view('[[NAME]].html.twig');
+
         // tu código aquí
     }
 }
