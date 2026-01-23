@@ -6,6 +6,8 @@
 
 namespace fsmaker;
 
+use function Laravel\Prompts\select;
+
 final class Column
 {
     const FORBIDDEN_WORDS = 'action,activetab,code';
@@ -49,16 +51,24 @@ final class Column
     public function ask(array $previous): void
     {
         while (true) {
-            $type = (int)self::prompt("Elija el tipo de campo\n"
-                . "1 = serial (autonumérico, ideal para ids)\n"
-                . "2 = integer\n"
-                . "3 = float\n"
-                . "4 = boolean\n"
-                . "5 = character varying\n"
-                . "6 = text\n"
-                . "7 = timestamp\n"
-                . "8 = date\n"
-                . "9 = time\n");
+            $type = (int)select(
+                label: 'Elija el tipo de campo',
+                options: [
+                    // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                    '1' => 'serial (autonumérico, ideal para ids)',
+                    '2' => 'integer',
+                    '3' => 'float',
+                    '4' => 'boolean',
+                    '5' => 'character varying',
+                    '6' => 'text',
+                    '7' => 'timestamp',
+                    '8' => 'date',
+                    '9' => 'time'
+                ],
+                default: '1',
+                scroll: 9, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+                required: true
+            );
 
             if ($type === 1) {
                 foreach ($previous as $column) {
@@ -73,6 +83,7 @@ final class Column
                 break;
             }
 
+            // linea unreachable
             Utils::echo("\nOpción incorrecta.\n");
         }
     }
@@ -83,8 +94,18 @@ final class Column
 
         // si estamos en una extensión, no preguntamos por los campos por defecto
         if (false === $extension) {
-            $prompt = self::prompt("¿Desea crear los campos habituales (id, creation_date, last_update, nick,"
-                . " last_nick)? 0=No (predeterminado), 1=SI");
+            $prompt = select(
+                label: '¿Desea crear los campos habituales? (Por defecto \'No\')',
+                options: [
+                    // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                    '0' => 'No',
+                    '1' => 'Si'
+                ],
+                default: '0',
+                scroll: 3, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+                hint: 'Los campos habituales son: id, creation_date, last_update, nick, last_nick',
+                required: true
+            );
             if ($prompt === '1') {
                 $fields[] = new Column([
                     'display' => 'none',
@@ -125,11 +146,16 @@ final class Column
         }
 
         while (true) {
-            $name = self::prompt("\nNombre del campo (vacío para terminar)", '/^[a-z][a-z0-9_]*$/', 'empezar por letra, solo minúsculas, números o guiones bajos');
-            if (is_null($name)) {
+            $name = Utils::promptStringWithRegex(
+                label: 'Nombre del del campo (vacío para terminar)',
+                placeholder: 'Dejar vacío o Ej: email',
+                hint: 'El nombre del campo debe empezar por letra, solo minúsculas, números o guiones bajos.',
+                regex: '/^[a-z][a-z0-9_]*$/',
+                errorMessage: 'Inválido, debe empezar por letra, solo minúsculas, números o guiones bajos.',
+                allowEmpty: true
+            );
+            if ($name === '') {
                 break;
-            } elseif (empty($name)) {
-                continue;
             }
 
             if (in_array($name, explode(',', self::FORBIDDEN_WORDS))) {
@@ -414,17 +440,32 @@ final class Column
 
     private function askDisplay(): void
     {
-        do {
-            $display = (int)self::prompt("¿Cual es la alineación del campo {$this->nombre}? 0=Izquierda (predeterminada), 1=Derecha, 2=Centro, 3=Ocultar");
-        } while ($display < 0 || $display > 3);
-
-        $displayList = ['left', 'right', 'center', 'none'];
-        $this->display = $displayList[$display];
+        $this->display = select(
+            label: "¿Cual es la alineación del campo {$this->nombre}?",
+            options: [
+                // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                'left' => 'Izquierda (predeterminada)',
+                'right' => 'Derecha',
+                'center' => 'Centro',
+                'none' => 'Ocultar'
+            ],
+            default: '0',
+            scroll: 4, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+            required: true
+        );
     }
 
     private function askLongitud(): void
     {
-        $long = (int)self::prompt("Longitud caracteres") ?? 30;
+        $long = (int)Utils::promptStringWithRegex(
+            label: 'Longitud de caracteres:',
+            placeholder: 'Ej: 30',
+            default: '30',
+            hint: 'Un número entero positivo',
+            regex: '^[0-9]+$', // regex de uno o más carácteres numéticos
+            errorMessage: 'Inválido, debe ser un número entero positivo.'
+        );
+
         if ($long > 0) {
             $this->longitud = $long;
             return;
@@ -436,8 +477,12 @@ final class Column
 
     private function askMaximo(): void
     {
-        $max = self::prompt("¿Valor máximo permitido? Deja en blanco para no establecer valor");
-        if (is_numeric($max)) {
+        $max = Utils::promptStringWithRegex(
+            label: '¿Valor máximo permitido? Deja en blanco para no establecer valor',
+            allowEmpty: true
+        );
+
+        if ($max !== '' && is_numeric($max)) {
             $this->maximo = $max;
             return;
         }
@@ -447,8 +492,12 @@ final class Column
 
     private function askMinimo(): void
     {
-        $min = self::prompt("¿Valor mínimo permitido? Deja en blanco para no establecer valor");
-        if (is_numeric($min)) {
+        $min = Utils::promptStringWithRegex(
+            label: '¿Valor mínimo permitido? Deja en blanco para no establecer valor',
+            allowEmpty: true
+        );
+
+        if ($min !== '' && is_numeric($min)) {
             $this->minimo = $min;
             return;
         }
@@ -467,14 +516,18 @@ final class Column
 
         // indicamos que campo es la clave primaria
         while (true) {
+
+            $fieldsToShowInOptions = [];
             foreach ($fields as $index => $field) {
-                Utils::echo($index . " - " . $field->nombre . "\n");
+                $fieldsToShowInOptions[$index] = $field->nombre;
             }
 
-            $pos = self::prompt('No estableció ninguna clave primaria, seleccione una de las anteriores', '/^[0-9]*$/');
-            if ($pos == '' || false === isset($fields[$pos])) {
-                continue;
-            }
+            $pos = select(
+                label: 'No estableció ninguna clave primaria, seleccione una',
+                options: $fieldsToShowInOptions,
+                scroll: count($fieldsToShowInOptions),
+                required: true
+            );
 
             $fields[$pos]->primary = true;
             $fields[$pos]->requerido = true;
@@ -485,39 +538,24 @@ final class Column
     private function askRequerido(): void
     {
         do {
-            $requerido = (int)self::prompt('¿El campo ' . $this->nombre . ' es obligatorio? 0=No (predeterminado), 1=Si');
-            $this->requerido = $requerido === 1;
-        } while ($requerido !== 1 && $requerido !== 0);
+            $requerido = Utils::promptYesOrNo("¿El campo {$this->nombre} es obligatorio? (No = predeterminado)");
+            $this->requerido = $requerido === 'Si';
+        } while ($requerido !== 'Si' && $requerido !== 'No');
     }
 
     private function askStep(): void
     {
-        $step = self::prompt("¿Valor de incremento? Deja en blanco para no establecer valor");
-        if (is_numeric($step)) {
+        $step = Utils::promptStringWithRegex(
+            label: '¿Valor de incremento? Deja en blanco para no establecer valor',
+            allowEmpty: true
+        );
+
+        if ($step !== '' && is_numeric($step)) {
             $this->step = $step;
             return;
         }
 
         $this->step = null;
-    }
-
-    private static function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
-    {
-        Utils::echo($label . ': ');
-        $matches = [];
-        $value = trim(fgets(STDIN));
-
-        // si el valor esta vacío, devolvemos null
-        if ($value == '') {
-            return null;
-        }
-
-        if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            Utils::echo("Valor no válido. Debe " . $pattern_explain . "\n");
-            return '';
-        }
-
-        return $value;
     }
 
     private function setType(int $type): void
