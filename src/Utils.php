@@ -86,7 +86,7 @@ class Utils
      * 
      * @return string devuelve el valor si y solo si cumple el regex y no es '' (si se activa $allowEmpty, se permite también)
      */
-    public static function promptStringWithRegex(string $label, string $placeholder = '', string $default = '', string $hint = '', string $regex = '^.*$', string $errorMessage = '', bool $allowEmpty = false): string {
+    public static function prompt(string $label, string $placeholder = '', string $default = '', string $hint = '', string $regex = '^.*$', string $errorMessage = '', bool $allowEmpty = false): string {
         return text(
             label: $label,
             placeholder: $placeholder,
@@ -110,7 +110,7 @@ class Utils
             hint: $hint
         );
     }
-
+    
     /**
      * Muestra un prompt de elegir si o no, devuelve 'Si' o 'No'
      */
@@ -126,25 +126,6 @@ class Utils
             scroll: 2, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
             required: true
         );
-    }
-
-    public static function prompt(string $label, string $pattern = '', string $pattern_explain = ''): ?string
-    {
-        self::echo($label . ': ');
-        $matches = [];
-        $value = trim(fgets(STDIN));
-
-        // si el valor esta vacío, devolvemos null
-        if ($value == '') {
-            return null;
-        }
-
-        if (!empty($pattern) && 1 !== preg_match($pattern, $value, $matches)) {
-            self::echo("Valor no válido. Debe " . $pattern_explain . "\n");
-            return '';
-        }
-
-        return $value;
     }
 
     /**

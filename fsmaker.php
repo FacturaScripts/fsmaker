@@ -181,7 +181,7 @@ final class fsmaker
             required: true
         );
 
-        $modelName = Utils::promptStringWithRegex(
+        $modelName = Utils::prompt(
             label: "Nombre del $option",
             placeholder: 'Ej: Producto',
             hint: "El nombre del $option debe empezar por mayúscula y solo puede contener letras, números y guiones bajos, luego será colocado como 'List[Nombre elegido].php' por ejemplo.",
@@ -338,7 +338,7 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del CronJob',
             placeholder: 'Ej: MiCronJob',
             regex: '/^[A-Z][a-zA-Z0-9_]*$/',
@@ -393,7 +393,7 @@ final class fsmaker
 
         switch ($option) {
             case 1:
-                $name = Utils::promptStringWithRegex(
+                $name = Utils::prompt(
                     label: 'Nombre de la tabla (plural)',
                     placeholder: 'Ej: productos',
                     hint: 'El nombre de la tabla debe empezar por minúscula y solo puede contener minusculas, números y guiones bajos.',
@@ -406,7 +406,7 @@ final class fsmaker
                 return;
 
             case 2:
-                $name = Utils::promptStringWithRegex(
+                $name = Utils::prompt(
                     label: 'Nombre del modelo (singular)',
                     placeholder: 'Ej: Producto',
                     hint: 'El nombre del modelo debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -418,7 +418,7 @@ final class fsmaker
                 return;
 
             case 3:
-                $name = Utils::promptStringWithRegex(
+                $name = Utils::prompt(
                     label: 'Nombre del controlador',
                     placeholder: 'Ej: ListFacturaCliente',
                     hint: 'El nombre del controlador debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -429,7 +429,7 @@ final class fsmaker
                 return;
 
             case 4:
-                $name = Utils::promptStringWithRegex(
+                $name = Utils::prompt(
                     label: 'Nombre del XMLView',
                     placeholder: 'Ej: EditContacto',
                     hint: 'El nombre del XMLView debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -440,7 +440,7 @@ final class fsmaker
                 return;
 
             case 5:
-                $name = Utils::promptStringWithRegex(
+                $name = Utils::prompt(
                     label: 'Nombre de la vista html.twig',
                     placeholder: 'Ej: factura_detalle_01',
                     hint: 'El nombre de la vista debe tener el formato: palabra_palabra_número (pudiendo ser mayuscula o minúscula).',
@@ -608,7 +608,7 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del modelo (singular)',
             placeholder: 'Ej: Cliente',
             hint: 'El nombre debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -616,7 +616,7 @@ final class fsmaker
             errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
         );
 
-        $tableName = Utils::promptStringWithRegex(
+        $tableName = Utils::prompt(
             label: 'Nombre de la tabla (plural)',
             placeholder: 'Ej: facturascli',
             hint: 'El nombre debe empezar por minuscula y solo puede contener minusculas, números y guiones bajos.',
@@ -666,7 +666,7 @@ final class fsmaker
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
         // promptear por el nombre del controlador y validar que sea un nombre válido
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del plugin',
             placeholder: 'Ej: MiPlugin',
             hint: 'El nombre del plugin debe empezar por mayúscula, sin espacios y sin caracteres especiales.',
@@ -708,7 +708,7 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del test (singular)',
             placeholder: 'Ej: AccountingPlanTest',
             hint: 'El nombre del test debe empezar por mayúscula y terminar en Test',
@@ -746,7 +746,7 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del worker',
             placeholder: 'Ej: MiWorker',
             hint: 'El nombre debe empezar por mayúscula y contener solo texto, números o guiones bajos.',
@@ -789,7 +789,7 @@ final class fsmaker
             || in_array(3, $options)
             || in_array(4, $options)
             || in_array(5, $options)) {
-            $event = Utils::promptStringWithRegex(
+            $event = Utils::prompt(
                 label: 'Introduce el nombre del modelo que contiene el evento a escuchar',
                 placeholder: 'Ej: FacturaCliente',
                 hint: 'El nombre debe empezar por mayúscula y contener solo texto, números o guiones bajos.',
@@ -797,7 +797,7 @@ final class fsmaker
                 errorMessage: 'Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.'
             );
             } elseif (in_array(6, $options)) {
-            $event = Utils::promptStringWithRegex(
+            $event = Utils::prompt(
                 label: 'Introduce el nombre del evento',
                 hint: 'El nombre debe contener solo texto, números o guiones.',
                 regex: '/^[a-zA-Z0-9_-]*$/',

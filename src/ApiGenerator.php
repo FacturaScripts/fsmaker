@@ -14,7 +14,7 @@ class ApiGenerator
             return;
         }
 
-        $name = Utils::promptStringWithRegex(
+        $name = Utils::prompt(
             label: 'Nombre del controlador de API',
             placeholder: 'Ej: CreateMultiInvoices',
             hint: 'El nombre del controlador de API debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -30,7 +30,7 @@ class ApiGenerator
             return;
         }
 
-        $endpoint = Utils::promptStringWithRegex(
+        $endpoint = Utils::prompt(
             label: 'Endpoint de la API',
             placeholder: 'Ej: /api/3/create-multi-invoices',
             hint: 'El nombre del endpoint de la API debe comenzar con /api/3/ y tener solo letras, números, guiones o barras.',

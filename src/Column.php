@@ -146,7 +146,7 @@ final class Column
         }
 
         while (true) {
-            $name = Utils::promptStringWithRegex(
+            $name = Utils::prompt(
                 label: 'Nombre del del campo (vacío para terminar)',
                 placeholder: 'Dejar vacío o Ej: email',
                 hint: 'El nombre del campo debe empezar por letra, solo minúsculas, números o guiones bajos.',
@@ -457,7 +457,7 @@ final class Column
 
     private function askLongitud(): void
     {
-        $long = (int)Utils::promptStringWithRegex(
+        $long = (int)Utils::prompt(
             label: 'Longitud de caracteres:',
             placeholder: 'Ej: 30',
             default: '30',
@@ -477,7 +477,7 @@ final class Column
 
     private function askMaximo(): void
     {
-        $max = Utils::promptStringWithRegex(
+        $max = Utils::prompt(
             label: '¿Valor máximo permitido? Deja en blanco para no establecer valor',
             allowEmpty: true
         );
@@ -492,7 +492,7 @@ final class Column
 
     private function askMinimo(): void
     {
-        $min = Utils::promptStringWithRegex(
+        $min = Utils::prompt(
             label: '¿Valor mínimo permitido? Deja en blanco para no establecer valor',
             allowEmpty: true
         );
@@ -545,7 +545,7 @@ final class Column
 
     private function askStep(): void
     {
-        $step = Utils::promptStringWithRegex(
+        $step = Utils::prompt(
             label: '¿Valor de incremento? Deja en blanco para no establecer valor',
             allowEmpty: true
         );
