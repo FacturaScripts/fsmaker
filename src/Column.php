@@ -94,19 +94,11 @@ final class Column
 
         // si estamos en una extensión, no preguntamos por los campos por defecto
         if (false === $extension) {
-            $prompt = select(
-                label: '¿Desea crear los campos habituales? (Por defecto \'No\')',
-                options: [
-                    // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
-                    '0' => 'No',
-                    '1' => 'Si'
-                ],
-                default: '0',
-                scroll: 3, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
-                hint: 'Los campos habituales son: id, creation_date, last_update, nick, last_nick',
-                required: true
+            $prompt = Utils::promptYesOrNo(
+                label: '¿Desea crear los campos habituales? (No = Default)'
             );
-            if ($prompt === '1') {
+
+            if ($prompt === 'Si') {
                 $fields[] = new Column([
                     'display' => 'none',
                     'nombre' => 'id',
