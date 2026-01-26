@@ -510,6 +510,10 @@ final class Column
 
         // indicamos que campo es la clave primaria
         while (true) {
+            if (count($fields) === 0) {
+                // no hay campos a elegir
+                break;
+            }
 
             $fieldsToShowInOptions = [];
             foreach ($fields as $index => $field) {
@@ -517,11 +521,13 @@ final class Column
             }
 
             $pos = select(
-                label: 'No estableció ninguna clave primaria, seleccione una',
+                label: 'No estableció ninguna clave primaria',
                 options: $fieldsToShowInOptions,
                 scroll: count($fieldsToShowInOptions),
                 required: true
             );
+            // buscar key de la opción seleccionada (al ser un array numérico y no una lista, devuelve el value select())
+            $pos = array_search($pos, $fieldsToShowInOptions, true);
 
             $fields[$pos]->primary = true;
             $fields[$pos]->requerido = true;
