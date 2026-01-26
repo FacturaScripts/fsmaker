@@ -454,7 +454,7 @@ final class Column
             placeholder: 'Ej: 30',
             default: '30',
             hint: 'Un número entero positivo',
-            regex: '^[0-9]+$', // regex de uno o más carácteres numéticos
+            regex: '/^[0-9]+$/', // regex de uno o más carácteres numéticos
             errorMessage: 'Inválido, debe ser un número entero positivo.'
         );
 
