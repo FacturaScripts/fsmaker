@@ -540,8 +540,9 @@ final class Column
     private function askStep(): void
     {
         $step = Utils::prompt(
-            label: '¿Valor de incremento? Deja en blanco para no establecer valor',
-            allowEmpty: true
+            label: '¿Valor de incremento?',
+            allowEmpty: true,
+            hint: 'Deja en blanco para no establecer valor'
         );
 
         if ($step !== '' && is_numeric($step)) {
