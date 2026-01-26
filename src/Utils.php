@@ -86,7 +86,7 @@ class Utils
      * 
      * @return string devuelve el valor si y solo si cumple el regex y no es '' (si se activa $allowEmpty, se permite también)
      */
-    public static function prompt(string $label, string $placeholder = '', string $default = '', string $hint = '', string $regex = '^.*$', string $errorMessage = '', bool $allowEmpty = false): string {
+    public static function prompt(string $label, string $placeholder = '', string $default = '', string $hint = '', string $regex = '/^.*$/', string $errorMessage = '', bool $allowEmpty = false): string {
         return text(
             label: $label,
             placeholder: $placeholder,
