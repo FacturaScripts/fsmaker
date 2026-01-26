@@ -470,8 +470,9 @@ final class Column
     private function askMaximo(): void
     {
         $max = Utils::prompt(
-            label: '¿Valor máximo permitido? Deja en blanco para no establecer valor',
-            allowEmpty: true
+            label: '¿Valor máximo permitido?',
+            allowEmpty: true,
+            hint: 'Deja en blanco para no establecer valor'
         );
 
         if ($max !== '' && is_numeric($max)) {
@@ -485,8 +486,9 @@ final class Column
     private function askMinimo(): void
     {
         $min = Utils::prompt(
-            label: '¿Valor mínimo permitido? Deja en blanco para no establecer valor',
-            allowEmpty: true
+            label: '¿Valor mínimo permitido?',
+            allowEmpty: true,
+            hint: 'Deja en blanco para no establecer valor'
         );
 
         if ($min !== '' && is_numeric($min)) {
