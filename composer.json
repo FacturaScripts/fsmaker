@@ -19,7 +19,8 @@
     "php": ">=8.0",
     "ext-zip": "*",
     "ext-mbstring": "*",
-    "ext-ctype": "*"
+    "ext-ctype": "*",
+    "laravel/prompts": "^0.3.10"
   },
   "bin": ["bin/fsmaker"],
   "require-dev": {
