@@ -139,7 +139,7 @@ final class Column
 
         while (true) {
             $name = Utils::prompt(
-                label: 'Nombre del del campo (vacío para terminar)',
+                label: 'Nombre del campo (vacío para terminar)',
                 placeholder: 'Dejar vacío o Ej: email',
                 hint: 'El nombre del campo debe empezar por letra, solo minúsculas, números o guiones bajos.',
                 regex: '/^[a-z][a-z0-9_]*$/',
