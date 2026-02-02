@@ -21,6 +21,10 @@ use fsmaker\UpdateTranslations;
 use fsmaker\Utils;
 use fsmaker\ZipGenerator;
 
+use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
+
 final class fsmaker
 {
     const VERSION = 1.9;
@@ -111,9 +115,13 @@ final class fsmaker
         }
     }
 
-    private function createController(): void
+    private function createController($name): void
     {
-        $name = Utils::prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
+        if (empty($name)) {
+            Utils::echo("* No introdujo el nombre del controlador.\n");
+            return;
+        }
+
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . $name . '.php';
         if (file_exists($fileName)) {
@@ -124,7 +132,15 @@ final class fsmaker
             return;
         }
 
-        $menu = Utils::prompt('Menú');
+        $menu = text(
+            label: 'Nombre del menú',
+            placeholder: 'Ej: Ventas',
+            default: 'Admin',
+            required: true,
+            validate: null,
+            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+        );
+
         $sample = file_get_contents(__DIR__ . "/samples/Controller.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         Utils::createFolder($filePath);
@@ -152,20 +168,38 @@ final class fsmaker
             return;
         }
 
-        $option = (int)Utils::prompt("Elija el tipo de controlador a crear\n1=Controller, 2=ListController, 3=EditController");
+        $option = select(
+            label: 'Elija el tipo de controlador a crear',
+            options: [
+                // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                'Controller' => 'Controller',
+                'ListController' => 'ListController',
+                'EditController' => 'EditController'
+            ],
+            default: 'Controller',
+            scroll: 3, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+            required: true
+        );
+
+        $modelName = Utils::prompt(
+            label: "Nombre del $option",
+            placeholder: 'Ej: Producto',
+            hint: "El nombre del $option debe empezar por mayúscula y solo puede contener letras, números y guiones bajos, luego será colocado como 'List[Nombre elegido].php' por ejemplo.",
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.'
+        );
+
         switch ($option) {
-            case 1:
-                $this->createController();
+            case 'Controller':
+                $this->createController($modelName);
                 return;
 
-            case 2:
-                $modelName = Utils::prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
+            case 'ListController':
                 $fields = Column::askMulti();
                 $this->createListController($modelName, $fields);
                 return;
 
-            case 3:
-                $modelName = Utils::prompt('Nombre del modelo a utilizar', '/^[A-Z][a-zA-Z0-9_]*$/');
+            case 'EditController':
                 $fields = Column::askMulti();
                 $this->createEditController($modelName, $fields);
                 return;
@@ -176,6 +210,11 @@ final class fsmaker
 
     private function createEditController(string $modelName, array $fields): void
     {
+        if (empty($modelName)) {
+            Utils::echo('* No introdujo el nombre del EditController');
+            return;
+        }
+
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'Edit' . $modelName . '.php';
         Utils::createFolder($filePath);
@@ -186,7 +225,15 @@ final class fsmaker
             return;
         }
 
-        $menu = Utils::prompt('Menú');
+        $menu = text(
+            label: 'Nombre del menú',
+            placeholder: 'Ej: Ventas',
+            default: 'Admin',
+            required: true,
+            validate: null,
+            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+        );
+
         $sample = file_get_contents(__DIR__ . "/samples/EditController.php.sample");
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
@@ -210,8 +257,29 @@ final class fsmaker
 
     private function createListController(string $modelName, array $fields): void
     {
-        $menu = Utils::prompt('Menú');
-        $title = Utils::prompt('Título');
+        if (empty($modelName)) {
+            Utils::echo('* No introdujo el nombre del ListController');
+            return;
+        }
+
+        $menu = text(
+            label: 'Nombre del menú',
+            placeholder: 'Ej: Ventas',
+            default: 'Admin',
+            required: true,
+            validate: null,
+            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+        );
+
+        $title = text(
+            label: 'Título',
+            placeholder: 'Ej: Lista de Productos',
+            default: '',
+            required: true,
+            validate: null,
+            hint: 'El título que se colocará en "$data[\'title\'] = \'TÍTULO_ELEGIDO\';".'
+        );
+
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'List' . $modelName . '.php';
         Utils::createFolder($filePath);
@@ -270,11 +338,12 @@ final class fsmaker
             return;
         }
 
-        $name = Utils::prompt('Nombre del CronJob', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
-        if (empty($name)) {
-            Utils::echo("* No introdujo el nombre del CronJob.\n");
-            return;
-        }
+        $name = Utils::prompt(
+            label: 'Nombre del CronJob',
+            placeholder: 'Ej: MiCronJob',
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
+        );
 
         $folder = 'CronJob/';
         $plugin = Utils::findPluginName();
@@ -307,30 +376,77 @@ final class fsmaker
             return;
         }
 
-        $option = (int)Utils::prompt("Elija el tipo de extensión\n1=Tabla, 2=Modelo, 3=Controlador, 4=XMLView, 5=View");
+        $option = (int)select(
+            label: 'Elija el tipo de extensión',
+            options: [
+                // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                '1' => 'Tabla',
+                '2' => 'Modelo',
+                '3' => 'Controlador',
+                '4' => 'XMLView',
+                '5' => 'View'
+            ],
+            default: '1',
+            scroll: 5, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+            required: true
+        );
+
         switch ($option) {
             case 1:
-                $name = strtolower(Utils::prompt('Nombre de la tabla (plural)', '/^[a-zA-Z][a-zA-Z0-9_]*$/'));
+                $name = Utils::prompt(
+                    label: 'Nombre de la tabla (plural)',
+                    placeholder: 'Ej: productos',
+                    hint: 'El nombre de la tabla debe empezar por minúscula y solo puede contener minusculas, números y guiones bajos.',
+                    regex: '/^[a-z][a-z0-9_]*$/',
+                    errorMessage: 'Inválido, debe empezar por minúscula y solo puede contener minusculas, números y guiones bajos.'
+                );
+                
+
                 $this->createExtensionTable($name);
                 return;
 
             case 2:
-                $name = Utils::prompt('Nombre del modelo (singular)', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt(
+                    label: 'Nombre del modelo (singular)',
+                    placeholder: 'Ej: Producto',
+                    hint: 'El nombre del modelo debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
+                    regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+                    errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
+                );
+
                 $this->createExtensionModel($name);
                 return;
 
             case 3:
-                $name = Utils::prompt('Nombre del controlador', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt(
+                    label: 'Nombre del controlador',
+                    placeholder: 'Ej: ListFacturaCliente',
+                    hint: 'El nombre del controlador debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
+                    regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+                    errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
+                );
                 $this->createExtensionController($name);
                 return;
 
             case 4:
-                $name = Utils::prompt('Nombre del XMLView', '/^[A-Z][a-zA-Z0-9_]*$/');
+                $name = Utils::prompt(
+                    label: 'Nombre del XMLView',
+                    placeholder: 'Ej: EditContacto',
+                    hint: 'El nombre del XMLView debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
+                    regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+                    errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
+                );
                 $this->createExtensionXMLView($name);
                 return;
 
             case 5:
-                $name = Utils::prompt('Nombre de la vista html.twig', '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/');
+                $name = Utils::prompt(
+                    label: 'Nombre de la vista html.twig',
+                    placeholder: 'Ej: factura_detalle_01',
+                    hint: 'El nombre de la vista debe tener el formato: palabra_palabra_número (pudiendo ser mayuscula o minúscula).',
+                    regex: '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/',
+                    errorMessage: 'Inválido, debe tener el formato: palabra_palabra_número (pudiendo ser mayuscula o minúscula).'
+                );
                 $this->createExtensionView($name);
                 return;
         }
@@ -493,22 +609,20 @@ final class fsmaker
         }
 
         $name = Utils::prompt(
-            'Nombre del modelo (singular)',
-            '/^[A-Z][a-zA-Z0-9_]*$/',
-            'empezar por mayúscula y sin espacios'
+            label: 'Nombre del modelo (singular)',
+            placeholder: 'Ej: Cliente',
+            hint: 'El nombre debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
         );
-        if (empty($name)) {
-            return;
-        }
 
         $tableName = Utils::prompt(
-            'Nombre de la tabla (plural)',
-            '/^[a-z][a-z0-9_]*$/',
-            'empezar por letra, todo en minúsculas y sin espacios'
+            label: 'Nombre de la tabla (plural)',
+            placeholder: 'Ej: facturascli',
+            hint: 'El nombre debe empezar por minuscula y solo puede contener minusculas, números y guiones bajos.',
+            regex: '/^[a-z][a-z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por minuscula y solo puede contener minusculas, números y guiones bajos.'
         );
-        if (empty($tableName)) {
-            return;
-        }
 
         $filePath = Utils::isCoreFolder() ? 'Core/Model/' : 'Model/';
         $fileName = $filePath . $name . '.php';
@@ -533,12 +647,12 @@ final class fsmaker
         }
 
         Utils::echo("\n");
-        if (Utils::prompt('¿Crear EditController? 0=No (predeterminado), 1=Si') === '1') {
+        if (Utils::promptYesOrNo('¿Crear EditController? (No - predeterminado)') === 'Si') {
             $this->createEditController($name, $fields);
         }
 
         Utils::echo("\n");
-        if (Utils::prompt('¿Crear ListController? 0=No (predeterminado), 1=Si') === '1') {
+        if (Utils::promptYesOrNo('¿Crear ListController? (No - predeterminado)') === 'Si') {
             $this->createListController($name, $fields);
         }
     }
@@ -551,11 +665,16 @@ final class fsmaker
         }
 
         // Estamos creando un Plugin, por lo que preguntaremos por el nombre de él
-        $name = Utils::prompt('Nombre del plugin', '/^[A-Z][a-zA-Z0-9_]*$/', 'empezar por mayúscula y sin espacios');
-        if (empty($name)) {
-            Utils::echo("* El plugin debe tener un nombre.\n");
-            return;
-        } elseif (file_exists($name)) {
+        // promptear por el nombre del controlador y validar que sea un nombre válido
+        $name = Utils::prompt(
+            label: 'Nombre del plugin',
+            placeholder: 'Ej: MiPlugin',
+            hint: 'El nombre del plugin debe empezar por mayúscula, sin espacios y sin caracteres especiales.',
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.'
+        );
+
+        if (file_exists($name)) {
             Utils::echo("* El plugin " . $name . " YA EXISTE.\n");
             return;
         }
@@ -590,14 +709,12 @@ final class fsmaker
         }
 
         $name = Utils::prompt(
-            'Nombre del test (singular)',
-            '/^[A-Z][a-zA-Z0-9_]*Test$/',
-            'empezar por mayúscula y terminar en Test'
+            label: 'Nombre del test (singular)',
+            placeholder: 'Ej: AccountingPlanTest',
+            hint: 'El nombre del test debe empezar por mayúscula y terminar en Test',
+            regex: '/^[A-Z][a-zA-Z0-9_]*Test$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y terminar en Test'
         );
-        if (empty($name)) {
-            Utils::echo("* No introdujo el nombre del test o está mal escrito.\n");
-            return;
-        }
 
         $filePath = 'Test/main/';
         $fileName = $filePath . $name . '.php';
@@ -630,13 +747,12 @@ final class fsmaker
         }
 
         $name = Utils::prompt(
-            'Nombre del worker',
-            '/^[A-Z][a-zA-Z0-9_]*$/',
-            'empezar por mayúscula y sin espacios'
+            label: 'Nombre del worker',
+            placeholder: 'Ej: MiWorker',
+            hint: 'El nombre debe empezar por mayúscula y contener solo texto, números o guiones bajos.',
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.'
         );
-        if (empty($name)) {
-            return;
-        }
 
         $filePath = 'Worker/';
         $fileName = $filePath . $name . '.php';
@@ -651,14 +767,20 @@ final class fsmaker
         file_put_contents($fileName, $template);
 
         Utils::echo('* ' . $fileName . self::OK);
-        $input = Utils::prompt("¿Qué eventos debe escuchar el worker? 1=Insert, 2=Update, 3=Save, 4=Delete, 5=Todos, 6=Personalizado");
-        $options = $input ? explode(' ', $input) : [];
-
-        // comprobamos si se han introducido opciones
-        if (count($options) === 0) {
-            Utils::echo("* No se han introducido opciones.\n");
-            return;
-        }
+        $options = multiselect(
+            label: '¿Qué eventos debe escuchar el worker?',
+            options: [
+                // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
+                '1' => 'Insert',
+                '2' => 'Update',
+                '3' => 'Save',
+                '4' => 'Delete',
+                '5' => 'Todos',
+                '6' => 'Personalizado'
+            ],
+            scroll: 6, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+            required: true
+        );
 
         // si en las opciones esta algunos de los números del 1 al 5, preguntamos el modelo
         // y lo añadimos a la lista de opciones
@@ -667,9 +789,20 @@ final class fsmaker
             || in_array(3, $options)
             || in_array(4, $options)
             || in_array(5, $options)) {
-            $event = Utils::prompt('Introduce el nombre del modelo que contiene el evento a escuchar', '/^[A-Z][a-zA-Z0-9_]*$/');
-        } elseif (in_array(6, $options)) {
-            $event = Utils::prompt('Introduce el nombre del evento');
+            $event = Utils::prompt(
+                label: 'Introduce el nombre del modelo que contiene el evento a escuchar',
+                placeholder: 'Ej: FacturaCliente',
+                hint: 'El nombre debe empezar por mayúscula y contener solo texto, números o guiones bajos.',
+                regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+                errorMessage: 'Inválido, debe empezar por mayúscula y contener solo texto, números o guiones bajos.'
+            );
+            } elseif (in_array(6, $options)) {
+            $event = Utils::prompt(
+                label: 'Introduce el nombre del evento',
+                hint: 'El nombre debe contener solo texto, números o guiones.',
+                regex: '/^[a-zA-Z0-9_-]*$/',
+                errorMessage: 'Inválido, debe contener solo texto, números o guiones.'
+            );
         } else {
             Utils::echo("* Error(Input): Opción no válida.\n");
             return;

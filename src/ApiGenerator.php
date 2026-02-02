@@ -15,10 +15,13 @@ class ApiGenerator
         }
 
         $name = Utils::prompt(
-            'Nombre del controlador de API (ejemplo: CreateMultiInvoices)',
-            '/^[A-Z][a-zA-Z0-9_]*$/',
-            'empezar por mayúscula y sin espacios'
+            label: 'Nombre del controlador de API',
+            placeholder: 'Ej: CreateMultiInvoices',
+            hint: 'El nombre del controlador de API debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
+            regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+            errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
         );
+
         $file_path = 'Controller/' . $name . '.php';
         if (empty($name)) {
             return;
@@ -28,13 +31,12 @@ class ApiGenerator
         }
 
         $endpoint = Utils::prompt(
-            'Endpoint de la API (ejemplo: /api/3/create-multi-invoices)',
-            '/^\/api\/3\/[a-zA-Z0-9_\/-]*$/',
-            'comenzar con /api/3/ y tener solo letras, números, guiones o barras'
+            label: 'Endpoint de la API',
+            placeholder: 'Ej: /api/3/create-multi-invoices',
+            hint: 'El nombre del endpoint de la API debe comenzar con /api/3/ y tener solo letras, números, guiones o barras.',
+            regex: '/^\/api\/3\/[a-zA-Z0-9_\/-]*$/',
+            errorMessage: 'Inválido, debe comenzar con /api/3/ y tener solo letras, números, guiones o barras.'
         );
-        if (empty($endpoint)) {
-            return;
-        }
 
         $sample = file_get_contents(Utils::getFolder() . "/samples/ApiController.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
