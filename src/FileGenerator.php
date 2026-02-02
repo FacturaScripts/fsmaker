@@ -94,10 +94,10 @@ final class FileGenerator
 
         if ($save_update) {
             $sample .= "\n"
-                . '    protected function saveUpdate(array $values = []): bool' . "\n"
+                . '    protected function saveUpdate(): bool' . "\n"
                 . "    {\n"
                 . $save_update . "\n"
-                . '        return parent::saveUpdate($values);' . "\n"
+                . '        return parent::saveUpdate();' . "\n"
                 . "    }\n";
         }
 
