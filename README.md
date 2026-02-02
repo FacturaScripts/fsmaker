@@ -121,7 +121,7 @@ Genera un archivo ZIP del plugin listo para distribución.
 
 ## ✅ Requisitos
 
-- PHP 8.0 o superior
+- PHP 8.1 o superior
 - Composer
 - Estar en la carpeta raíz del plugin o core de FacturaScripts
 
