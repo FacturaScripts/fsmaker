@@ -1,4 +1,34 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-include __DIR__ . '/../fsmaker.php';
+/**
+ * FacturaScripts Maker - Bootstrap script
+ *
+ * @author Carlos García Gómez  <carlos@facturascripts.com>
+ */
+
+// Autoload paths: try composer vendor paths
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',      // Local installation
+    __DIR__ . '/../../../autoload.php',       // Global installation via composer
+];
+
+$autoloadFound = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require $path;
+        $autoloadFound = true;
+        break;
+    }
+}
+
+if (!$autoloadFound) {
+    fwrite(STDERR, "Error: No se pudo encontrar el autoloader de Composer.\n");
+    fwrite(STDERR, "Por favor, ejecute 'composer install' primero.\n");
+    exit(1);
+}
+
+use fsmaker\Console\Application;
+
+$application = new Application();
+$application->run();

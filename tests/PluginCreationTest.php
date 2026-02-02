@@ -5,11 +5,6 @@ namespace fsmaker\Tests;
 use PHPUnit\Framework\TestCase;
 use fsmaker\Utils;
 
-if (!defined('FSMAKER_TESTING')) {
-    define('FSMAKER_TESTING', true);
-}
-require_once __DIR__ . '/../fsmaker.php';
-
 class PluginCreationTest extends TestCase
 {
     private string $testDir;
@@ -60,12 +55,12 @@ class PluginCreationTest extends TestCase
         rmdir($dir);
     }
 
-    public function testPluginCommandExistsInFsmaker(): void
+    public function testSymfonyConsoleCommandsExist(): void
     {
-        // Test that the fsmaker class exists and has the required method
-        $reflection = new \ReflectionClass('fsmaker');
-        $this->assertTrue($reflection->hasMethod('createPluginAction'));
-        $this->assertTrue($reflection->hasMethod('help'));
+        // Test that the main Symfony Console application exists
+        $this->assertTrue(class_exists('fsmaker\Console\Application'));
+        $this->assertTrue(class_exists('fsmaker\Console\BaseCommand'));
+        $this->assertTrue(class_exists('fsmaker\Command\Plugin\PluginCommand'));
     }
 
     public function testCreatePluginActionCreatesDirectoryStructure(): void

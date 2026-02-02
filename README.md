@@ -19,10 +19,17 @@ composer global require facturascripts/fsmaker
 ```
 
 ### Ejecutar
-Una vez instalado puede ejecutarlo desde cualquier directorio:
+Una vez instalado, fsmaker utiliza **Symfony Console** para una experiencia mejorada:
 
 ```bash
-composer global exec fsmaker
+# Ver todos los comandos disponibles
+fsmaker list
+
+# Ver ayuda de un comando específico
+fsmaker controller --help
+
+# Ejecutar un comando
+fsmaker model
 ```
 
 ### Comando corto (Linux / Mac)
@@ -35,8 +42,19 @@ sudo ln -s ~/.config/composer/vendor/bin/fsmaker /usr/local/bin/fsmaker
 Ahora puede usar simplemente:
 
 ```bash
-fsmaker
+fsmaker list
 ```
+
+## 🚀 Arquitectura moderna con Symfony Console
+
+A partir de la versión 2.0, fsmaker utiliza **Symfony Console** para ofrecer:
+
+- ✅ Sistema de ayuda completo (`fsmaker --help`, `fsmaker zip --help`)
+- ✅ Autocompletado de comandos en shell
+- ✅ Output coloreado y formateado
+- ✅ Control de verbosidad (`-v`, `-vv`, `-vvv`)
+- ✅ Mejor organización y mantenibilidad del código
+- ✅ Estándar de la industria (Symfony Console)
 
 ## ⚡ Comandos disponibles
 
@@ -163,6 +181,17 @@ MiPlugin/
 
 ## 💡 Ejemplos de uso
 
+### Ver todos los comandos disponibles
+```bash
+fsmaker list
+```
+
+### Ver ayuda de un comando
+```bash
+fsmaker controller --help
+fsmaker model --help
+```
+
 ### Crear un plugin completo
 ```bash
 cd /ruta/desarrollo/
@@ -176,9 +205,9 @@ cd MiPlugin/
 fsmaker model
 # Introduce: Cliente (modelo)
 # Introduce: clientes (tabla)
-# Configura campos
-# ¿Crear EditController? 1
-# ¿Crear ListController? 1
+# Configura campos con prompts interactivos
+# ¿Crear EditController? Si
+# ¿Crear ListController? Si
 ```
 
 ### Actualizar código a nuevas versiones
@@ -192,6 +221,13 @@ fsmaker upgrade-bs5    # Migra Bootstrap 4 → 5
 ```bash
 cd MiPlugin/
 fsmaker zip
+```
+
+### Ejecutar con mayor verbosidad
+```bash
+fsmaker model -v      # Verbose
+fsmaker model -vv     # Very verbose
+fsmaker model -vvv    # Debug
 ```
 
 ## 📞 Issues / Feedback

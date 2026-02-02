@@ -5,11 +5,6 @@ namespace fsmaker\Tests;
 use PHPUnit\Framework\TestCase;
 use fsmaker\Utils;
 
-if (!defined('FSMAKER_TESTING')) {
-    define('FSMAKER_TESTING', true);
-}
-require_once __DIR__ . '/../fsmaker.php';
-
 class EndToEndPluginTest extends TestCase
 {
     private string $testDir;

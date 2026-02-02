@@ -7,6 +7,7 @@ namespace fsmaker;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Utils
 {
@@ -15,6 +16,9 @@ class Utils
 
     /** @var bool */
     private static $silent = false;
+
+    /** @var OutputInterface|null */
+    private static $output = null;
 
     public static function createFolder(string $path): bool
     {
@@ -142,6 +146,14 @@ class Utils
     }
 
     /**
+     * Sets the Symfony Console output interface for formatted output.
+     */
+    public static function setOutput(?OutputInterface $output): void
+    {
+        self::$output = $output;
+    }
+
+    /**
      * Sets silent mode for output control (useful in tests).
      */
     public static function setSilent(bool $silent): void
@@ -151,10 +163,17 @@ class Utils
 
     /**
      * Outputs a message unless silent mode is enabled.
+     * Uses Symfony Console OutputInterface if available, otherwise falls back to echo.
      */
     public static function echo(string $message): void
     {
-        if (!self::$silent) {
+        if (self::$silent) {
+            return;
+        }
+
+        if (self::$output !== null) {
+            self::$output->write($message);
+        } else {
             echo $message;
         }
     }
