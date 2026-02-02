@@ -6,6 +6,9 @@ use PHPUnit\Framework\TestCase;
 use fsmaker\Utils;
 use fsmaker\FileGenerator;
 
+if (!defined('FSMAKER_TESTING')) {
+    define('FSMAKER_TESTING', true);
+}
 require_once __DIR__ . '/../fsmaker.php';
 
 class PluginCreationIntegrationTest extends TestCase

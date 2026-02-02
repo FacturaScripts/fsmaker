@@ -928,8 +928,7 @@ final class fsmaker
 }
 
 // Only auto-execute if this file is run directly, not when required by tests
-if (!defined('PHPUNIT_COMPOSER_INSTALL') && !defined('__PHPUNIT_PHAR__') &&
-    basename($_SERVER['SCRIPT_FILENAME'] ?? '') === basename(__FILE__)) {
+if (!defined('FSMAKER_TESTING')) {
     $argv = $_SERVER['argv'] ?? [];
     new fsmaker($argv);
 }

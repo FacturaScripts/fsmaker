@@ -6,6 +6,9 @@ use fsmaker\FileUpdater;
 use fsmaker\Utils;
 use PHPUnit\Framework\TestCase;
 
+if (!defined('FSMAKER_TESTING')) {
+    define('FSMAKER_TESTING', true);
+}
 require_once __DIR__ . '/../fsmaker.php';
 
 class FileUpdaterUpgradeTest extends TestCase
