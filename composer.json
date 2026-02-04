@@ -12,7 +12,10 @@
   "autoload": {
     "psr-4": {
       "fsmaker\\": "src/"
-    }
+    },
+    "files": [
+      "src/Patches/TerminalPatch.php"
+    ]
   },
   "minimum-stability": "stable",
   "require": {
