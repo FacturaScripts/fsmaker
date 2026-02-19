@@ -14,6 +14,8 @@ use fsmaker\Column;
 use fsmaker\FileGenerator;
 use fsmaker\Utils;
 
+use function Laravel\Prompts\text;
+
 #[AsCommand(
     name: 'model',
     description: 'Crea un nuevo modelo con su tabla XML'
@@ -130,13 +132,22 @@ class ModelCommand extends BaseCommand
             return;
         }
 
-        $menu = \Laravel\Prompts\text(
+        $menu = text(
             label: 'Nombre del menú',
             placeholder: 'Ej: Ventas',
             default: 'Admin',
             required: true,
             validate: null,
             hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+        );
+
+        $title = text(
+            label: 'Nombre del submenú',
+            placeholder: 'Ej: Productos',
+            default: $modelName,
+            required: true,
+            validate: null,
+            hint: 'El nombre que se colocará en "$data[\'title\'] = \'NOMBRE_ELEGIDO\';", (Si tienes traducciones coloca la key de la traducción).'
         );
 
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
@@ -150,8 +161,8 @@ class ModelCommand extends BaseCommand
         $samplePath = dirname(__DIR__, 3) . "/samples/ListController.php.sample";
         $sample = file_get_contents($samplePath);
         $template = str_replace(
-            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
-            [Utils::getNamespace(), $modelName, $menu],
+            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]', '[[TITLE]]'],
+            [Utils::getNamespace(), $modelName, $menu, $title],
             $sample
         );
         file_put_contents($fileName, $template);

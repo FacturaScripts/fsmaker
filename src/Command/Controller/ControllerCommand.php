@@ -176,6 +176,15 @@ class ControllerCommand extends BaseCommand
             hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
         );
 
+        $title = text(
+            label: 'Nombre del submenú',
+            placeholder: 'Ej: Productos',
+            default: $modelName,
+            required: true,
+            validate: null,
+            hint: 'El nombre que se colocará en "$data[\'title\'] = \'NOMBRE_ELEGIDO\';", (Si tienes traducciones coloca la key de la traducción).'
+        );
+
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'List' . $modelName . '.php';
         Utils::createFolder($filePath);
@@ -187,8 +196,8 @@ class ControllerCommand extends BaseCommand
         $samplePath = dirname(__DIR__, 3) . "/samples/ListController.php.sample";
         $sample = file_get_contents($samplePath);
         $template = str_replace(
-            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
-            [Utils::getNamespace(), $modelName, $menu],
+            ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]', '[[TITLE]]'],
+            [Utils::getNamespace(), $modelName, $menu, $title],
             $sample
         );
         file_put_contents($fileName, $template);
