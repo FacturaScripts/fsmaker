@@ -96,11 +96,11 @@ class ModelCommand extends BaseCommand
 
         $menu = \Laravel\Prompts\text(
             label: 'Nombre del menú',
-            placeholder: 'Ej: Ventas',
-            default: 'Admin',
+            placeholder: 'Ej: sales',
+            default: 'admin',
             required: true,
             validate: null,
-            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "admin".'
         );
 
         $samplePath = dirname(__DIR__, 3) . "/samples/EditController.php.sample";
@@ -134,11 +134,11 @@ class ModelCommand extends BaseCommand
 
         $menu = text(
             label: 'Nombre del menú',
-            placeholder: 'Ej: Ventas',
-            default: 'Admin',
+            placeholder: 'Ej: sales',
+            default: 'admin',
             required: true,
             validate: null,
-            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "Admin".'
+            hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "admin".'
         );
 
         $title = text(
