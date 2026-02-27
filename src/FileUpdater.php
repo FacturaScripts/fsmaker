@@ -311,9 +311,13 @@ final class FileUpdater
 
             // manejamos el archivo Init.php específicamente
             if (basename($pathFile) === 'Init.php') {
-                // añadimos tipo de retorno void a init() y update()
-                $fileStr = preg_replace('/public function init\(\)(\s*)({)/', 'public function init(): void$1$2', $fileStr);
-                $fileStr = preg_replace('/public function update\(\)(\s*)({)/', 'public function update(): void$1$2', $fileStr);
+                // añadimos tipo de retorno void a init() y update() si no existe
+                if (strpos($fileStr, 'public function init(): void') === false) {
+                    $fileStr = str_replace('public function init()', 'public function init(): void', $fileStr);
+                }
+                if (strpos($fileStr, 'public function update(): void') === false) {
+                    $fileStr = str_replace('public function update()', 'public function update(): void', $fileStr);
+                }
 
                 // verificamos si existe el método uninstall, si no lo añadimos
                 if (strpos($fileStr, 'function uninstall()') === false && strpos($fileStr, 'function uninstall(): void') === false) {
