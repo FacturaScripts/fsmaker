@@ -7,6 +7,15 @@ https://facturascripts.com/publicaciones/las-vistas-html-69
 
 https://twig.symfony.com/
 
+También si necesitas hacer formularios o similares revisa la carpeta de facturascripts de macros
+que contiene componentes listos para ser usados y funciones extra de frontend:
+- https://github.com/NeoRazorX/facturascripts/tree/master/Core/View/Macro
+- /Core/View/Macro en Facturascripts.
+- por ejemplo {% import "Macro/Forms.html.twig" as forms %}
+
+No te olvides de usar
+    $this->view(nombre_de_la_vista);
+dentro de la función controlador->run() para invocar a la vista.
 #}
 
 {% extends "Master/MenuTemplate.html.twig" %}

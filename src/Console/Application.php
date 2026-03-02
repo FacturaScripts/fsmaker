@@ -34,6 +34,7 @@ class Application extends BaseApplication
             new \fsmaker\Command\Plugin\PluginCommand(),
             new \fsmaker\Command\Test\TestCommand(),
             new \fsmaker\Command\Test\RunTestsCommand(),
+            new \fsmaker\Command\View\ViewCommand(),
             new \fsmaker\Command\Worker\WorkerCommand(),
         ];
     }
