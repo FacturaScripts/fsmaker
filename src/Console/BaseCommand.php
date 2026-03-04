@@ -22,12 +22,38 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Verifica que estamos en un directorio de plugin o core de FacturaScripts.
-     * Muestra un mensaje de error si no lo es.
+     * Verifica que estamos en la raiz del plugin o de FacturaScripts.
+     * Muestra un mensaje de error si no lo está.
      */
     protected function requirePluginOrCore(): bool
     {
         if (!Utils::isPluginFolder() && !Utils::isCoreFolder()) {
+            Utils::echo("* Esta no es la carpeta raíz del plugin o de facturascripts.\n");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verifica que estamos en el core de FacturaScripts.
+     * Muestra un mensaje de error si no lo está.
+     */
+    protected function requireCore(): bool
+    {
+        if (!Utils::isCoreFolder()) {
+            Utils::echo("* Esta no es la carpeta raíz del core.\n");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verifica que estamos en la raiz de un plugin.
+     * Muestra un mensaje de error si no lo está.
+     */
+    protected function requirePlugin(): bool
+    {
+        if (!Utils::isPluginFolder()) {
             Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
             return false;
         }
