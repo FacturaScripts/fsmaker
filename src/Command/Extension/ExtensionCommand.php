@@ -91,10 +91,10 @@ class ExtensionCommand extends BaseCommand
             case 5:
                 $name = Utils::prompt(
                     label: 'Nombre de la vista html.twig',
-                    placeholder: 'Ej: factura_detalle_01',
-                    hint: 'El nombre de la vista debe tener el formato: palabra_palabra_número (pudiendo ser mayuscula o minúscula).',
-                    regex: '/^[a-zA-Z]+_[a-zA-Z]+_[0-9]+$/',
-                    errorMessage: 'Inválido, debe tener el formato: palabra_palabra_número (pudiendo ser mayuscula o minúscula).'
+                    placeholder: 'Ej: MiExtension',
+                    hint: 'El nombre debe empezar por mayúscula. Se autocompletará el .html.twig automáticamente.',
+                    regex: '/^[A-Z][a-zA-Z0-9_]*$/',
+                    errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
                 );
                 $this->createExtensionView($name);
                 return Command::SUCCESS;
