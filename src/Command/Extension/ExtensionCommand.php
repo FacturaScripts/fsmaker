@@ -25,7 +25,7 @@ class ExtensionCommand extends BaseCommand
 {
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (!$this->requirePluginOrCore()) {
+        if (!$this->requirePlugin()) {
             return Command::FAILURE;
         }
 
