@@ -38,7 +38,7 @@ class ApiGenerator
             errorMessage: 'Inválido, debe comenzar con /api/3/ y tener solo letras, números, guiones o barras.'
         );
 
-        $sample = file_get_contents(Utils::getFolder() . "/samples/ApiController.php.sample");
+        $sample = file_get_contents(dirname(__DIR__, 1) . "/samples/ApiController.php.sample");
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
         Utils::createFolder('Controller');
         file_put_contents($file_path, $template);
