@@ -16,6 +16,7 @@ use fsmaker\Utils;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\confirm;
 
 #[AsCommand(
     name: 'controller',
@@ -92,26 +93,38 @@ class ControllerCommand extends BaseCommand
             hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "admin".'
         );
 
+        $createView = 'Si' === Utils::promptYesOrNo(
+            label: '¿Desea añadir la vista twig?'
+        );
+
         $samplePath = dirname(__DIR__, 3) . "/samples/Controller.php.sample";
         $sample = file_get_contents($samplePath);
+
+        if (!$createView) {
+            $search = "\n\n        \$this->view('[[NAME]].html.twig');";
+            $sample = str_replace($search, '', $sample);
+        }
+
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         Utils::createFolder($filePath);
         file_put_contents($fileName, $template);
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
-        $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
-        $viewFilename = $viewPath . $name . '.html.twig';
-        Utils::createFolder($viewPath);
-        if (file_exists($viewFilename)) {
-            Utils::echo('* ' . $viewFilename . " YA EXISTE.\n");
-            return;
-        }
+        if ($createView) {
+            $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
+            $viewFilename = $viewPath . $name . '.html.twig';
+            Utils::createFolder($viewPath);
+            if (file_exists($viewFilename)) {
+                Utils::echo('* ' . $viewFilename . " YA EXISTE.\n");
+                return;
+            }
 
-        $samplePath2 = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
-        $sample2 = file_get_contents($samplePath2);
-        $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
-        file_put_contents($viewFilename, $template2);
-        Utils::echo('* ' . $viewFilename . " -> OK.\n");
+            $samplePath2 = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
+            $sample2 = file_get_contents($samplePath2);
+            $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
+            file_put_contents($viewFilename, $template2);
+            Utils::echo('* ' . $viewFilename . " -> OK.\n");
+        }
     }
 
     private function createEditController(string $modelName, array $fields): void
