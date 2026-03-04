@@ -229,7 +229,30 @@ class ExtensionCommand extends BaseCommand
             return;
         }
 
-        file_put_contents($fileName, '');
+        $origin = select(
+            label: '¿Es una plantilla del core o de un plugin?',
+            options: [
+                'Core' => 'Core', 
+                'Plugin' => 'Plugin'
+            ],
+            default: 'Core'
+        );
+
+        if ($origin === 'Core') {
+            $extendsLine = "{% extends '@Core/" . $name . ".html.twig' %}";
+        } else {
+            $plugin = Utils::prompt(
+                label: 'Nombre del plugin',
+                placeholder: 'Ej: Pluginecommerce'
+            );
+            $extendsLine = "{% extends \"@" . $plugin . "/" . $name . ".html.twig\" %}";
+        }
+
+        $content = "{#\nDocumentación oficial: https://facturascripts.com/publicaciones/herencia-de-plantillas-904#md_h2 \n#}\n";
+        $content .= $extendsLine . "\n\n";
+        $content .= "{% block body %}\n    <h1>Hola mundo</h1>\n{% endblock %}";
+
+        file_put_contents($fileName, $content);
         Utils::echo('* ' . $fileName . " -> OK.\n");
     }
 }
