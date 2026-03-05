@@ -14,7 +14,7 @@ class Application extends BaseApplication
 {
     public function __construct()
     {
-        parent::__construct('FacturaScripts Maker', '2.0.0');
+        parent::__construct('FacturaScripts Maker', '2.1.0');
         $this->addCommands($this->getCommands());
     }
 
