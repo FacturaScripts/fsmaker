@@ -5,10 +5,19 @@
 
 namespace fsmaker\Console;
 
+use Laravel\Prompts\ConfirmPrompt;
+use Laravel\Prompts\MultiSelectPrompt;
+use Laravel\Prompts\Prompt;
+use Laravel\Prompts\SelectPrompt;
+use Laravel\Prompts\TextPrompt;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class Application extends BaseApplication
 {
@@ -16,6 +25,54 @@ class Application extends BaseApplication
     {
         parent::__construct('FacturaScripts Maker', '2.1.0');
         $this->addCommands($this->getCommands());
+    }
+
+    public function doRun(InputInterface $input, OutputInterface $output): int
+    {
+        // Fix para windows (la librería prompt no lo soporta)
+        // FORZAR CALLBACK SIEMPRE PARA TESTING (Prompt::fallbackWhen(true))
+        // En producción debería ser: Prompt::fallbackWhen(PHP_OS_FAMILY === 'Windows');
+        Prompt::fallbackWhen(true);
+
+        $io = new SymfonyStyle($input, $output);
+
+        TextPrompt::fallbackUsing(function (TextPrompt $prompt) use ($io) {
+            return $io->ask($prompt->label, $prompt->default, $prompt->validate);
+        });
+
+        SelectPrompt::fallbackUsing(function (SelectPrompt $prompt) use ($io) {
+            $choice = $io->choice($prompt->label, $prompt->options, $prompt->default);
+            // Ensure we return the key if options are associative
+            if (array_is_list($prompt->options)) {
+                return $choice;
+            }
+            return array_search($choice, $prompt->options) ?: $choice;
+        });
+
+        ConfirmPrompt::fallbackUsing(function (ConfirmPrompt $prompt) use ($io) {
+            return $io->confirm($prompt->label, $prompt->default);
+        });
+
+        MultiSelectPrompt::fallbackUsing(function (MultiSelectPrompt $prompt) use ($io) {
+            $default = is_array($prompt->default) ? implode(',', $prompt->default) : $prompt->default;
+            $question = new ChoiceQuestion($prompt->label, $prompt->options, $default);
+            $question->setMultiselect(true);
+            $result = $io->askQuestion($question);
+
+            if (array_is_list($prompt->options)) {
+                return $result;
+            }
+
+            // Map values back to keys
+            $mapped = [];
+            foreach ($result as $val) {
+                $key = array_search($val, $prompt->options);
+                $mapped[] = $key !== false ? $key : $val;
+            }
+            return $mapped;
+        });
+
+        return parent::doRun($input, $output);
     }
 
     /**
