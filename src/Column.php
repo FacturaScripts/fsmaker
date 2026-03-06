@@ -98,7 +98,7 @@ final class Column
                 label: '¿Desea crear los campos habituales? (No = Default)'
             );
 
-            if ($prompt === 'Si') {
+            if ($prompt === 'si') {
                 $fields[] = new Column([
                     'display' => 'none',
                     'nombre' => 'id',
@@ -539,8 +539,8 @@ final class Column
     {
         do {
             $requerido = Utils::promptYesOrNo("¿El campo {$this->nombre} es obligatorio? (No = predeterminado)");
-            $this->requerido = $requerido === 'Si';
-        } while ($requerido !== 'Si' && $requerido !== 'No');
+            $this->requerido = $requerido === 'si';
+        } while ($requerido !== 'si' && $requerido !== 'no');
     }
 
     private function askStep(): void

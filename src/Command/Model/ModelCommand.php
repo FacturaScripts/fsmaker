@@ -67,12 +67,12 @@ class ModelCommand extends BaseCommand
         }
 
         Utils::echo("\n");
-        if (Utils::promptYesOrNo('¿Crear EditController? (No - predeterminado)') === 'Si') {
+        if (Utils::promptYesOrNo('¿Crear EditController? (No - predeterminado)') === 'si') {
             $this->createEditController($name, $fields);
         }
 
         Utils::echo("\n");
-        if (Utils::promptYesOrNo('¿Crear ListController? (No - predeterminado)') === 'Si') {
+        if (Utils::promptYesOrNo('¿Crear ListController? (No - predeterminado)') === 'si') {
             $this->createListController($name, $fields);
         }
 

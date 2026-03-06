@@ -116,17 +116,17 @@ class Utils
     }
     
     /**
-     * Muestra un prompt de elegir si o no, devuelve 'Si' o 'No'
+     * Muestra un prompt de elegir si o no, devuelve 'si' o 'no'
      */
     public static function promptYesOrNo(string $label, bool $noPorDefecto = true): string {
         return select(
             label: $label,
             options: [
                 // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
-                'Si' => 'Si',
-                'No' => 'No'
+                'si' => 'Si',
+                'no' => 'No'
             ],
-            default: $noPorDefecto ? 'No' : 'Si',
+            default: $noPorDefecto ? 'no' : 'si',
             scroll: 2, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
             required: true
         );
