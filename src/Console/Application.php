@@ -37,7 +37,17 @@ class Application extends BaseApplication
         $io = new SymfonyStyle($input, $output);
 
         TextPrompt::fallbackUsing(function (TextPrompt $prompt) use ($io) {
-            return $io->ask($prompt->label, $prompt->default, $prompt->validate);
+            $validator = function ($value) use ($prompt) {
+                if ($prompt->validate) {
+                    $error = ($prompt->validate)($value ?? '');
+                    if (is_string($error) && strlen($error) > 0) {
+                        throw new \RuntimeException($error);
+                    }
+                }
+                return $value;
+            };
+
+            return (string)$io->ask($prompt->label, $prompt->default, $validator);
         });
 
         SelectPrompt::fallbackUsing(function (SelectPrompt $prompt) use ($io) {
@@ -54,9 +64,25 @@ class Application extends BaseApplication
         });
 
         MultiSelectPrompt::fallbackUsing(function (MultiSelectPrompt $prompt) use ($io) {
-            $default = is_array($prompt->default) ? implode(',', $prompt->default) : $prompt->default;
+            $default = $prompt->default;
+            if (is_array($default) && !empty($default)) {
+                $default = implode(',', $default);
+            } elseif (empty($default)) {
+                $default = null;
+            }
+
             $question = new ChoiceQuestion($prompt->label, $prompt->options, $default);
             $question->setMultiselect(true);
+
+            // Normalizador para permitir separar por espacios además de comas
+            $question->setNormalizer(function ($value) {
+                if ($value === null) {
+                    return $value;
+                }
+                // Reemplaza uno o más espacios/comas con una sola coma
+                return preg_replace('/[\s,]+/', ',', trim($value));
+            });
+
             $result = $io->askQuestion($question);
 
             if (array_is_list($prompt->options)) {
