@@ -30,33 +30,57 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
         // Fix para windows (la librería prompt no lo soporta)
-        // FORZAR CALLBACK SIEMPRE PARA TESTING (Prompt::fallbackWhen(true))
-        // En producción debería ser: Prompt::fallbackWhen(PHP_OS_FAMILY === 'Windows');
-        Prompt::fallbackWhen(true);
+        Prompt::fallbackWhen(PHP_OS_FAMILY === 'Windows');
+        // Prompt::fallbackWhen(true); // para tests
 
         $io = new SymfonyStyle($input, $output);
 
         TextPrompt::fallbackUsing(function (TextPrompt $prompt) use ($io) {
-            $validator = function ($value) use ($prompt) {
+            while (true) {
+                $value = $io->ask($prompt->label, $prompt->default);
+
                 if ($prompt->validate) {
                     $error = ($prompt->validate)($value ?? '');
                     if (is_string($error) && strlen($error) > 0) {
-                        throw new \RuntimeException($error);
+                        $io->writeln("<fg=red>Error: $error</>");
+                        continue;
                     }
                 }
-                return $value;
-            };
-
-            return (string)$io->ask($prompt->label, $prompt->default, $validator);
+                return (string)$value;
+            }
         });
 
         SelectPrompt::fallbackUsing(function (SelectPrompt $prompt) use ($io) {
-            $choice = $io->choice($prompt->label, $prompt->options, $prompt->default);
-            // Ensure we return the key if options are associative
-            if (array_is_list($prompt->options)) {
-                return $choice;
+            $question = new ChoiceQuestion($prompt->label, $prompt->options, $prompt->default);
+            // Capturar el validador por defecto
+            $validator = $question->getValidator();
+            
+            $question->setValidator(function ($answer) {
+               return $answer;
+            });
+
+            while (true) {
+                // Aquí el askQuestion llamará a nuestro validador nulo.
+                $answer = $io->askQuestion($question);
+                
+                try {
+                    // Validar manualmente con el validador original.
+                    // El validador original espera el valor tal cual sale del normalizador interno.
+                    $choice = $validator($answer);
+
+                    // Ensure we return the key if options are associative
+                    if (array_is_list($prompt->options)) {
+                        return $choice;
+                    }
+                    return array_search($choice, $prompt->options) ?: $choice;
+                } catch (\Exception $e) {
+                    $msg = $e->getMessage();
+                    if (preg_match('/^Value "(.*)" is invalid$/', $msg, $matches)) {
+                        $msg = "El valor \"{$matches[1]}\" es inválido";
+                    }
+                    $io->writeln("<fg=red>Error: $msg</>");
+                }
             }
-            return array_search($choice, $prompt->options) ?: $choice;
         });
 
         ConfirmPrompt::fallbackUsing(function (ConfirmPrompt $prompt) use ($io) {
@@ -83,19 +107,38 @@ class Application extends BaseApplication
                 return preg_replace('/[\s,]+/', ',', trim($value));
             });
 
-            $result = $io->askQuestion($question);
+            // Capturar el validador por defecto
+            $validator = $question->getValidator();
+            // Anular el validador en la pregunta
+            $question->setValidator(function ($answer) {
+                return $answer;
+            });
 
-            if (array_is_list($prompt->options)) {
-                return $result;
-            }
+            while (true) {
+                $result = $io->askQuestion($question);
+                try {
+                    // Validar manualmente
+                    $result = $validator($result);
 
-            // Map values back to keys
-            $mapped = [];
-            foreach ($result as $val) {
-                $key = array_search($val, $prompt->options);
-                $mapped[] = $key !== false ? $key : $val;
+                    if (array_is_list($prompt->options)) {
+                        return $result;
+                    }
+
+                    // Map values back to keys
+                    $mapped = [];
+                    foreach ($result as $val) {
+                        $key = array_search($val, $prompt->options);
+                        $mapped[] = $key !== false ? $key : $val;
+                    }
+                    return $mapped;
+                } catch (\Exception $e) {
+                    $msg = $e->getMessage();
+                    if (preg_match('/^Value "(.*)" is invalid$/', $msg, $matches)) {
+                        $msg = "El valor \"{$matches[1]}\" es inválido";
+                    }
+                    $io->writeln("<fg=red>Error: $msg</>");
+                }
             }
-            return $mapped;
         });
 
         return parent::doRun($input, $output);
