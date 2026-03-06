@@ -5,7 +5,6 @@
 
 namespace fsmaker\Console;
 
-use Laravel\Prompts\ConfirmPrompt;
 use Laravel\Prompts\MultiSelectPrompt;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
@@ -81,10 +80,6 @@ class Application extends BaseApplication
                     $io->writeln("<fg=red>Error: $msg</>");
                 }
             }
-        });
-
-        ConfirmPrompt::fallbackUsing(function (ConfirmPrompt $prompt) use ($io) {
-            return $io->confirm($prompt->label, $prompt->default);
         });
 
         MultiSelectPrompt::fallbackUsing(function (MultiSelectPrompt $prompt) use ($io) {
