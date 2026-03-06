@@ -93,7 +93,7 @@ class ControllerCommand extends BaseCommand
             hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "admin".'
         );
 
-        $createView = 'Si' === Utils::promptYesOrNo(
+        $createView = 'si' === Utils::promptYesOrNo(
             label: '¿Desea añadir la vista twig?'
         );
 
