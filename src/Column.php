@@ -441,7 +441,7 @@ final class Column
                 'center' => 'Centro',
                 'none' => 'Ocultar'
             ],
-            default: '0',
+            default: 'left',
             scroll: 4, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
             required: true
         );
