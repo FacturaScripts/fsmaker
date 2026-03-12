@@ -24,7 +24,8 @@
     "ext-mbstring": "*",
     "ext-ctype": "*",
     "laravel/prompts": "^0.3.10",
-    "symfony/console": "^6.4 || ^7.0"
+    "symfony/console": "^6.4 || ^7.0",
+    "symfony/http-foundation": "^7.4"
   },
   "bin": ["bin/fsmaker"],
   "require-dev": {
