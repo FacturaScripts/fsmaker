@@ -95,7 +95,7 @@ class CronJobCommand extends BaseCommand
             file_put_contents('Cron.php', $fileStr);
             $usePosition = strpos($fileStr, 'use FacturaScripts\Core\Template\CronClass');
             $usePosition = strpos($fileStr, ';', $usePosition) + 1;
-            $fileStr = substr_replace($fileStr, "\nuse Facturascripts\\$nameSpace\CronJob\\$name;", $usePosition, 0);
+            $fileStr = substr_replace($fileStr, "\nuse FacturaScripts\\$nameSpace\CronJob\\$name;", $usePosition, 0);
             file_put_contents('Cron.php', $fileStr);
             Utils::echo('* Cron.php actualizado' . " -> OK.\n");
         }
