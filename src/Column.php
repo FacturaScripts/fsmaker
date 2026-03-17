@@ -48,29 +48,37 @@ final class Column
         }
     }
 
-    public function ask(array $previous): void
+    public function ask(array $previous, bool $existsPrimaryKey = false): void
     {
         while (true) {
+            // Construimos las opciones base
+            $options = [
+                '1' => 'serial (autonumérico, ideal para ids)',
+                '2' => 'integer',
+                '3' => 'float',
+                '4' => 'boolean',
+                '5' => 'character varying',
+                '6' => 'text',
+                '7' => 'timestamp',
+                '8' => 'date',
+                '9' => 'time'
+            ];
+
+            // Si ya existe una primary key, quitamos la opción de serial
+            if ($existsPrimaryKey) {
+                unset($options['1']);
+            }
+
             $type = (int)select(
                 label: 'Elija el tipo de campo',
-                options: [
-                    // 'valor que devuelve' => 'key que se muestra al usuario a elegir'
-                    '1' => 'serial (autonumérico, ideal para ids)',
-                    '2' => 'integer',
-                    '3' => 'float',
-                    '4' => 'boolean',
-                    '5' => 'character varying',
-                    '6' => 'text',
-                    '7' => 'timestamp',
-                    '8' => 'date',
-                    '9' => 'time'
-                ],
-                default: '1',
-                scroll: 9, // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll)
+                options: $options,
+                default: $existsPrimaryKey ? '2' : '1',
+                scroll: count($options),  // cantidad de opciones a mostrar a la vez en pantalla (el resto scroll
                 required: true
             );
 
-            if ($type === 1) {
+            // Si no existe primary key y el usuario eligió serial, verificamos que no haya otra
+            if (!$existsPrimaryKey && $type === 1) {
                 foreach ($previous as $column) {
                     if ($column->tipo === 'serial' || $column->primary) {
                         Utils::echo("\nYa hay un campo de tipo serial o primary key.\n");
@@ -78,6 +86,7 @@ final class Column
                     }
                 }
             }
+            
             if ($type >= 1 && $type <= 9) {
                 $this->setType($type);
                 break;
@@ -88,12 +97,12 @@ final class Column
         }
     }
 
-    public static function askMulti(bool $extension = false): array
+    public static function askMulti(bool $existsPrimaryKey = false): array
     {
         $fields = [];
 
-        // si estamos en una extensión, no preguntamos por los campos por defecto
-        if (false === $extension) {
+        // si ya existe una primary key (por ejemplo, en extensiones), no preguntamos por los campos por defecto
+        if (false === $existsPrimaryKey) {
             $prompt = Utils::promptYesOrNo(
                 label: '¿Desea crear los campos habituales? (No = Default)'
             );
@@ -138,6 +147,15 @@ final class Column
         }
 
         while (true) {
+            // Verificamos dinámicamente si ya existe una primary key en los campos actuales
+            $hasPrimaryKey = $existsPrimaryKey;
+            foreach ($fields as $field) {
+                if ($field->tipo === 'serial' || $field->primary) {
+                    $hasPrimaryKey = true;
+                    break;
+                }
+            }
+
             $name = Utils::prompt(
                 label: 'Nombre del campo (vacío para terminar)',
                 placeholder: 'Dejar vacío o Ej: email',
@@ -156,7 +174,7 @@ final class Column
             }
 
             $column = new Column(['nombre' => $name]);
-            $column->ask($fields);
+            $column->ask($fields, $hasPrimaryKey);
 
             $fields[] = $column;
         }
@@ -166,7 +184,7 @@ final class Column
             return strcmp($a->nombre, $b->nombre);
         });
 
-        if (false === $extension) {
+        if (false === $existsPrimaryKey) {
             self::askPrimaryKey($fields);
         }
 

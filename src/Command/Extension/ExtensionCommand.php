@@ -180,6 +180,7 @@ class ExtensionCommand extends BaseCommand
             return;
         }
 
+        // En extensiones, la tabla ya existe y por tanto ya tiene una primary key
         $fields = Column::askMulti(true);
         FileGenerator::createTableXmlByFields($fileName, $name, $fields);
         Utils::echo('* ' . $fileName . " -> OK.\n");
@@ -208,6 +209,7 @@ class ExtensionCommand extends BaseCommand
             $type = 'edit';
         }
 
+        // En extensiones de XMLView, la tabla ya existe y por tanto ya tiene una primary key
         $fields = Column::askMulti(true);
         FileGenerator::createXMLViewByFields($fileName, $fields, $type, true);
         Utils::echo('* ' . $fileName . " -> OK.\n");
