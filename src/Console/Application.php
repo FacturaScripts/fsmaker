@@ -168,6 +168,7 @@ class Application extends BaseApplication
             new \fsmaker\Command\Init\InitCommand(),
             new \fsmaker\Command\List\ListCommand(),
             new \fsmaker\Command\Model\ModelCommand(),
+            new \fsmaker\Command\Mod\CalculatorModCommand(),
             new \fsmaker\Command\Plugin\PluginCommand(),
             new \fsmaker\Command\Test\TestCommand(),
             new \fsmaker\Command\Test\RunTestsCommand(),
