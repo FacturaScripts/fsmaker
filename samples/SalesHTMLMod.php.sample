@@ -1,0 +1,122 @@
+<?php
+
+namespace FacturaScripts\[[NAME_SPACE]]\Mod;
+
+use FacturaScripts\Core\Contract\SalesModInterface;
+use FacturaScripts\Core\Model\Base\SalesDocument;
+
+/**
+ * Mod para modificar los formularios de venta (Cabecera y Pie).
+ * 
+ * @see https://facturascripts.com/publicaciones/formularios-de-edicion-de-facturas-albaranes-etc
+ */
+class [[NAME]] implements SalesModInterface
+{
+    /**
+     * Aplica los cambios al modelo usando los datos recibidos del formulario.
+     */
+    public function apply(SalesDocument &$model, array $formData): void
+    {
+        // Ejemplo de cómo recoger y asignar datos al modelo:
+        // $model->pruebaNewFields = $formData['pruebaNewFields'];
+        // $model->pruebaNewModalFields = $formData['pruebaNewModalFields'];
+    }
+
+    /**
+     * Se ejecuta antes de aplicar los datos.
+     */
+    public function applyBefore(SalesDocument &$model, array $formData): void
+    {
+    }
+
+    /**
+     * Permite cargar archivos javascript o css adicionales si fuera necesario.
+     */
+    public function assets(): void
+    {
+    }
+
+    /**
+     * Registra nuevos campos que aparecerán en la pestaña general de la cabecera.
+     * Retorna un array con los identificadores de los campos.
+     */
+    public function newFields(): array
+    {
+        // Ejemplo de registro de campo:
+        // return ['pruebaNewFields'];
+        return [];
+    }
+
+    /**
+     * Registra nuevos campos para el modal de detalles adicionales de la cabecera (botón de los tres puntos).
+     * Retorna un array con los identificadores de los campos.
+     */
+    public function newModalFields(): array
+    {
+        // Ejemplo de registro de campo en modal:
+        // return ['pruebaNewModalFields'];
+        return [];
+    }
+
+    /**
+     * Registra nuevos botones o campos select que se añadirán al bloque principal de la cabecera.
+     */
+    public function newBtnFields(): array
+    {
+        // Ejemplo de registro de un botón:
+        // return ['pruebaNewBtnFields'];
+        return [];
+    }
+
+    /**
+     * Devuelve el HTML correspondiente a cada uno de los campos registrados.
+     */
+    public function renderField(SalesDocument $model, string $field): ?string
+    {
+        // Ejemplo de cómo asignar el html de un campo:
+        /*
+        if ($field == 'pruebaNewFields') {
+            return static::pruebaNewFields($model);
+        }
+        if ($field == 'pruebaNewModalFields') {
+            return static::pruebaNewModalFields($model);
+        }
+        if ($field == 'pruebaNewBtnFields') {
+            return static::pruebaNewBtnFields($model);
+        }
+        */
+
+        return null;
+    }
+
+    /* 
+    Ejemplos de métodos privados para generar el HTML:
+    
+    private static function pruebaNewFields(SalesDocument $model): string
+    {
+        $html = '<div class="col-sm"><div class="form-group">';
+        $html .= 'pruebaNewFields<input class="form-control border-danger" type="text" name="pruebaNewFields" placeholder="opcional" value="">';
+        $html .= '</div></div>';
+
+        return $html;
+    }
+
+    private static function pruebaNewModalFields(SalesDocument $model): string
+    {
+        $html = '<div class="col-sm"><div class="form-group">';
+        $html .= 'pruebaNewModalFields<input class="form-control border-danger" type="text" name="pruebaNewModalFields" placeholder="opcional" value="">';
+        $html .= '</div></div>';
+
+        return $html;
+    }
+
+    private static function pruebaNewBtnFields(SalesDocument $model): string
+    {
+        $html = '<div class="col-sm-auto"><div class="form-group">';
+        $html .= '<button type="button" class="btn btn-danger">pruebaNewBtnFields</button>';
+        $html .= '</div></div>';
+
+        return $html;
+    }
+    */
+}

@@ -1,0 +1,147 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Mod;
+
+use FacturaScripts\Core\Contract\PurchasesLineModInterface;
+use FacturaScripts\Core\Model\Base\PurchaseDocument;
+use FacturaScripts\Core\Model\Base\BusinessDocumentLine;
+
+/**
+ * Mod para modificar las líneas de los formularios de compras.
+ * 
+ * @see https://facturascripts.com/publicaciones/formularios-de-edicion-de-facturas-albaranes-etc
+ */
+class [[NAME]] implements PurchasesLineModInterface
+{
+    /**
+     * Aplica los cambios a nivel general después de guardar los datos de la línea.
+     */
+    public function apply(PurchaseDocument &$model, array &$lines, array $formData): void
+    {
+    }
+
+    /**
+     * Obtiene los datos de los nuevos campos del formulario y los asigna al modelo de la línea,
+     * para poder guardarlos en la base de datos.
+     */
+    public function applyToLine(array $formData, BusinessDocumentLine &$line, string $id): void
+    {
+        // Ejemplo:
+        // $line->pruebaNewFields = $formData['pruebaNewFields_' . $id];
+        // $line->pruebaNewModalFields = $formData['pruebaNewModalFields_' . $id];
+    }
+
+    /**
+     * Permite cargar archivos javascript o css adicionales si fuera necesario.
+     */
+    public function assets(): void
+    {
+    }
+
+    /**
+     * Retorna una línea rápida vacía si necesitas procesar algo en concreto al añadir nuevas líneas de forma masiva.
+     */
+    public function getFastLine(PurchaseDocument $model, array $formData): ?BusinessDocumentLine
+    {
+        return null;
+    }
+
+    /**
+     * Actualiza los datos de una columna sin perder el foco del cursor en el modo edición de línea.
+     */
+    public function map(array $lines, PurchaseDocument $model): array
+    {
+        /* Ejemplo de actualizar un dato al editar otro:
+        $map = [];
+        $num = 0;
+        foreach ($lines as $line) {
+            $num++;
+            $idlinea = $line->idlinea ?? 'n' . $num;
+            $map['pruebaNewFields_' . $idlinea] = 'aquí hacemos nuestro cálculo';
+        }
+        return $map;
+        */
+        return [];
+    }
+
+    /**
+     * Registra las nuevas columnas a añadir directamente en la línea de compra.
+     */
+    public function newFields(): array
+    {
+        // return ['pruebaNewFields'];
+        return [];
+    }
+
+    /**
+     * Registra nuevos campos que aparecerán dentro del botón "..." de cada línea.
+     */
+    public function newModalFields(): array
+    {
+        // return ['pruebaNewModalFields'];
+        return [];
+    }
+
+    /**
+     * Devuelve el HTML correspondiente al campo de la línea que se debe renderizar.
+     */
+    public function renderField(string $idlinea, BusinessDocumentLine $line, PurchaseDocument $model, string $field): ?string
+    {
+        /*
+        if ($field == 'pruebaNewFields') {
+            return static::pruebaNewFields($model);
+        }
+        if ($field == 'pruebaNewModalFields') {
+            return static::pruebaNewModalFields($model);
+        }
+        */
+
+        return null;
+    }
+
+    /**
+     * Devuelve el título HTML correspondiente a la cabecera de la columna añadida en newFields().
+     */
+    public function renderTitle(PurchaseDocument $model, string $field): ?string
+    {
+        /*
+        if ($field == 'pruebaNewFields') {
+            return static::pruebaNewFieldsTitle();
+        }
+        */
+
+        return null;
+    }
+
+    public function newTitles(): array
+    {
+        return [];
+    }
+
+    /*
+    Ejemplos de cómo generar el HTML de la línea:
+
+    private static function pruebaNewFields(string $idlinea, BusinessDocumentLine $line, PurchaseDocument $model): string
+    {
+        // Nota: order-1 a order-12 define la posición de la columna.
+        $html = '<div class="col-sm col-lg-1 order-2">';
+        $html .= '<div class="d-lg-none mt-3 small">Prueba</div>';
+        $html .= '<input class="form-control" type="text" name="pruebaNewFields_' . $idlinea . '" value="' . $line->pruebaNewFields . '">';
+        $html .= '</div>';
+        return $html;
+    }
+    
+    private function pruebaNewFieldsTitle(): string
+    {
+        return '<div class="col-lg-1 order-2">Prueba</div>';
+    }
+
+    private static function pruebaNewModalFields(string $idlinea, BusinessDocumentLine $line, PurchaseDocument $model): string
+    {
+        $html = '<div class="col-6"><div class="mb-2">';
+        $html .= 'pruebaNewModalFields<input class="form-control border-danger" type="text" name="pruebaNewModalFields_' . $idlinea . '" value="' . $line->pruebaNewModalFields . '">';
+        $html .= '</div></div>';
+        return $html;
+    }
+    */
+}
