@@ -69,10 +69,10 @@ class InitEditor
      * @param bool $checkIfNotExists revisa si existe esa linea de código
      * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
      */
-    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false): ?string
+    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false, string $functionName = 'init'): ?string
     {
         // obtener el diagnostico general
-        $analysis = self::detectValidInitFunction();
+        $analysis = self::detectValidInitFunction($functionName);
 
         // si algo va mal
         if (!$analysis['isValid']) {
@@ -118,7 +118,7 @@ class InitEditor
      * Esta función analiza el fichero y detecta si está correcto y se puede agregar funciones. Devuelve información útil.
      * @return array {isValid: bool, info: string|array}
      */
-    public static function detectValidInitFunction(): array
+    public static function detectValidInitFunction(string $functionName = 'init'): array
     {
         $str = self::getInitContent();
 
@@ -130,16 +130,16 @@ class InitEditor
         }
 
         $error = '';
-        $words = ['public', 'function', 'init', '(', ')', ':', 'void', '{'];
+        $words = ['public', 'function', $functionName, '(', ')', ':', 'void', '{'];
 
         // comprobar si solo existe una función init
         $matches = self::getSentenceMatches(self::removeSpaces($str), implode($words));
 
         if (count($matches) !== 1) {
             if (count($matches) > 1) {
-                $error = '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function init(): void{".\n';
+                $error = '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function ' . $functionName . '(): void{".\n';
             } else {// $matches < 1
-                $error = '* Error(Init.php): Init mal formado. No se ha podido encontrar "public function init(): void{".\n';
+                $error = '* Error(Init.php): Init mal formado. No se ha podido encontrar "public function ' . $functionName . '(): void{".\n';
             }
             return [
                 'isValid' => false,
