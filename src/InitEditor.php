@@ -63,16 +63,17 @@ class InitEditor
     }
 
     /**
-     * Devuelve el contenido del fichero agregandole la linea introducida por `str`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
+     * Devuelve el contenido del fichero agregandole la linea introducida por `str` a la función indicada. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
      *  - Esta función si que escribe comentarios en la terminal
+     * @param string $functionName
      * @param string $instructionStr
      * @param bool $checkIfNotExists revisa si existe esa linea de código
      * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
      */
-    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false, string $functionName = 'init'): ?string
+    public static function addToFunction(string $functionName, string $instructionStr, bool $checkIfNotExists = false): ?string
     {
         // obtener el diagnostico general
-        $analysis = self::detectValidInitFunction($functionName);
+        $analysis = self::detectValidFunction($functionName);
 
         // si algo va mal
         if (!$analysis['isValid']) {
@@ -115,10 +116,23 @@ class InitEditor
     }
 
     /**
+     * Devuelve el contenido del fichero agregandole la linea introducida por `str` a la función `init`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
+     *  - Esta función si que escribe comentarios en la terminal
+     * @param string $instructionStr
+     * @param bool $checkIfNotExists revisa si existe esa linea de código
+     * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
+     */
+    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false): ?string
+    {
+        return self::addToFunction('init', $instructionStr, $checkIfNotExists);
+    }
+
+    /**
      * Esta función analiza el fichero y detecta si está correcto y se puede agregar funciones. Devuelve información útil.
+     * @param string $functionName
      * @return array {isValid: bool, info: string|array}
      */
-    public static function detectValidInitFunction(string $functionName = 'init'): array
+    public static function detectValidFunction(string $functionName): array
     {
         $str = self::getInitContent();
 
