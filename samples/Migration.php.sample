@@ -1,6 +1,6 @@
 <?php
 
-namespace [[NAME_SPACE]]\Migration;
+namespace FacturaScripts\[[NAME_SPACE]]\Migration;
 
 use FacturaScripts\Core\Template\MigrationClass;
 
