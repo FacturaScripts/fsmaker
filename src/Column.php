@@ -143,6 +143,12 @@ final class Column
                     'tipo' => 'character varying',
                     'longitud' => 100
                 ]);
+
+                $addedNames = [];
+                foreach ($fields as $field) {
+                    $addedNames[] = $field->nombre;
+                }
+                Utils::echo("\n -> Se han registrado los campos: " . implode(', ', $addedNames) . ".\n\n");
             }
         }
 
