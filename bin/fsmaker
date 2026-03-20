@@ -2,7 +2,7 @@
 <?php declare(strict_types=1);
 
 /**
- * FacturaScripts Maker - Bootstrap script
+ * fsmaker - Bootstrap script
  *
  * @author Carlos García Gómez  <carlos@facturascripts.com>
  */
