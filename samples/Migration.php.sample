@@ -1,0 +1,31 @@
+<?php
+
+namespace FacturaScripts\[[NAME_SPACE]]\Migration;
+
+use FacturaScripts\Core\Template\MigrationClass;
+
+/**
+ * Clase de migración para realizar cambios en la base de datos de forma segura.
+ * Se ejecuta automáticamente tras instalar o actualizar el plugin.
+ *
+ * Más información: https://facturascripts.com/publicaciones/migraciones-de-tablas
+ */
+class [[NAME]] extends MigrationClass
+{
+    /**
+     * Identificador único de la migración.
+     * Debe ser descriptivo e incluir versión o fecha.
+     */
+    const MIGRATION_NAME = '[[MIGRATION_NAME]]';
+
+    /**
+     * Ejecuta la lógica de la migración
+     */
+    public function run(): void
+    {
+        // Tu lógica aquí
+        // if (!$this->db()->tableExists('mi_tabla')) {
+        //     return;
+        // }
+    }
+}

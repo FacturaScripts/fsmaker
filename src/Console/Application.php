@@ -167,6 +167,7 @@ class Application extends BaseApplication
             new \fsmaker\Command\Generator\ZipCommand(),
             new \fsmaker\Command\Init\InitCommand(),
             new \fsmaker\Command\List\ListCommand(),
+            new \fsmaker\Command\Migration\MigrationCommand(),
             new \fsmaker\Command\Model\ModelCommand(),
             new \fsmaker\Command\Mod\ModCommand(),
             new \fsmaker\Command\Plugin\PluginCommand(),

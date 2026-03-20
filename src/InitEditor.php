@@ -63,16 +63,17 @@ class InitEditor
     }
 
     /**
-     * Devuelve el contenido del fichero agregandole la linea introducida por `str`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
+     * Devuelve el contenido del fichero agregandole la linea introducida por `str` a la función indicada. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
      *  - Esta función si que escribe comentarios en la terminal
+     * @param string $functionName
      * @param string $instructionStr
      * @param bool $checkIfNotExists revisa si existe esa linea de código
      * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
      */
-    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false): ?string
+    public static function addToFunction(string $functionName, string $instructionStr, bool $checkIfNotExists = false): ?string
     {
         // obtener el diagnostico general
-        $analysis = self::detectValidInitFunction();
+        $analysis = self::detectValidFunction($functionName);
 
         // si algo va mal
         if (!$analysis['isValid']) {
@@ -115,10 +116,23 @@ class InitEditor
     }
 
     /**
+     * Devuelve el contenido del fichero agregandole la linea introducida por `str` a la función `init`. Si quieres agregarla solo si no existe puedes colocar a true `checkIfNotExists`
+     *  - Esta función si que escribe comentarios en la terminal
+     * @param string $instructionStr
+     * @param bool $checkIfNotExists revisa si existe esa linea de código
+     * @return ?string Si no ha sido exitosa la operación devuelve false si no pues el string modificado
+     */
+    public static function addToInitFunction(string $instructionStr, bool $checkIfNotExists = false): ?string
+    {
+        return self::addToFunction('init', $instructionStr, $checkIfNotExists);
+    }
+
+    /**
      * Esta función analiza el fichero y detecta si está correcto y se puede agregar funciones. Devuelve información útil.
+     * @param string $functionName
      * @return array {isValid: bool, info: string|array}
      */
-    public static function detectValidInitFunction(): array
+    public static function detectValidFunction(string $functionName): array
     {
         $str = self::getInitContent();
 
@@ -130,16 +144,16 @@ class InitEditor
         }
 
         $error = '';
-        $words = ['public', 'function', 'init', '(', ')', ':', 'void', '{'];
+        $words = ['public', 'function', $functionName, '(', ')', ':', 'void', '{'];
 
         // comprobar si solo existe una función init
         $matches = self::getSentenceMatches(self::removeSpaces($str), implode($words));
 
         if (count($matches) !== 1) {
             if (count($matches) > 1) {
-                $error = '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function init(): void{".\n';
+                $error = '* Error(Init.php): Init mal formado. Existe más de una coincidencia de: "public function ' . $functionName . '(): void{".\n';
             } else {// $matches < 1
-                $error = '* Error(Init.php): Init mal formado. No se ha podido encontrar "public function init(): void{".\n';
+                $error = '* Error(Init.php): Init mal formado. No se ha podido encontrar "public function ' . $functionName . '(): void{".\n';
             }
             return [
                 'isValid' => false,
