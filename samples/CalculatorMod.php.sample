@@ -1,0 +1,75 @@
+<?php
+
+namespace FacturaScripts\[[NAME_SPACE]]\Mod;
+
+use FacturaScripts\Core\Template\CalculatorModClass;
+use FacturaScripts\Core\Model\Base\BusinessDocument;
+use FacturaScripts\Core\Model\Base\BusinessDocumentLine;
+use FacturaScripts\Core\Model\RegimenIVA;
+
+/**
+ * Mod para modificar los cálculos de totales y subtotales de los albaranes, facturas, etc.
+ * 
+ * @see https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin
+ */
+class [[NAME]] implements CalculatorModClass
+{
+    /** @var string */
+    private $regimenIVA;
+
+    /**
+     * Podemos utilizar apply para aplicar configuraciones o precargar datos.
+     */
+    public function apply(BusinessDocument &$doc, array &$lines): bool
+    {
+        // Obtener y guardar el régimen de IVA una sola vez
+        // $subject = $doc->getSubject();
+        // $this->regimenIVA = $subject->regimeniva ?? RegimenIVA::TAX_SYSTEM_GENERAL;
+        return true;
+    }
+
+    /**
+     * La función calculate se usa para recalcular el total del documento.
+     */
+    public function calculate(BusinessDocument &$doc, array &$lines): bool
+    {
+        // $doc->total = 'aquí tu cálculo';
+        return true;
+    }
+
+    /**
+     * Para recalcular las líneas de los documentos se usa calculateLine.
+     */
+    public function calculateLine(BusinessDocument $doc, BusinessDocumentLine &$line): bool
+    {
+        // $line->pvptotal = 'aquí tu cálculo';
+        return true;
+    }
+
+    /**
+     * Para inicializar los registros se usa clear. Normalmente se inicializan todos los valores a 0,
+     * aunque si es necesario se puede utilizar otro valor.
+     */
+    public function clear(BusinessDocument &$doc, array &$lines): bool
+    {
+        /*
+        $doc->total = 0.0;
+        
+        foreach ($lines as $line) {
+            $line->total = 0.0;
+        }
+        */
+        
+        return true;
+    }
+
+    /**
+     * Para modificar los subtotales se utiliza getSubtotals, donde los subtotales se especifican mediante un array.
+     */
+    public function getSubtotals(array &$subtotals, BusinessDocument $doc, array $lines)
+    {
+        // $subtotals['neto'] += 10;
+        // $subtotals['total'] += 10;
+        return true;
+    }
+}
