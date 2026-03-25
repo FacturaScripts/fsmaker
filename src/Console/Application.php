@@ -158,6 +158,7 @@ class Application extends BaseApplication
             new \fsmaker\Command\Cron\CronCommand(),
             new \fsmaker\Command\Cron\CronJobCommand(),
             new \fsmaker\Command\Extension\ExtensionCommand(),
+            new \fsmaker\Command\Generator\AgentAiCommand(),
             new \fsmaker\Command\Generator\GithubActionCommand(),
             new \fsmaker\Command\Generator\GitignoreCommand(),
             new \fsmaker\Command\Help\HelpCommand(),
