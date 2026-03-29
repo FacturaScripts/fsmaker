@@ -175,6 +175,7 @@ class Application extends BaseApplication
             new \fsmaker\Command\Test\TestCommand(),
             new \fsmaker\Command\Test\RunTestsCommand(),
             new \fsmaker\Command\View\ViewCommand(),
+            new \fsmaker\Command\Web\WebCommand(),
             new \fsmaker\Command\Worker\WorkerCommand(),
         ];
     }
