@@ -9,6 +9,61 @@ final class FileGenerator
 {
     const OK = " -> OK.\n";
 
+    public static function createGithubActionRelease(): void
+    {
+        if (!Utils::isPluginFolder()) {
+            Utils::echo('* No se encuentra en un plugin');
+            return;
+        }
+
+        $filePath = ".github/workflows/release.yml";
+        if (file_exists($filePath)) {
+            Utils::echo('* ' . $filePath . " YA EXISTE\n");
+            return;
+        }
+
+        if (false === Utils::createFolder(dirname($filePath))) {
+            Utils::echo('* No se pudo crear la carpeta ' . dirname($filePath));
+            return;
+        }
+
+        $template = file_get_contents(__DIR__ . '/../samples/github-action-release.yml.sample');
+        if (file_put_contents($filePath, $template)) {
+            Utils::echo('* ' . $filePath . self::OK);
+        }
+    }
+
+    public static function createGithubActionTest(): void
+    {
+        if (!Utils::isPluginFolder()) {
+            Utils::echo('* No se encuentra en un plugin');
+            return;
+        }
+
+        $pluginName = Utils::findPluginName();
+        if (empty($pluginName)) {
+            Utils::echo('* No se pudo obtener el nombre del plugin');
+            return;
+        }
+
+        $filePath = ".github/workflows/tests.yml";
+        if (file_exists($filePath)) {
+            Utils::echo('* ' . $filePath . " YA EXISTE\n");
+            return;
+        }
+
+        if (false === Utils::createFolder(dirname($filePath))) {
+            Utils::echo('* No se pudo crear la carpeta ' . dirname($filePath));
+            return;
+        }
+
+        $template = file_get_contents(__DIR__ . '/../samples/github-action-test.yml.sample');
+        $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
+        if (file_put_contents($filePath, $content)) {
+            Utils::echo('* ' . $filePath . self::OK);
+        }
+    }
+
     public static function createGitIgnore(): void
     {
         $fileName = '.gitignore';
@@ -194,36 +249,5 @@ final class FileGenerator
             . "</view>";
 
         file_put_contents($xmlFilename, $sample);
-    }
-
-    public static function createGithubAction(): void
-    {
-        if (!Utils::isPluginFolder()) {
-            Utils::echo('* No se encuentra en un plugin');
-            return;
-        }
-
-        $pluginName = Utils::findPluginName();
-        if (empty($pluginName)) {
-            Utils::echo('* No se pudo obtener el nombre del plugin');
-            return;
-        }
-
-        $filePath = ".github/workflows/tests.yml";
-        if (file_exists($filePath)) {
-            Utils::echo('* ' . $filePath . " YA EXISTE\n");
-            return;
-        }
-
-        if (false === Utils::createFolder(dirname($filePath))) {
-            Utils::echo('* No se pudo crear la carpeta ' . dirname($filePath));
-            return;
-        }
-
-        $template = file_get_contents(__DIR__ . '/../samples/github-action.yml.sample');
-        $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
-        if (file_put_contents($filePath, $content)) {
-            Utils::echo('* ' . $filePath . self::OK);
-        }
     }
 }
