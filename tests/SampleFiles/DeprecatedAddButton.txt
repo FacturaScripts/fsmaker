@@ -1,0 +1,49 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Controller;
+
+use FacturaScripts\Core\Lib\ExtendedController\ListController;
+
+class TestListController extends ListController
+{
+    public function getPageData(): array
+    {
+        return ['title' => 'test', 'menu' => 'admin'];
+    }
+
+    protected function createViews(): void
+    {
+        $viewName = 'ListTestModel';
+        $this->addListView($viewName, 'TestModel', 'test-model');
+
+        // nombre de vista como variable, array multi-línea con varias propiedades
+        $this->addButton($viewName, [
+            'action' => 'remove-item',
+            'color' => 'danger',
+            'confirm' => true,
+            'icon' => 'fa-solid fa-folder-minus',
+            'label' => 'remove-from-list',
+        ]);
+
+        // nombre de vista como variable, con type link
+        $this->addButton($viewName, [
+            'action' => 'SendMail?email=test@example.com',
+            'color' => 'success',
+            'icon' => 'fa-solid fa-envelope',
+            'label' => 'send',
+            'type' => 'link',
+        ]);
+
+        // nombre de vista como literal con comillas simples
+        $this->addButton('OtherView', [
+            'action' => 'create-accounting-entry',
+            'label' => 'create-accounting-entry',
+            'icon' => 'fa-solid fa-balance-scale',
+            'color' => 'success',
+            'confirm' => true,
+        ]);
+
+        // nombre de vista con comillas dobles, array inline
+        $this->addButton("ThirdView", ['action' => 'run', 'icon' => 'fa-solid fa-play', 'label' => 'run']);
+    }
+}

@@ -1,0 +1,65 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Model;
+
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Tools;
+
+class TestModel
+{
+    public function findAll(): array
+    {
+        // operador = (básico, 2 argumentos)
+        $where = [new DataBaseWhere('channel', 'master')];
+
+        // operadores de comparación (3 argumentos)
+        $where[] = new DataBaseWhere('amount', 100, '>');
+        $where[] = new DataBaseWhere('stock', 0, '<');
+        $where[] = new DataBaseWhere('fecha', '2026-01-01', '>=');
+        $where[] = new DataBaseWhere('cantidad', 10, '<=');
+        $where[] = new DataBaseWhere('estado', 'cancelled', '!=');
+
+        // null con IS / IS NOT
+        $where[] = new DataBaseWhere('nick', null, 'IS');
+        $where[] = new DataBaseWhere('telefono1', null, 'IS NOT');
+
+        // OR junction (4 argumentos)
+        $where[] = new DataBaseWhere('telefono2', null, 'IS NOT', 'OR');
+
+        // LIKE y XLIKE
+        $where[] = new DataBaseWhere('nombre', 'test%', 'LIKE');
+        $where[] = new DataBaseWhere('descripcion', Tools::noHtml('buscar'), 'XLIKE');
+
+        // IN y NOT IN
+        $where[] = new DataBaseWhere('codimpuesto', implode(',', ['IVA21', 'IVA10']), 'IN');
+        $where[] = new DataBaseWhere('codejercicio', '2024,2025', 'NOT IN');
+
+        // REGEXP
+        $where[] = new DataBaseWhere('codigo', '^-?[0-9]+$', 'REGEXP');
+
+        // 5 argumentos (useField = true)
+        $where[] = new DataBaseWhere('stocks.disponible', 'field:stockmin', '<', 'AND', true);
+        $where[] = new DataBaseWhere('stocks.disponible', 'field:stockmax', '>', 'AND', true);
+
+        // getSQLWhere en concatenación SQL
+        $sql = 'SELECT * FROM table' . DataBaseWhere::getSQLWhere($where) . ' ORDER BY id ASC';
+
+        // getSQLWhere asignado a variable
+        $sqlWhere = DataBaseWhere::getSQLWhere($where);
+        $sql2 = 'SELECT MAX(id) FROM table' . $sqlWhere . ';';
+
+        return [];
+    }
+
+    public function searchByDate(string $dateStart, string $dateEnd): array
+    {
+        $where = [
+            new DataBaseWhere('fecha', $dateStart, '>='),
+            new DataBaseWhere('fecha', $dateEnd, '<='),
+        ];
+
+        $sql = 'SELECT * FROM docs' . DataBaseWhere::getSQLWhere($where);
+
+        return [];
+    }
+}

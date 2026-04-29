@@ -1,0 +1,38 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Model\Join;
+
+use FacturaScripts\Core\Model\Base\JoinModel;
+use FacturaScripts\Core\Where;
+
+class TestJoinModel extends JoinModel
+{
+    protected function getTables(): array
+    {
+        return ['asientos', 'partidas'];
+    }
+
+    protected function getFields(): array
+    {
+        return [
+            'idasiento' => 'partidas.idasiento',
+            'codsubcuenta' => 'partidas.codsubcuenta',
+            'codejercicio' => 'asientos.codejercicio',
+            'fecha' => 'asientos.fecha',
+            'debe' => 'SUM(partidas.debe)',
+            'haber' => 'SUM(partidas.haber)',
+        ];
+    }
+
+    protected function getSQLFrom(): string
+    {
+        return 'partidas'
+            . ' INNER JOIN asientos ON asientos.idasiento = partidas.idasiento';
+    }
+
+    public function findByExercise(string $codejercicio): array
+    {
+        $where = [Where::eq('asientos.codejercicio', $codejercicio)];
+        return static::all($where, ['fecha' => 'ASC'], 0, 50);
+    }
+}
