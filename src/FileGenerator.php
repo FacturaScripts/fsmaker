@@ -18,8 +18,7 @@ final class FileGenerator
 
         $filePath = ".github/workflows/release.yml";
         if (file_exists($filePath)) {
-            Utils::echo('* ' . $filePath . " YA EXISTE\n");
-            return;
+            Utils::echo('* ' . $filePath . " YA EXISTE LO REEMPLAZAMOS\n");
         }
 
         if (false === Utils::createFolder(dirname($filePath))) {
