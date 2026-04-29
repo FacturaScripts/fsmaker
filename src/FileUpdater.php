@@ -144,7 +144,10 @@ final class FileUpdater
                 strpos($fileStr, 'HttpFoundation') === false &&
                 strpos($fileStr, 'FacturaScripts\Core\Base') === false &&
                 strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false &&
-                strpos($fileStr, 'function clear()') === false
+                strpos($fileStr, 'function clear()') === false &&
+                strpos($fileStr, 'DataBaseWhere') === false &&
+                strpos($fileStr, '$this->addButton(') === false &&
+                strpos($fileStr, 'Core\Model\Base\JoinModel') === false
             ) {
                 continue;
             }
@@ -221,6 +224,7 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\InitClass;', 'use FacturaScripts\Core\Template\InitClass;', $fileStr);
 
             // reemplazamos modelos
+            $fileStr = str_replace('use FacturaScripts\Core\Model\Base\JoinModel;', 'use FacturaScripts\Core\Template\JoinModel;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelOnChange;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
@@ -294,6 +298,45 @@ final class FileUpdater
 
             // reemplazamos ->primaryColumnValue() por ->id()
             $fileStr = str_replace('->primaryColumnValue()', '->id()', $fileStr);
+
+            // reemplazamos DataBaseWhere por Where
+            if (strpos($fileStr, 'DataBaseWhere') !== false) {
+                $fileStr = str_replace('use FacturaScripts\Core\Base\DataBase\DataBaseWhere;', 'use FacturaScripts\Core\Where;', $fileStr);
+                $fileStr = str_replace('new DataBaseWhere(', 'new Where(', $fileStr);
+                $fileStr = str_replace('DataBaseWhere::getSQLWhere(', 'Where::multiSqlLegacy(', $fileStr);
+
+                // inyectamos el use de Where si no está presente tras el reemplazo
+                $whereUsed = strpos($fileStr, 'new Where(') !== false || strpos($fileStr, 'Where::') !== false;
+                $whereImported = strpos($fileStr, 'use FacturaScripts\Core\Where;') !== false;
+                if ($whereUsed && !$whereImported) {
+                    $uses = [];
+                    $matches = [];
+                    preg_match_all('/use FacturaScripts\\\\Core\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
+                    foreach ($matches[0] as $match) {
+                        $uses[] = $match;
+                    }
+                    $uses[] = 'use FacturaScripts\Core\Where;';
+                    sort($uses);
+                    $pos = array_search('use FacturaScripts\Core\Where;', $uses);
+                    $namespace = '';
+                    preg_match('/namespace FacturaScripts\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
+                    if (isset($matches[0])) {
+                        $namespace = $matches[0];
+                    }
+                    if ($pos === 0) {
+                        $fileStr = str_replace($namespace, $namespace . "\n\nuse FacturaScripts\Core\Where;", $fileStr);
+                    } else {
+                        $fileStr = str_replace($uses[$pos - 1], $uses[$pos - 1] . "\nuse FacturaScripts\Core\Where;", $fileStr);
+                    }
+                }
+            }
+
+            // reemplazamos $this->addButton($viewName, $array) por $this->tab($viewName)->addButton($array)
+            $fileStr = preg_replace(
+                '/\$this->addButton\(\s*((?:\'[^\']*\'|"[^"]*"|\$\w+))\s*,\s*/',
+                '$this->tab($1)->addButton(',
+                $fileStr
+            );
 
             // reemplazamos $this->previousData['xxx'] por $this->getOriginal('xxx')
             $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
@@ -454,7 +497,7 @@ final class FileUpdater
         }
     }
 
-    public static function upgradeIniFile(): void
+        public static function upgradeIniFile(): void
     {
         $iniFile = 'facturascripts.ini';
 
@@ -539,7 +582,7 @@ final class FileUpdater
 
         return $files;
     }
-
+    
     private static function filterTableFiles(array $files): array
     {
         return array_filter($files, function ($file) {
