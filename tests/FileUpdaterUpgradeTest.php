@@ -38,32 +38,53 @@ class FileUpdaterUpgradeTest extends TestCase
             // ninguna referencia a DataBaseWhere debe quedar
             $this->assertStringNotContainsString('DataBaseWhere', $updated);
 
+            // no se usa el constructor genérico: todas son factory methods
+            $this->assertStringNotContainsString('new Where(', $updated);
+
             // el import se actualiza correctamente
             $this->assertStringContainsString('use FacturaScripts\Core\Where;', $updated);
 
             // los imports no relacionados se conservan
             $this->assertStringContainsString('use FacturaScripts\Core\Tools;', $updated);
 
-            // las 18 instanciaciones se reemplazan por new Where(
-            $this->assertSame(18, substr_count($updated, 'new Where('));
-
             // las 3 llamadas a getSQLWhere se reemplazan por multiSqlLegacy
             $this->assertSame(3, substr_count($updated, 'Where::multiSqlLegacy('));
 
-            // los operadores y argumentos se conservan intactos
-            $this->assertStringContainsString("new Where('channel', 'master')", $updated);
-            $this->assertStringContainsString("new Where('amount', 100, '>')", $updated);
-            $this->assertStringContainsString("new Where('stock', 0, '<')", $updated);
-            $this->assertStringContainsString("new Where('nick', null, 'IS')", $updated);
-            $this->assertStringContainsString("new Where('telefono1', null, 'IS NOT')", $updated);
-            $this->assertStringContainsString("new Where('telefono2', null, 'IS NOT', 'OR')", $updated);
-            $this->assertStringContainsString("new Where('nombre', 'test%', 'LIKE')", $updated);
-            $this->assertStringContainsString("new Where('descripcion', Tools::noHtml('buscar'), 'XLIKE')", $updated);
-            $this->assertStringContainsString("new Where('codimpuesto', implode(',', ['IVA21', 'IVA10']), 'IN')", $updated);
-            $this->assertStringContainsString("new Where('codejercicio', '2024,2025', 'NOT IN')", $updated);
-            $this->assertStringContainsString("new Where('codigo', '^-?[0-9]+\$', 'REGEXP')", $updated);
-            $this->assertStringContainsString("new Where('stocks.disponible', 'field:stockmin', '<', 'AND', true)", $updated);
-            $this->assertStringContainsString("new Where('stocks.disponible', 'field:stockmax', '>', 'AND', true)", $updated);
+            // operador = (por defecto, 2 argumentos)
+            $this->assertStringContainsString("Where::eq('channel', 'master')", $updated);
+
+            // operadores de comparación numérica
+            $this->assertStringContainsString("Where::gt('amount', 100)", $updated);
+            $this->assertStringContainsString("Where::lt('stock', 0)", $updated);
+            $this->assertStringContainsString("Where::gte('fecha', '2026-01-01')", $updated);
+            $this->assertStringContainsString("Where::lte('cantidad', 10)", $updated);
+            $this->assertStringContainsString("Where::notEq('estado', 'cancelled')", $updated);
+
+            // IS NULL / IS NOT NULL (el valor null no se pasa como argumento)
+            $this->assertStringContainsString("Where::isNull('nick')", $updated);
+            $this->assertStringContainsString("Where::isNotNull('telefono1')", $updated);
+
+            // variante OR
+            $this->assertStringContainsString("Where::orIsNotNull('telefono2')", $updated);
+
+            // LIKE y XLIKE (value puede ser una llamada a función)
+            $this->assertStringContainsString("Where::like('nombre', 'test%')", $updated);
+            $this->assertStringContainsString("Where::xlike('descripcion', Tools::noHtml('buscar'))", $updated);
+
+            // IN y NOT IN (value puede contener comas internas en implode)
+            $this->assertStringContainsString("Where::in('codimpuesto', implode(',', ['IVA21', 'IVA10']))", $updated);
+            $this->assertStringContainsString("Where::notIn('codejercicio', '2024,2025')", $updated);
+
+            // REGEXP
+            $this->assertStringContainsString("Where::regexp('codigo', '^-?[0-9]+\$')", $updated);
+
+            // useField (5º argumento true) → encadenado con ->useField()
+            $this->assertStringContainsString("Where::lt('stocks.disponible', 'field:stockmin')->useField()", $updated);
+            $this->assertStringContainsString("Where::gt('stocks.disponible', 'field:stockmax')->useField()", $updated);
+
+            // rango de fechas con variables (searchByDate)
+            $this->assertStringContainsString("Where::gte('fecha', \$dateStart)", $updated);
+            $this->assertStringContainsString("Where::lte('fecha', \$dateEnd)", $updated);
         } finally {
             chdir($originalDir);
             Utils::setSilent(false);
