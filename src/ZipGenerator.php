@@ -59,8 +59,19 @@ class ZipGenerator
                 continue;
             }
 
-            // excluimos Thumbs.db
-            if ($name === './Thumbs.db') {
+            // excluimos archivos basura de macOS y Windows en cualquier nivel
+            $basename = basename($name);
+            if ($basename === '.DS_Store' || $basename === 'Thumbs.db' || $basename === '.AppleDouble' || $basename === '.Spotlight-V100' || $basename === '.Trashes') {
+                continue;
+            }
+
+            // excluimos la carpeta __MACOSX en cualquier nivel
+            if (strpos($name, '/__MACOSX/') !== false || strpos($name, './__MACOSX/') === 0) {
+                continue;
+            }
+
+            // excluimos archivos AppleDouble (._archivo)
+            if (substr($basename, 0, 2) === '._') {
                 continue;
             }
 
