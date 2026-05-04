@@ -31,7 +31,7 @@ class PluginCreationIntegrationTest extends TestCase
         // Restore normal output mode
         Utils::setSilent(false);
     }
-
+    
     private function removeDirectory(string $dir): void
     {
         if (!is_dir($dir)) {
@@ -125,6 +125,60 @@ class PluginCreationIntegrationTest extends TestCase
         $this->assertStringContainsString('class Cron extends CronClass', $cronContent);
     }
 
+    public function testGithubActionReleaseCreation(): void
+    {
+        file_put_contents('facturascripts.ini', "name = '" . $this->pluginName . "'\n");
+
+        FileGenerator::createGithubActionRelease();
+
+        $filePath = '.github/workflows/release.yml';
+        $this->assertFileExists($filePath);
+        $this->assertStringContainsString('Crear Release', file_get_contents($filePath));
+    }
+
+    public function testGithubActionTestCreation(): void
+    {
+        file_put_contents('facturascripts.ini', "name = '" . $this->pluginName . "'\n");
+
+        FileGenerator::createGithubActionTest();
+
+        $filePath = '.github/workflows/tests.yml';
+        $this->assertFileExists($filePath);
+        $this->assertStringContainsString($this->pluginName, file_get_contents($filePath));
+    }
+
+    public function testGithubActionTestNotOverwritten(): void
+    {
+        file_put_contents('facturascripts.ini', "name = '" . $this->pluginName . "'\n");
+        Utils::createFolder('.github/workflows');
+        $original = "# original\n";
+        file_put_contents('.github/workflows/tests.yml', $original);
+
+        FileGenerator::createGithubActionTest();
+
+        $this->assertEquals($original, file_get_contents('.github/workflows/tests.yml'));
+    }
+    
+    public function testGitignoreNotOverwritten(): void
+    {
+        $original = "# original content\n";
+        file_put_contents('.gitignore', $original);
+
+        FileGenerator::createGitIgnore();
+
+        $this->assertEquals($original, file_get_contents('.gitignore'));
+    }
+
+    public function testIniNotOverwritten(): void
+    {
+        $original = "name = 'OtherPlugin'\n";
+        file_put_contents('facturascripts.ini', $original);
+
+        FileGenerator::createIni($this->pluginName);
+
+        $this->assertEquals($original, file_get_contents('facturascripts.ini'));
+    }
+
     public function testInitFileCreation(): void
     {
         // Create plugin directory
@@ -180,6 +234,10 @@ class PluginCreationIntegrationTest extends TestCase
         // Test that FileGenerator class has required methods
         $this->assertTrue(method_exists(FileGenerator::class, 'createIni'));
         $this->assertTrue(method_exists(FileGenerator::class, 'createGitIgnore'));
-        $this->assertTrue(method_exists(FileGenerator::class, 'createGithubAction'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createGithubActionRelease'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createGithubActionTest'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createModelByFields'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createTableXmlByFields'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createXMLViewByFields'));
     }
 }
