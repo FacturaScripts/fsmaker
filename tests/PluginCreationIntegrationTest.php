@@ -180,6 +180,6 @@ class PluginCreationIntegrationTest extends TestCase
         // Test that FileGenerator class has required methods
         $this->assertTrue(method_exists(FileGenerator::class, 'createIni'));
         $this->assertTrue(method_exists(FileGenerator::class, 'createGitIgnore'));
-        $this->assertTrue(method_exists(FileGenerator::class, 'createGithubAction'));
+        $this->assertTrue(method_exists(FileGenerator::class, 'createGithubActionRelease'));
     }
 }
