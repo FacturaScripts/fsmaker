@@ -9,6 +9,23 @@ final class FileUpdater
 {
     const OK = " -> OK.\n";
 
+    private const WHERE_FACTORY_MAP = [
+        '='        => ['and' => 'eq',        'or' => 'orEq'],
+        '!='       => ['and' => 'notEq',     'or' => 'orNotEq'],
+        '>'        => ['and' => 'gt',        'or' => 'orGt'],
+        '>='       => ['and' => 'gte',       'or' => 'orGte'],
+        '<'        => ['and' => 'lt',        'or' => 'orLt'],
+        '<='       => ['and' => 'lte',       'or' => 'orLte'],
+        'LIKE'     => ['and' => 'like',      'or' => 'orLike'],
+        'NOT LIKE' => ['and' => 'notLike',   'or' => 'orNotLike'],
+        'XLIKE'    => ['and' => 'xlike',     'or' => 'orXlike'],
+        'IN'       => ['and' => 'in',        'or' => 'orIn'],
+        'NOT IN'   => ['and' => 'notIn',     'or' => 'orNotIn'],
+        'REGEXP'   => ['and' => 'regexp',    'or' => 'orRegexp'],
+        'IS'       => ['and' => 'isNull',    'or' => 'orIsNull'],
+        'IS NOT'   => ['and' => 'isNotNull', 'or' => 'orIsNotNull'],
+    ];
+
     public static function upgradeBootstrap5(): void
     {
         if (false === Utils::isPluginFolder()) {
@@ -112,7 +129,7 @@ final class FileUpdater
             Utils::echo("* Error al guardar el archivo " . $jsFile . "\n");
         }
     }
-
+    
     public static function upgradePhpFiles(): void
     {
         // obtenemos la lista de archivos
@@ -144,7 +161,10 @@ final class FileUpdater
                 strpos($fileStr, 'HttpFoundation') === false &&
                 strpos($fileStr, 'FacturaScripts\Core\Base') === false &&
                 strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false &&
-                strpos($fileStr, 'function clear()') === false
+                strpos($fileStr, 'function clear()') === false &&
+                strpos($fileStr, 'DataBaseWhere') === false &&
+                strpos($fileStr, '$this->addButton(') === false &&
+                strpos($fileStr, 'Core\Model\Base\JoinModel') === false
             ) {
                 continue;
             }
@@ -221,6 +241,7 @@ final class FileUpdater
             $fileStr = str_replace('use FacturaScripts\Core\Base\InitClass;', 'use FacturaScripts\Core\Template\InitClass;', $fileStr);
 
             // reemplazamos modelos
+            $fileStr = str_replace('use FacturaScripts\Core\Model\Base\JoinModel;', 'use FacturaScripts\Core\Template\JoinModel;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelClass;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelTrait;', 'use FacturaScripts\Core\Template\ModelTrait;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Model\Base\ModelOnChange;', 'use FacturaScripts\Core\Template\ModelClass;', $fileStr);
@@ -294,6 +315,45 @@ final class FileUpdater
 
             // reemplazamos ->primaryColumnValue() por ->id()
             $fileStr = str_replace('->primaryColumnValue()', '->id()', $fileStr);
+
+            // reemplazamos DataBaseWhere por Where
+            if (strpos($fileStr, 'DataBaseWhere') !== false) {
+                $fileStr = str_replace('use FacturaScripts\Core\Base\DataBase\DataBaseWhere;', 'use FacturaScripts\Core\Where;', $fileStr);
+                $fileStr = str_replace('DataBaseWhere::getSQLWhere(', 'Where::multiSqlLegacy(', $fileStr);
+                $fileStr = self::convertDataBaseWhereCalls($fileStr);
+
+                // inyectamos el use de Where si no está presente tras el reemplazo
+                $whereUsed = strpos($fileStr, 'Where::') !== false;
+                $whereImported = strpos($fileStr, 'use FacturaScripts\Core\Where;') !== false;
+                if ($whereUsed && !$whereImported) {
+                    $uses = [];
+                    $matches = [];
+                    preg_match_all('/use FacturaScripts\\\\Core\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
+                    foreach ($matches[0] as $match) {
+                        $uses[] = $match;
+                    }
+                    $uses[] = 'use FacturaScripts\Core\Where;';
+                    sort($uses);
+                    $pos = array_search('use FacturaScripts\Core\Where;', $uses);
+                    $namespace = '';
+                    preg_match('/namespace FacturaScripts\\\\[a-zA-Z0-9_\\\\]*;/', $fileStr, $matches);
+                    if (isset($matches[0])) {
+                        $namespace = $matches[0];
+                    }
+                    if ($pos === 0) {
+                        $fileStr = str_replace($namespace, $namespace . "\n\nuse FacturaScripts\Core\Where;", $fileStr);
+                    } else {
+                        $fileStr = str_replace($uses[$pos - 1], $uses[$pos - 1] . "\nuse FacturaScripts\Core\Where;", $fileStr);
+                    }
+                }
+            }
+
+            // reemplazamos $this->addButton($viewName, $array) por $this->tab($viewName)->addButton($array)
+            $fileStr = preg_replace(
+                '/\$this->addButton\(\s*((?:\'[^\']*\'|"[^"]*"|\$\w+))\s*,\s*/',
+                '$this->tab($1)->addButton(',
+                $fileStr
+            );
 
             // reemplazamos $this->previousData['xxx'] por $this->getOriginal('xxx')
             $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
@@ -454,7 +514,7 @@ final class FileUpdater
         }
     }
 
-    public static function upgradeIniFile(): void
+        public static function upgradeIniFile(): void
     {
         $iniFile = 'facturascripts.ini';
 
@@ -505,6 +565,96 @@ final class FileUpdater
         }
     }
 
+
+    /**
+     * Convierte los argumentos de un DataBaseWhere en la llamada a la factory method
+     * correspondiente de Where, respetando operador, operación (AND/OR) y useField.
+     */
+    private static function buildWhereFactoryCall(array $args, string $argsStr): string
+    {
+        $field     = $args[0] ?? '';
+        $value     = $args[1] ?? 'null';
+        $operator  = strtoupper(trim($args[2] ?? "'='", "'\" "));
+        $operation = strtoupper(trim($args[3] ?? "'AND'", "'\" "));
+        $useField  = isset($args[4]) && strtolower(trim($args[4])) === 'true';
+
+        if (!isset(self::WHERE_FACTORY_MAP[$operator])) {
+            // operador sin equivalente directo: conservar el constructor genérico
+            return 'new Where(' . $argsStr . ')';
+        }
+
+        $variant = ($operation === 'OR') ? 'or' : 'and';
+        $method  = self::WHERE_FACTORY_MAP[$operator][$variant];
+
+        // IS NULL / IS NOT NULL encapsulan el valor null dentro del método; no lo reciben como argumento
+        $call = ($operator === 'IS' || $operator === 'IS NOT')
+            ? "Where::$method($field)"
+            : "Where::$method($field, $value)";
+
+        return $useField ? $call . '->useField()' : $call;
+    }
+
+    /**
+     * Recorre el código fuente buscando todas las instanciaciones de DataBaseWhere
+     * y las reemplaza por la factory method equivalente de Where.
+     */
+    private static function convertDataBaseWhereCalls(string $fileStr): string
+    {
+        $result = '';
+        $pos = 0;
+        $needle = 'new DataBaseWhere(';
+
+        while (($start = strpos($fileStr, $needle, $pos)) !== false) {
+            // acumular el texto que precede a esta instanciación
+            $result .= substr($fileStr, $pos, $start - $pos);
+
+            $openParen  = $start + strlen($needle) - 1;
+            $closeParen = self::findClosingParen($fileStr, $openParen);
+
+            $argsStr = substr($fileStr, $openParen + 1, $closeParen - $openParen - 1);
+            $args    = self::parseCallArguments($argsStr);
+
+            $result .= self::buildWhereFactoryCall($args, $argsStr);
+
+            $pos = $closeParen + 1;
+        }
+
+        return $result . substr($fileStr, $pos);
+    }
+
+    /**
+     * Localiza el paréntesis de cierre balanceado a partir de la posición del paréntesis de apertura.
+     * Ignora correctamente los paréntesis que aparecen dentro de cadenas de texto.
+     */
+    private static function findClosingParen(string $code, int $openAt): int
+    {
+        $depth    = 0;
+        $inSingle = false;
+        $inDouble = false;
+
+        for ($i = $openAt, $len = strlen($code); $i < $len; $i++) {
+            $ch   = $code[$i];
+            $prev = $i > 0 ? $code[$i - 1] : '';
+
+            if ($ch === "'" && !$inDouble && $prev !== '\\') {
+                $inSingle = !$inSingle;
+            } elseif ($ch === '"' && !$inSingle && $prev !== '\\') {
+                $inDouble = !$inDouble;
+            } elseif (!$inSingle && !$inDouble) {
+                if ($ch === '(' || $ch === '[') {
+                    $depth++;
+                } elseif ($ch === ')' || $ch === ']') {
+                    $depth--;
+                    if ($depth === 0) {
+                        return $i;
+                    }
+                }
+            }
+        }
+
+        return $openAt; // fallback: no se encontró cierre balanceado
+    }
+
     private static function getFilesByExtension(string $folder, string $extension, &$files = array()): array
     {
         // obtenemos la lista de archivos y carpetas
@@ -551,5 +701,60 @@ final class FileUpdater
             return !preg_match('#(^|/)Table/#', $relativePath) &&
                 !preg_match('#(^|/)Extension/Table/#', $relativePath);
         });
+    }
+
+    /**
+     * Divide una cadena de argumentos PHP en un array, respetando cadenas de texto
+     * y estructuras anidadas (paréntesis, corchetes) para no confundir sus comas
+     * internas con separadores de argumento.
+     *
+     * Ejemplo: "'campo', implode(',', ['a','b']), 'IN'"  →  ["'campo'", "implode(',', ['a','b'])", "'IN'"]
+     */
+    private static function parseCallArguments(string $str): array
+    {
+        $args     = [];
+        $current  = '';
+        $depth    = 0;       // profundidad de paréntesis/corchetes anidados
+        $inSingle = false;   // cursor dentro de una cadena con comillas simples
+        $inDouble = false;   // cursor dentro de una cadena con comillas dobles
+
+        for ($i = 0, $len = strlen($str); $i < $len; $i++) {
+            $ch   = $str[$i];
+            $prev = $i > 0 ? $str[$i - 1] : '';
+
+            if ($ch === "'" && !$inDouble && $prev !== '\\') {
+                // apertura/cierre de cadena simple; el carácter pertenece al argumento
+                $inSingle = !$inSingle;
+                $current .= $ch;
+            } elseif ($ch === '"' && !$inSingle && $prev !== '\\') {
+                // apertura/cierre de cadena doble; el carácter pertenece al argumento
+                $inDouble = !$inDouble;
+                $current .= $ch;
+            } elseif (!$inSingle && !$inDouble) {
+                // fuera de cadenas: interpretar la estructura del código
+                if ($ch === '(' || $ch === '[') {
+                    $depth++;
+                    $current .= $ch;
+                } elseif ($ch === ')' || $ch === ']') {
+                    $depth--;
+                    $current .= $ch;
+                } elseif ($ch === ',' && $depth === 0) {
+                    // coma en nivel raíz → separador de argumento
+                    $args[]  = trim($current);
+                    $current = '';
+                } else {
+                    $current .= $ch;
+                }
+            } else {
+                // dentro de una cadena: copiar literalmente sin interpretar
+                $current .= $ch;
+            }
+        }
+
+        if (trim($current) !== '') {
+            $args[] = trim($current);
+        }
+
+        return $args;
     }
 }
