@@ -132,8 +132,17 @@ jobs:
 
             # Compilar assets npm si los había en ese commit
             if [ -f "${BUILD_DIR}/${PLUGIN_NAME}/package.json" ]; then
-              echo "Compilando assets npm para $ver..."
-              (cd "${BUILD_DIR}/${PLUGIN_NAME}" && npm ci && npm run build)
+              HAS_BUILD=$(node -e "const p=require('${BUILD_DIR}/${PLUGIN_NAME}/package.json'); process.exit(p.scripts&&p.scripts.build?0:1);" 2>/dev/null && echo "yes" || echo "no")
+              if [ "$HAS_BUILD" = "yes" ]; then
+                echo "Compilando assets npm para $ver..."
+                if [ -f "${BUILD_DIR}/${PLUGIN_NAME}/package-lock.json" ]; then
+                  (cd "${BUILD_DIR}/${PLUGIN_NAME}" && npm ci && npm run build)
+                else
+                  (cd "${BUILD_DIR}/${PLUGIN_NAME}" && npm install && npm run build)
+                fi
+              else
+                echo "package.json sin script 'build', se omite compilación npm para $ver."
+              fi
             fi
 
             # Limpiar archivos que no deben distribuirse
@@ -278,7 +287,16 @@ jobs:
         if: steps.mode.outputs.mode == 'current' && steps.versions.outputs.skip != 'true'
         run: |
           if [ -f "package.json" ]; then
-            npm ci && npm run build
+            HAS_BUILD=$(node -e "const p=require('./package.json'); process.exit(p.scripts&&p.scripts.build?0:1);" 2>/dev/null && echo "yes" || echo "no")
+            if [ "$HAS_BUILD" = "yes" ]; then
+              if [ -f "package-lock.json" ]; then
+                npm ci && npm run build
+              else
+                npm install && npm run build
+              fi
+            else
+              echo "package.json sin script 'build', se omite compilación npm."
+            fi
           else
             echo "No existe package.json, se omite."
           fi
