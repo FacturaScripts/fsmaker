@@ -137,6 +137,20 @@ Ejecuta los tests del plugin. Opcionalmente especifica la ruta de FacturaScripts
 #### `fsmaker zip`
 Genera un archivo ZIP del plugin listo para distribución.
 
+#### `fsmaker web`
+Inicia una interfaz web local para ejecutar comandos de fsmaker desde el navegador.
+
+```bash
+fsmaker web
+```
+
+Opciones útiles:
+
+```bash
+fsmaker web --port=8788
+fsmaker web --host=0.0.0.0 --no-open
+```
+
 ## ✅ Requisitos
 
 - PHP 8.1 o superior
@@ -221,6 +235,14 @@ fsmaker upgrade-bs5    # Migra Bootstrap 4 → 5
 ```bash
 cd MiPlugin/
 fsmaker zip
+```
+
+### Usar interfaz web local
+```bash
+cd MiPlugin/
+fsmaker web
+# abre http://127.0.0.1:8787
+# en "Respuestas" escribe una por línea en orden de los prompts
 ```
 
 ### Ejecutar con mayor verbosidad
