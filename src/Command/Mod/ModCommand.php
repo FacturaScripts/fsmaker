@@ -85,9 +85,13 @@ class ModCommand extends BaseCommand
         // Escribir en Init.php
         $use = 'use ' . $useClass . ';';
         $newInitContent = InitEditor::addUse($use);
-        InitEditor::setInitContent($newInitContent);
+        if ($newInitContent !== null) {
+            InitEditor::setInitContent($newInitContent);
+        }
         $newInitContent = InitEditor::addToInitFunction($initCode);
-        InitEditor::setInitContent($newInitContent);
+        if ($newInitContent !== null) {
+            InitEditor::setInitContent($newInitContent);
+        }
 
         return Command::SUCCESS;
     }
