@@ -9,6 +9,24 @@ final class FileUpdater
 {
     const OK = " -> OK.\n";
 
+    private static array $warnings = [];
+
+    public static function flushWarnings(): void
+    {
+        if (empty(self::$warnings)) {
+            return;
+        }
+
+        Utils::echo("\n⚠️  AVISOS IMPORTANTES — requieren revisión manual:\n");
+        Utils::echo(str_repeat('-', 60) . "\n");
+        foreach (self::$warnings as $warning) {
+            Utils::echo($warning);
+        }
+        Utils::echo(str_repeat('-', 60) . "\n");
+
+        self::$warnings = [];
+    }
+
     private const WHERE_FACTORY_MAP = [
         '='        => ['and' => 'eq',        'or' => 'orEq'],
         '!='       => ['and' => 'notEq',     'or' => 'orNotEq'],
@@ -297,16 +315,16 @@ final class FileUpdater
                     );
                 }
 
-                Utils::echo(
-                    "  * AVISO: se ha migrado CalculatorModInterface -> CalculatorModClass.\n" .
+                self::$warnings[] =
+                    "  * AVISO en " . $pathFile . ": \n" .
+                    "    se ha migrado CalculatorModInterface -> CalculatorModClass.\n" .
                     "    Se han corregido automáticamente:\n" .
                     "      - use e implements/extends\n" .
                     "      - firmas de métodos (& en \$doc/\$line eliminado, bool -> string)\n" .
                     "    Revisa manualmente:\n" .
                     "      - Los TODO encima de cada return true/false (cambiar a \$this->done(), etc.)\n" .
                     "      - getSubtotals (reemplazado en el core por accumulateSubtotals/updateSubtotals)\n" .
-                    "    Más info: https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin \n"
-                );
+                    "    Más info: https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin\n";
             }
 
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\PurchasesLineModInterface;', 'use FacturaScripts\Core\Contract\PurchasesLineModInterface;', $fileStr);

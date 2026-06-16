@@ -28,6 +28,7 @@ class UpgradeCommand extends BaseCommand
         FileUpdater::upgradeXmlFiles();
         FileUpdater::upgradeTwigFiles();
         FileUpdater::upgradeIniFile();
+        FileUpdater::flushWarnings();
 
         return Command::SUCCESS;
     }
