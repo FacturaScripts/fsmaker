@@ -259,6 +259,56 @@ final class FileUpdater
 
             // reemplazamos contratos
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\CalculatorModInterface;', 'use FacturaScripts\Core\Contract\CalculatorModInterface;', $fileStr);
+
+            // migramos CalculatorModInterface (deprecado) a CalculatorModClass
+            if (strpos($fileStr, 'use FacturaScripts\Core\Contract\CalculatorModInterface;') !== false) {
+                $fileStr = str_replace(
+                    'use FacturaScripts\Core\Contract\CalculatorModInterface;',
+                    'use FacturaScripts\Core\Template\CalculatorModClass;',
+                    $fileStr
+                );
+                $fileStr = str_replace('implements CalculatorModInterface', 'extends CalculatorModClass', $fileStr);
+
+                // normalizamos firmas de los métodos del Calculator (quitar & en $doc/$line, bool -> string)
+                $calcSignaturePatterns = [
+                    '/(public\s+function\s+apply\s*\(\s*BusinessDocument\s*)&(\s*\$doc\b[^)]*\))\s*:\s*bool/' => '$1$2: string',
+                    '/(public\s+function\s+calculate\s*\(\s*BusinessDocument\s*)&(\s*\$doc\b[^)]*\))\s*:\s*bool/' => '$1$2: string',
+                    '/(public\s+function\s+calculateLine\s*\([^)]*BusinessDocumentLine\s*)&(\s*\$line\s*\))\s*:\s*bool/' => '$1$2: string',
+                    '/(public\s+function\s+clear\s*\(\s*BusinessDocument\s*)&(\s*\$doc\b[^)]*\))\s*:\s*bool/' => '$1$2: string',
+                    '/(public\s+function\s+getSubtotals\s*\([^)]*\))\s*:\s*bool/' => '$1: string',
+                ];
+                foreach ($calcSignaturePatterns as $pattern => $replacement) {
+                    $fileStr = preg_replace($pattern, $replacement, $fileStr);
+                }
+
+                // añadimos TODO encima de return true/false para que el dev complete la migración
+                if (strpos($fileStr, '// TODO: reemplazar por $this->done()') === false) {
+                    $fileStr = preg_replace(
+                        '/^(\s+)(return true;)/m',
+                        '$1// TODO: reemplazar por $this->done()' . "\n" . '$1$2',
+                        $fileStr
+                    );
+                }
+                if (strpos($fileStr, '// TODO: reemplazar por $this->stopAll()') === false) {
+                    $fileStr = preg_replace(
+                        '/^(\s+)(return false;)/m',
+                        '$1// TODO: reemplazar por $this->stopAll() o $this->stopMods()' . "\n" . '$1$2',
+                        $fileStr
+                    );
+                }
+
+                Utils::echo(
+                    "  * AVISO: se ha migrado CalculatorModInterface -> CalculatorModClass.\n" .
+                    "    Se han corregido automáticamente:\n" .
+                    "      - use e implements/extends\n" .
+                    "      - firmas de métodos (& en \$doc/\$line eliminado, bool -> string)\n" .
+                    "    Revisa manualmente:\n" .
+                    "      - Los TODO encima de cada return true/false (cambiar a \$this->done(), etc.)\n" .
+                    "      - getSubtotals (reemplazado en el core por accumulateSubtotals/updateSubtotals)\n" .
+                    "    Más info: https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin \n"
+                );
+            }
+
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\PurchasesLineModInterface;', 'use FacturaScripts\Core\Contract\PurchasesLineModInterface;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\PurchasesModInterface;', 'use FacturaScripts\Core\Contract\PurchasesModInterface;', $fileStr);
             $fileStr = str_replace('use FacturaScripts\Core\Base\Contract\SalesLineModInterface;', 'use FacturaScripts\Core\Contract\SalesLineModInterface;', $fileStr);
