@@ -34,10 +34,40 @@ class Utils
         return false;
     }
 
+    public static function readFile(string $path): string|false
+    {
+        if (!file_exists($path)) {
+            self::echo("* ERROR: Archivo no encontrado: $path\n");
+            return false;
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            self::echo("* ERROR: Sin permisos de lectura: $path\n");
+            return false;
+        }
+
+        return $content;
+    }
+
+    public static function writeFile(string $path, string $content): bool
+    {
+        if (false === file_put_contents($path, $content)) {
+            self::echo("* ERROR: No se pudo escribir: $path\n");
+            return false;
+        }
+
+        return true;
+    }
+
     public static function findPluginName(): string
     {
         if (self::isPluginFolder()) {
             $ini = parse_ini_file('facturascripts.ini');
+            if ($ini === false) {
+                self::echo("* WARNING: No se pudo leer facturascripts.ini.\n");
+                return '';
+            }
             return $ini['name'] ?? '';
         }
 
@@ -57,6 +87,10 @@ class Utils
 
         if (self::isPluginFolder()) {
             $ini = parse_ini_file('facturascripts.ini');
+            if ($ini === false) {
+                self::echo("* WARNING: No se pudo leer facturascripts.ini.\n");
+                return '';
+            }
             return 'Plugins\\' . ($ini['name'] ?? '');
         }
 
