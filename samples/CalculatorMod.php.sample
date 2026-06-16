@@ -12,7 +12,7 @@ use FacturaScripts\Core\Model\RegimenIVA;
  * 
  * @see https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin
  */
-class [[NAME]] implements CalculatorModClass
+class [[NAME]] extends CalculatorModClass
 {
     /** @var string */
     private $regimenIVA;
