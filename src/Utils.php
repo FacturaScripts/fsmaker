@@ -79,9 +79,8 @@ class Utils
     public static function findPluginName(): string
     {
         if (self::isPluginFolder()) {
-            $ini = parse_ini_file('facturascripts.ini');
+            $ini = self::parseIniFile('facturascripts.ini');
             if ($ini === false) {
-                self::echo("* WARNING: No se pudo leer facturascripts.ini.\n");
                 return '';
             }
             return $ini['name'] ?? '';
@@ -102,9 +101,8 @@ class Utils
         }
 
         if (self::isPluginFolder()) {
-            $ini = parse_ini_file('facturascripts.ini');
+            $ini = self::parseIniFile('facturascripts.ini');
             if ($ini === false) {
-                self::echo("* WARNING: No se pudo leer facturascripts.ini.\n");
                 return '';
             }
             return 'Plugins\\' . ($ini['name'] ?? '');

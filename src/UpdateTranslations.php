@@ -25,7 +25,10 @@ class UpdateTranslations
         if (Utils::isPluginFolder()) {
             $folder = 'Translation/';
             Utils::createFolder($folder);
-            $ini = parse_ini_file('facturascripts.ini');
+            $ini = Utils::parseIniFile('facturascripts.ini');
+            if ($ini === false) {
+                return;
+            }
             $project = $ini['name'] ?? '';
         } elseif (Utils::isCoreFolder()) {
             $folder = 'Core/Translation/';

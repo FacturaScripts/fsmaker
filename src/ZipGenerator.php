@@ -18,9 +18,8 @@ class ZipGenerator
             return;
         }
 
-        $ini = parse_ini_file('facturascripts.ini');
+        $ini = Utils::parseIniFile('facturascripts.ini');
         if ($ini === false) {
-            Utils::echo("* No se pudo leer facturascripts.ini.\n");
             return;
         }
         $pluginName = $ini['name'] ?? '';
