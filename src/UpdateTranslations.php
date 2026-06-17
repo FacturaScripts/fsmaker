@@ -11,12 +11,14 @@ class UpdateTranslations
 
     public static function create(string $name): void
     {
+        if (!Utils::createFolder($name . '/Translation')) {
+            return;
+        }
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
-            file_put_contents(
-                $name . '/Translation/' . $filename . '.json',
-                '{"' . strtolower($name) . '": "' . $name . '"}'
-            );
-            Utils::echo('* ' . $name . '/Translation/' . $filename . ".json -> OK.\n");
+            $path = $name . '/Translation/' . $filename . '.json';
+            if (Utils::writeFile($path, '{"' . strtolower($name) . '": "' . $name . '"}')) {
+                Utils::echo('* ' . $path . " -> OK.\n");
+            }
         }
     }
 
