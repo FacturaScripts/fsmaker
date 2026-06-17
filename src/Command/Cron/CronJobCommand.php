@@ -33,7 +33,9 @@ class CronJobCommand extends BaseCommand
 
         $folder = 'CronJob/';
         $plugin = Utils::findPluginName();
-        Utils::createFolder($folder);
+        if (false === Utils::createFolder($folder)) {
+            return Command::FAILURE;
+        }
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
@@ -104,11 +106,15 @@ class CronJobCommand extends BaseCommand
         if ($position !== false) {
             $position = strpos($fileStr, '{', $position) + 1;
             $fileStr = substr_replace($fileStr, $newJob, $position, 0);
-            file_put_contents('Cron.php', $fileStr);
+            if (!Utils::writeFile('Cron.php', $fileStr)) {
+                return;
+            }
             $usePosition = strpos($fileStr, 'use FacturaScripts\Core\Template\CronClass');
             $usePosition = strpos($fileStr, ';', $usePosition) + 1;
             $fileStr = substr_replace($fileStr, "\nuse FacturaScripts\\$nameSpace\CronJob\\$name;", $usePosition, 0);
-            file_put_contents('Cron.php', $fileStr);
+            if (!Utils::writeFile('Cron.php', $fileStr)) {
+                return;
+            }
             Utils::echo('* Cron.php actualizado' . " -> OK.\n");
         }
     }

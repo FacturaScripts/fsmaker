@@ -74,7 +74,9 @@ class ModCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        Utils::createFolder($dir);
+        if (false === Utils::createFolder($dir)) {
+            return Command::FAILURE;
+        }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/" . $sampleName;
         $sample = Utils::readFile($samplePath);

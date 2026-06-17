@@ -57,7 +57,9 @@ class ViewCommand extends BaseCommand
 
         $fileName = $viewPath . $name . '.html.twig';
 
-        Utils::createFolder($viewPath);
+        if (false === Utils::createFolder($viewPath)) {
+            return Command::FAILURE;
+        }
 
         if (file_exists($fileName)) {
             Utils::echo("* La vista " . $fileName . " YA EXISTE.\n");

@@ -52,18 +52,15 @@ class ControllerCommand extends BaseCommand
 
         switch ($option) {
             case 'Controller':
-                $this->createController($modelName);
-                return Command::SUCCESS;
+                return $this->createController($modelName) ? Command::SUCCESS : Command::FAILURE;
 
             case 'ListController':
                 $fields = Column::askMulti();
-                $this->createListController($modelName, $fields);
-                return Command::SUCCESS;
+                return $this->createListController($modelName, $fields) ? Command::SUCCESS : Command::FAILURE;
 
             case 'EditController':
                 $fields = Column::askMulti();
-                $this->createEditController($modelName, $fields);
-                return Command::SUCCESS;
+                return $this->createEditController($modelName, $fields) ? Command::SUCCESS : Command::FAILURE;
         }
 
         Utils::echo("Opción no válida.\n");

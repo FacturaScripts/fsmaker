@@ -35,7 +35,9 @@ class TestCommand extends BaseCommand
 
         $filePath = 'Test/main/';
         $fileName = $filePath . $name . '.php';
-        Utils::createFolder($filePath);
+        if (false === Utils::createFolder($filePath)) {
+            return Command::FAILURE;
+        }
         if (file_exists($fileName)) {
             Utils::echo("* El test " . $name . " YA EXISTE.\n");
             return Command::FAILURE;

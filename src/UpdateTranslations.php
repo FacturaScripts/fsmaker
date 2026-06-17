@@ -26,7 +26,9 @@ class UpdateTranslations
     {
         if (Utils::isPluginFolder()) {
             $folder = 'Translation/';
-            Utils::createFolder($folder);
+            if (false === Utils::createFolder($folder)) {
+                return;
+            }
             $ini = Utils::parseIniFile('facturascripts.ini');
             if ($ini === false) {
                 return;
@@ -34,7 +36,9 @@ class UpdateTranslations
             $project = $ini['name'] ?? '';
         } elseif (Utils::isCoreFolder()) {
             $folder = 'Core/Translation/';
-            Utils::createFolder($folder);
+            if (false === Utils::createFolder($folder)) {
+                return;
+            }
             $project = 'CORE';
         } else {
             Utils::echo("* Esta no es la carpeta raíz del plugin.\n");
@@ -61,7 +65,9 @@ class UpdateTranslations
                 continue;
             }
             if (!empty($json) && strlen($json) > 10) {
-                Utils::writeFile($folder . $filename . '.json', $json);
+                if (!Utils::writeFile($folder . $filename . '.json', $json)) {
+                    $errores++;
+                }
                 Utils::echo("\n");
                 continue;
             }

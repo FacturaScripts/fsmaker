@@ -38,7 +38,9 @@ class WorkerCommand extends BaseCommand
 
         $filePath = 'Worker/';
         $fileName = $filePath . $name . '.php';
-        Utils::createFolder($filePath);
+        if (false === Utils::createFolder($filePath)) {
+            return Command::FAILURE;
+        }
         if (file_exists($fileName)) {
             Utils::echo("* El worker " . $name . " YA EXISTE.\n");
             return Command::FAILURE;
