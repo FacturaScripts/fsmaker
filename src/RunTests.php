@@ -86,8 +86,13 @@ class RunTests
         }
 
         $foundTests = false;
+        $testEntries = scandir('Test/');
+        if ($testEntries === false) {
+            Utils::echo("* No se pudo leer la carpeta Test/.\n");
+            return;
+        }
         // recorremos las carpetas dentro de Test
-        foreach (scandir('Test/') as $item) {
+        foreach ($testEntries as $item) {
             if ($item === '.' || $item === '..') {
                 continue;
             }
