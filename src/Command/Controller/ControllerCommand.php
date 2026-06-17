@@ -121,8 +121,7 @@ class ControllerCommand extends BaseCommand
 
             $samplePath2 = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
             $sample2 = file_get_contents($samplePath2);
-            $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
-            file_put_contents($viewFilename, $template2);
+            file_put_contents($viewFilename, $sample2);
             Utils::echo('* ' . $viewFilename . " -> OK.\n");
         }
     }
