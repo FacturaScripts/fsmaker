@@ -44,8 +44,13 @@ class TestCommand extends BaseCommand
         $txtFile = $filePath . 'install-plugins.txt';
         if (false === file_exists($txtFile)) {
             // Creamos el fichero install-plugins.txt con el nombre del plugin
-            $ini = parse_ini_file('facturascripts.ini');
-            file_put_contents($txtFile, $ini['name'] ?? '');
+            $ini = Utils::parseIniFile('facturascripts.ini');
+            if ($ini === false) {
+                return Command::FAILURE;
+            }
+            if (!Utils::writeFile($txtFile, $ini['name'] ?? '')) {
+                return Command::FAILURE;
+            }
             Utils::echo('* ' . $txtFile . " -> OK.\n");
         }
 
