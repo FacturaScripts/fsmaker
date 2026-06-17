@@ -47,6 +47,7 @@ class UpdateTranslations
         }
 
         // descargamos el json de facturascripts.com
+        $errores = 0;
         foreach (explode(',', self::TRANSLATIONS) as $filename) {
             // esperamos medio segundo entre peticiones
             usleep(500000);
@@ -54,13 +55,21 @@ class UpdateTranslations
             Utils::echo("D " . $folder . $filename . ".json");
             $url = "https://facturascripts.com/EditLanguage?action=json&project=" . $project . "&code=" . $filename;
             $json = file_get_contents($url);
+            if ($json === false) {
+                Utils::echo(" - ERROR de red\n");
+                $errores++;
+                continue;
+            }
             if (!empty($json) && strlen($json) > 10) {
-                file_put_contents($folder . $filename . '.json', $json);
+                Utils::writeFile($folder . $filename . '.json', $json);
                 Utils::echo("\n");
                 continue;
             }
 
             Utils::echo(" - vacío\n");
+        }
+        if ($errores > 0) {
+            Utils::echo("* $errores traducciones no se pudieron descargar.\n");
         }
     }
 }
