@@ -67,18 +67,18 @@ class ControllerCommand extends BaseCommand
         return Command::FAILURE;
     }
 
-    private function createController(string $name): void
+    private function createController(string $name): bool
     {
         if (empty($name)) {
             Utils::echo("* No introdujo el nombre del controlador.\n");
-            return;
+            return false;
         }
 
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . $name . '.php';
         if (file_exists($fileName)) {
             Utils::echo("* El controlador " . $name . " YA EXISTE.\n");
-            return;
+            return false;
         }
 
         $menu = text(
@@ -97,7 +97,7 @@ class ControllerCommand extends BaseCommand
         $samplePath = dirname(__DIR__, 3) . "/samples/Controller.php.sample";
         $sample = Utils::readFile($samplePath);
         if ($sample === false) {
-            return;
+            return false;
         }
 
         if (!$createView) {
@@ -106,46 +106,55 @@ class ControllerCommand extends BaseCommand
         }
 
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
-        Utils::createFolder($filePath);
+        if (false === Utils::createFolder($filePath)) {
+            return false;
+        }
         if (!Utils::writeFile($fileName, $template)) {
-            return;
+            return false;
         }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         if ($createView) {
             $viewPath = Utils::isCoreFolder() ? 'Core/View/' : 'View/';
             $viewFilename = $viewPath . $name . '.html.twig';
-            Utils::createFolder($viewPath);
+            if (false === Utils::createFolder($viewPath)) {
+                return false;
+            }
             if (file_exists($viewFilename)) {
                 Utils::echo('* ' . $viewFilename . " YA EXISTE.\n");
-                return;
+                return true;
             }
 
             $samplePath2 = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
             $sample2 = Utils::readFile($samplePath2);
             if ($sample2 === false) {
-                return;
+                return false;
             }
             $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
-            if (Utils::writeFile($viewFilename, $template2)) {
-                Utils::echo('* ' . $viewFilename . " -> OK.\n");
+            if (!Utils::writeFile($viewFilename, $template2)) {
+                return false;
             }
+            Utils::echo('* ' . $viewFilename . " -> OK.\n");
         }
+
+        return true;
     }
 
-    private function createEditController(string $modelName, array $fields): void
+    private function createEditController(string $modelName, array $fields): bool
     {
         if (empty($modelName)) {
             Utils::echo('* No introdujo el nombre del EditController');
-            return;
+            return false;
         }
 
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'Edit' . $modelName . '.php';
-        Utils::createFolder($filePath);
+        if (false === Utils::createFolder($filePath)) {
+            return false;
+        }
         if (file_exists($fileName)) {
             Utils::echo("El controlador " . $fileName . " YA EXISTE.\n");
-            return;
+            return false;
         }
 
         $menu = text(
@@ -160,7 +169,7 @@ class ControllerCommand extends BaseCommand
         $samplePath = dirname(__DIR__, 3) . "/samples/EditController.php.sample";
         $sample = Utils::readFile($samplePath);
         if ($sample === false) {
-            return;
+            return false;
         }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
@@ -168,27 +177,33 @@ class ControllerCommand extends BaseCommand
             $sample
         );
         if (!Utils::writeFile($fileName, $template)) {
-            return;
+            return false;
         }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'Edit' . $modelName . '.xml';
-        Utils::createFolder($xmlPath);
+        if (false === Utils::createFolder($xmlPath)) {
+            return false;
+        }
         if (file_exists($xmlFilename)) {
             Utils::echo('* ' . $xmlFilename . " YA EXISTE\n");
-            return;
+            return true;
         }
 
-        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit');
+        if (!FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit')) {
+            return false;
+        }
         Utils::echo('* ' . $xmlFilename . " -> OK.\n");
+
+        return true;
     }
 
-    private function createListController(string $modelName, array $fields): void
+    private function createListController(string $modelName, array $fields): bool
     {
         if (empty($modelName)) {
             Utils::echo('* No introdujo el nombre del ListController');
-            return;
+            return false;
         }
 
         $menu = text(
@@ -211,16 +226,18 @@ class ControllerCommand extends BaseCommand
 
         $filePath = Utils::isCoreFolder() ? 'Core/Controller/' : 'Controller/';
         $fileName = $filePath . 'List' . $modelName . '.php';
-        Utils::createFolder($filePath);
+        if (false === Utils::createFolder($filePath)) {
+            return false;
+        }
         if (file_exists($fileName)) {
             Utils::echo("El controlador " . $fileName . " YA EXISTE.\n");
-            return;
+            return false;
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/ListController.php.sample";
         $sample = Utils::readFile($samplePath);
         if ($sample === false) {
-            return;
+            return false;
         }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]', '[[TITLE]]'],
@@ -228,19 +245,25 @@ class ControllerCommand extends BaseCommand
             $sample
         );
         if (!Utils::writeFile($fileName, $template)) {
-            return;
+            return false;
         }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
         $xmlFilename = $xmlPath . 'List' . $modelName . '.xml';
-        Utils::createFolder($xmlPath);
+        if (false === Utils::createFolder($xmlPath)) {
+            return false;
+        }
         if (file_exists($xmlFilename)) {
             Utils::echo('* ' . $xmlFilename . " YA EXISTE\n");
-            return;
+            return true;
         }
 
-        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list');
+        if (!FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list')) {
+            return false;
+        }
         Utils::echo('* ' . $xmlFilename . " -> OK.\n");
+
+        return true;
     }
 }

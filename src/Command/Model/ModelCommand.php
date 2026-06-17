@@ -53,14 +53,18 @@ class ModelCommand extends BaseCommand
         }
 
         $fields = Column::askMulti();
-        FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, Utils::getNamespace());
+        if (!FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, Utils::getNamespace())) {
+            return Command::FAILURE;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $tablePath = Utils::isCoreFolder() ? 'Core/Table/' : 'Table/';
         $tableFilename = $tablePath . $tableName . '.xml';
         Utils::createFolder($tablePath);
         if (false === file_exists($tableFilename)) {
-            FileGenerator::createTableXmlByFields($tableFilename, $tableName, $fields);
+            if (!FileGenerator::createTableXmlByFields($tableFilename, $tableName, $fields)) {
+                return Command::FAILURE;
+            }
             Utils::echo('* ' . $tableFilename . " -> OK.\n");
         } else {
             Utils::echo("\n" . '* ' . $tableFilename . " YA EXISTE");
@@ -126,7 +130,9 @@ class ModelCommand extends BaseCommand
             return;
         }
 
-        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit');
+        if (!FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'edit')) {
+            return;
+        }
         Utils::echo('* ' . $xmlFilename . " -> OK.\n");
     }
 
@@ -186,7 +192,9 @@ class ModelCommand extends BaseCommand
             return;
         }
 
-        FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list');
+        if (!FileGenerator::createXMLViewByFields($xmlFilename, $fields, 'list')) {
+            return;
+        }
         Utils::echo('* ' . $xmlFilename . " -> OK.\n");
     }
 }

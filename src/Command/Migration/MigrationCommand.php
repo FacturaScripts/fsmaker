@@ -33,26 +33,26 @@ class MigrationCommand extends BaseCommand
             errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
         );
 
-        $this->createMigration($name);
-
-        return Command::SUCCESS;
+        return $this->createMigration($name) ? Command::SUCCESS : Command::FAILURE;
     }
 
-    private function createMigration(string $name): void
+    private function createMigration(string $name): bool
     {
         $folder = 'Migration/';
-        Utils::createFolder($folder);
+        if (false === Utils::createFolder($folder)) {
+            return false;
+        }
 
         $fileName = $folder . $name . '.php';
         if (file_exists($fileName)) {
             Utils::echo("* La migración " . $name . " YA EXISTE.\n");
-            return;
+            return false;
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Migration.php.sample";
         $sample = Utils::readFile($samplePath);
         if ($sample === false) {
-            return;
+            return false;
         }
 
         $migrationNameConst = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)) . '_' . date('Y_m_d');
@@ -61,9 +61,10 @@ class MigrationCommand extends BaseCommand
             [$name, Utils::getNamespace(), $migrationNameConst],
             $sample
         );
-        if (Utils::writeFile($fileName, $template)) {
-            Utils::echo('* ' . $fileName . " -> OK.\n");
+        if (!Utils::writeFile($fileName, $template)) {
+            return false;
         }
+        Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $newContentUse = InitEditor::addUse('use FacturaScripts\Core\Migrations;');
         if ($newContentUse) {
@@ -74,5 +75,7 @@ class MigrationCommand extends BaseCommand
         if ($newContentFunc) {
             InitEditor::setInitContent($newContentFunc);
         }
+
+        return true;
     }
 }
