@@ -60,6 +60,22 @@ class Utils
         return true;
     }
 
+    public static function parseIniFile(string $path): array|false
+    {
+        if (!file_exists($path)) {
+            self::echo("* ERROR: Archivo no encontrado: $path\n");
+            return false;
+        }
+
+        $ini = parse_ini_file($path);
+        if ($ini === false) {
+            self::echo("* ERROR: No se pudo leer o parsear: $path\n");
+            return false;
+        }
+
+        return $ini;
+    }
+
     public static function findPluginName(): string
     {
         if (self::isPluginFolder()) {
