@@ -98,7 +98,10 @@ class ControllerCommand extends BaseCommand
         );
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Controller.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
 
         if (!$createView) {
             $search = "\n\n        \$this->view('[[NAME]].html.twig');";
@@ -107,7 +110,9 @@ class ControllerCommand extends BaseCommand
 
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[MENU]]'], [Utils::getNamespace(), $name, $menu], $sample);
         Utils::createFolder($filePath);
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         if ($createView) {
@@ -120,10 +125,14 @@ class ControllerCommand extends BaseCommand
             }
 
             $samplePath2 = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
-            $sample2 = file_get_contents($samplePath2);
+            $sample2 = Utils::readFile($samplePath2);
+            if ($sample2 === false) {
+                return;
+            }
             $template2 = str_replace('[[NADA_A_REEMPLAZAR]]', $name, $sample2);
-            file_put_contents($viewFilename, $template2);
-            Utils::echo('* ' . $viewFilename . " -> OK.\n");
+            if (Utils::writeFile($viewFilename, $template2)) {
+                Utils::echo('* ' . $viewFilename . " -> OK.\n");
+            }
         }
     }
 
@@ -152,13 +161,18 @@ class ControllerCommand extends BaseCommand
         );
 
         $samplePath = dirname(__DIR__, 3) . "/samples/EditController.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
             [Utils::getNamespace(), $modelName, $menu],
             $sample
         );
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
@@ -207,13 +221,18 @@ class ControllerCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/ListController.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]', '[[TITLE]]'],
             [Utils::getNamespace(), $modelName, $menu, $title],
             $sample
         );
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';

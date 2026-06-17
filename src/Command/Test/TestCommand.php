@@ -50,10 +50,15 @@ class TestCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Test.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return Command::FAILURE;
+        }
         $nameSpace = Utils::getNamespace() . '\\' . str_replace('/', '\\', substr($filePath, 0, -1));
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [$nameSpace, $name], $sample);
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return Command::FAILURE;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         return Command::SUCCESS;

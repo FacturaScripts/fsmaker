@@ -65,9 +65,14 @@ class ViewCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/View.html.twig.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return Command::FAILURE;
+        }
 
-        file_put_contents($fileName, $sample);
+        if (!Utils::writeFile($fileName, $sample)) {
+            return Command::FAILURE;
+        }
 
         Utils::echo('* ' . $fileName . " -> OK.\n");
 

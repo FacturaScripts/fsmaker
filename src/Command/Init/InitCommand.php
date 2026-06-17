@@ -31,9 +31,14 @@ class InitCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Init.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return Command::FAILURE;
+        }
         $template = str_replace('[[NAME]]', Utils::findPluginName(), $sample);
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return Command::FAILURE;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         return Command::SUCCESS;

@@ -26,8 +26,11 @@ final class FileGenerator
             return;
         }
 
-        $template = file_get_contents(__DIR__ . '/../samples/github-action-release.yml.sample');
-        if (file_put_contents($filePath, $template)) {
+        $template = Utils::readFile(__DIR__ . '/../samples/github-action-release.yml.sample');
+        if ($template === false) {
+            return;
+        }
+        if (Utils::writeFile($filePath, $template)) {
             Utils::echo('* ' . $filePath . self::OK);
         }
     }
@@ -56,9 +59,12 @@ final class FileGenerator
             return;
         }
 
-        $template = file_get_contents(__DIR__ . '/../samples/github-action-test.yml.sample');
+        $template = Utils::readFile(__DIR__ . '/../samples/github-action-test.yml.sample');
+        if ($template === false) {
+            return;
+        }
         $content = str_replace('$$NOMBRE-DEL-PLUGIN$$', $pluginName, $template);
-        if (file_put_contents($filePath, $content)) {
+        if (Utils::writeFile($filePath, $content)) {
             Utils::echo('* ' . $filePath . self::OK);
         }
     }
@@ -71,9 +77,13 @@ final class FileGenerator
             return;
         }
 
-        $template = file_get_contents(__DIR__ . "/../samples/gitignore.sample");
-        file_put_contents($fileName, $template);
-        Utils::echo('* ' . $fileName . self::OK);
+        $template = Utils::readFile(__DIR__ . "/../samples/gitignore.sample");
+        if ($template === false) {
+            return;
+        }
+        if (Utils::writeFile($fileName, $template)) {
+            Utils::echo('* ' . $fileName . self::OK);
+        }
     }
 
     public static function createIni(string $name): void
@@ -84,10 +94,14 @@ final class FileGenerator
             return;
         }
 
-        $sample = file_get_contents(__DIR__ . "/../samples/facturascripts.ini.sample");
+        $sample = Utils::readFile(__DIR__ . "/../samples/facturascripts.ini.sample");
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace('[[NAME]]', $name, $sample);
-        file_put_contents($fileName, $template);
-        Utils::echo('* ' . $fileName . self::OK);
+        if (Utils::writeFile($fileName, $template)) {
+            Utils::echo('* ' . $fileName . self::OK);
+        }
     }
 
     /**
@@ -157,7 +171,7 @@ final class FileGenerator
 
         $sample .= "}\n";
 
-        file_put_contents($fileName, $sample);
+        Utils::writeFile($fileName, $sample);
     }
 
     /**
@@ -178,7 +192,7 @@ final class FileGenerator
         $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
             . "<table>\n" . $columns . $constraints . "</table>";
 
-        file_put_contents($tableFilename, $sample);
+        Utils::writeFile($tableFilename, $sample);
     }
 
     /**
@@ -247,6 +261,6 @@ final class FileGenerator
         $sample .= "    </columns>\n"
             . "</view>";
 
-        file_put_contents($xmlFilename, $sample);
+        Utils::writeFile($xmlFilename, $sample);
     }
 }

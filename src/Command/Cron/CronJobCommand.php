@@ -42,11 +42,16 @@ class CronJobCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/CronJob.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return Command::FAILURE;
+        }
         $jobName = Utils::kebab($name);
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]', '[[JOB_NAME]]'], [Utils::getNamespace(), $name, $jobName], $sample);
 
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return Command::FAILURE;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         if (file_exists('Cron.php')) {
@@ -68,15 +73,22 @@ class CronJobCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Cron.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
-        file_put_contents($fileName, $template);
-        Utils::echo('* ' . $fileName . " -> OK.\n");
+        if (Utils::writeFile($fileName, $template)) {
+            Utils::echo('* ' . $fileName . " -> OK.\n");
+        }
     }
 
     private function updateCron(string $name): void
     {
-        $fileStr = file_get_contents('Cron.php');
+        $fileStr = Utils::readFile('Cron.php');
+        if ($fileStr === false) {
+            return;
+        }
         $newJob = <<<END
         \n
                 \$this->job($name::JOB_NAME)

@@ -19,6 +19,10 @@ class ZipGenerator
         }
 
         $ini = parse_ini_file('facturascripts.ini');
+        if ($ini === false) {
+            Utils::echo("* No se pudo leer facturascripts.ini.\n");
+            return;
+        }
         $pluginName = $ini['name'] ?? '';
         if (empty($pluginName)) {
             Utils::echo("* No se ha encontrado el nombre del plugin.\n");

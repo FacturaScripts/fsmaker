@@ -104,13 +104,18 @@ class ModelCommand extends BaseCommand
         );
 
         $samplePath = dirname(__DIR__, 3) . "/samples/EditController.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]'],
             [Utils::getNamespace(), $modelName, $menu],
             $sample
         );
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';
@@ -159,13 +164,18 @@ class ModelCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/ListController.php.sample";
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
         $template = str_replace(
             ['[[NAME_SPACE]]', '[[MODEL_NAME]]', '[[MENU]]', '[[TITLE]]'],
             [Utils::getNamespace(), $modelName, $menu, $title],
             $sample
         );
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         $xmlPath = Utils::isCoreFolder() ? 'Core/XMLView/' : 'XMLView/';

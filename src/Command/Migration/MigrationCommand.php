@@ -50,16 +50,20 @@ class MigrationCommand extends BaseCommand
         }
 
         $samplePath = dirname(__DIR__, 3) . "/samples/Migration.php.sample";
-        $sample = file_get_contents($samplePath);
-        
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return;
+        }
+
         $migrationNameConst = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)) . '_' . date('Y_m_d');
         $template = str_replace(
             ['[[NAME]]', '[[NAME_SPACE]]', '[[MIGRATION_NAME]]'],
             [$name, Utils::getNamespace(), $migrationNameConst],
             $sample
         );
-        file_put_contents($fileName, $template);
-        Utils::echo('* ' . $fileName . " -> OK.\n");
+        if (Utils::writeFile($fileName, $template)) {
+            Utils::echo('* ' . $fileName . " -> OK.\n");
+        }
 
         $newContentUse = InitEditor::addUse('use FacturaScripts\Core\Migrations;');
         if ($newContentUse) {

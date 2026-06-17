@@ -77,9 +77,14 @@ class ModCommand extends BaseCommand
         Utils::createFolder($dir);
 
         $samplePath = dirname(__DIR__, 3) . "/samples/" . $sampleName;
-        $sample = file_get_contents($samplePath);
+        $sample = Utils::readFile($samplePath);
+        if ($sample === false) {
+            return Command::FAILURE;
+        }
         $template = str_replace(['[[NAME_SPACE]]', '[[NAME]]'], [Utils::getNamespace(), $name], $sample);
-        file_put_contents($fileName, $template);
+        if (!Utils::writeFile($fileName, $template)) {
+            return Command::FAILURE;
+        }
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
         // Escribir en Init.php
