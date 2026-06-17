@@ -110,9 +110,9 @@ final class FileGenerator
      * @param Column[] $fields
      * @param string $name
      * @param string $namespace
-     * @return void
+     * @return bool
      */
-    public static function createModelByFields(string $fileName, string $tableName, array $fields, string $name, string $namespace): void
+    public static function createModelByFields(string $fileName, string $tableName, array $fields, string $name, string $namespace): bool
     {
         $properties = '';
         $primaryColumn = '';
@@ -171,16 +171,16 @@ final class FileGenerator
 
         $sample .= "}\n";
 
-        Utils::writeFile($fileName, $sample);
+        return Utils::writeFile($fileName, $sample);
     }
 
     /**
      * @param string $tableFilename
      * @param string $tableName
      * @param Column[] $fields
-     * @return void
+     * @return bool
      */
-    public static function createTableXmlByFields(string $tableFilename, string $tableName, array $fields): void
+    public static function createTableXmlByFields(string $tableFilename, string $tableName, array $fields): bool
     {
         $columns = '';
         $constraints = '';
@@ -192,7 +192,7 @@ final class FileGenerator
         $sample = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
             . "<table>\n" . $columns . $constraints . "</table>";
 
-        Utils::writeFile($tableFilename, $sample);
+        return Utils::writeFile($tableFilename, $sample);
     }
 
     /**
@@ -200,9 +200,9 @@ final class FileGenerator
      * @param Column[] $fields
      * @param string $type
      * @param bool $extension
-     * @return void
+     * @return bool
      */
-    public static function createXMLViewByFields(string $xmlFilename, array $fields, string $type, bool $extension = false): void
+    public static function createXMLViewByFields(string $xmlFilename, array $fields, string $type, bool $extension = false): bool
     {
         if (empty($fields)) {
             $fields = Column::askMulti($extension);
@@ -255,12 +255,12 @@ final class FileGenerator
                 break;
 
             default: // No es ninguna de las opciones de antes
-                return;
+                return false;
         }
 
         $sample .= "    </columns>\n"
             . "</view>";
 
-        Utils::writeFile($xmlFilename, $sample);
+        return Utils::writeFile($xmlFilename, $sample);
     }
 }
