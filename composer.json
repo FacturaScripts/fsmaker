@@ -17,6 +17,11 @@
       "src/Patches/TerminalPatch.php"
     ]
   },
+  "autoload-dev": {
+    "psr-4": {
+      "fsmaker\\Tests\\": "tests/"
+    }
+  },
   "minimum-stability": "stable",
   "require": {
     "php": "^8.1",
