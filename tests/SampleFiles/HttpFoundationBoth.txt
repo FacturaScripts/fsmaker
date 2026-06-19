@@ -1,0 +1,21 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Controller;
+
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+
+class TestController
+{
+    public function run(): Response
+    {
+        $where = [new DataBaseWhere('active', 1)];
+
+        if (empty($where)) {
+            return new RedirectResponse('/error');
+        }
+
+        return new Response('ok');
+    }
+}
