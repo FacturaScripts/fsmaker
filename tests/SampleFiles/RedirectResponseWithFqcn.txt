@@ -1,0 +1,14 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Controller;
+
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use FacturaScripts\Core\ResponseFactory;
+
+class TestController
+{
+    public function run(): void
+    {
+        $response = new RedirectResponse('/login');
+    }
+}

@@ -1,0 +1,20 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Model;
+
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+
+class TestModel
+{
+    public function find(): array
+    {
+        // 'C:\\' : dos backslashes seguidos de comilla → la comilla SÍ cierra el string
+        // (número par de backslashes → ninguno escapa la comilla)
+        $where = [new DataBaseWhere('ruta', 'C:\\', '=')];
+
+        // mismo patrón dentro de double-quoted string
+        $where[] = new DataBaseWhere('desc', "valor\\\\fin", '=');
+
+        return [];
+    }
+}

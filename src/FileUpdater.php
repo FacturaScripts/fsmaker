@@ -353,7 +353,7 @@ final class FileUpdater
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Request;', 'use FacturaScripts\Core\Request;', $fileStr);
             $fileStr = str_replace('use Symfony\Component\HttpFoundation\Response;', 'use FacturaScripts\Core\Response;', $fileStr);
 
-            if (strpos($fileStr, 'HttpFoundation\RedirectResponse') !== false && strpos($fileStr, 'FacturaScripts\Core\Response') !== false) {
+            if (strpos($fileStr, 'HttpFoundation\RedirectResponse') !== false && strpos($fileStr, 'use FacturaScripts\Core\Response;') !== false) {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', '', $fileStr);
             } else {
                 $fileStr = str_replace('use Symfony\Component\HttpFoundation\RedirectResponse;', 'use FacturaScripts\Core\Response;', $fileStr);
@@ -372,7 +372,12 @@ final class FileUpdater
             }
 
             // reemplazamos loadFromCode('', $where) por loadWhere($where)
-            $fileStr = preg_replace('/->loadFromCode\(\s*[\'\"]\s*\'\s*,\s*([^)]+)\)/', '->loadWhere($1)', $fileStr);
+            $fileStr = self::replaceMethodCall($fileStr, '->loadFromCode(', function (array $args) {
+                if (count($args) >= 2 && in_array(trim($args[0]), ["''", '""'], true)) {
+                    return '->loadWhere(' . implode(', ', array_slice($args, 1)) . ')';
+                }
+                return '->loadFromCode(' . implode(', ', $args) . ')';
+            });
 
             // reemplazamos loadFromCode($code) por load($code)
             $fileStr = str_replace('->loadFromCode($', '->load($', $fileStr);
@@ -427,12 +432,12 @@ final class FileUpdater
             $fileStr = preg_replace('/\$this->previousData\[([^\]]+)\]/', '$this->getOriginal($1)', $fileStr);
 
             // reemplazamos llamadas al método all() con 3 parámetros añadiendo el 4º parámetro (50)
-            // añade ", 50" solo cuando hay exactamente 3 argumentos
-            $fileStr = preg_replace(
-                '/(->|::)all\(\s*([^,()]+)\s*,\s*([^,()]+)\s*,\s*([^,()]+)\s*\)/',
-                '$1all($2, $3, $4, 50)',
-                $fileStr
-            );
+            foreach (['->all(', '::all('] as $allNeedle) {
+                $fileStr = self::replaceMethodCall($fileStr, $allNeedle, function (array $args) use ($allNeedle) {
+                    $suffix = count($args) === 3 ? ', 50' : '';
+                    return substr($allNeedle, 0, 2) . 'all(' . implode(', ', $args) . $suffix . ')';
+                });
+            }
 
             // reemplazamos protected function onChange($field) por protected function onChange(string $field): bool
             $fileStr = str_replace('protected function onChange($field)', 'protected function onChange(string $field): bool', $fileStr);
@@ -690,6 +695,23 @@ final class FileUpdater
         return $result . substr($fileStr, $pos);
     }
 
+    private static function replaceMethodCall(string $fileStr, string $needle, callable $fn): string
+    {
+        $result = '';
+        $pos    = 0;
+
+        while (($start = strpos($fileStr, $needle, $pos)) !== false) {
+            $result    .= substr($fileStr, $pos, $start - $pos);
+            $openParen  = $start + strlen($needle) - 1;
+            $closeParen = self::findClosingParen($fileStr, $openParen);
+            $argsStr    = substr($fileStr, $openParen + 1, $closeParen - $openParen - 1);
+            $result    .= $fn(self::parseCallArguments($argsStr));
+            $pos        = $closeParen + 1;
+        }
+
+        return $result . substr($fileStr, $pos);
+    }
+
     /**
      * Localiza el paréntesis de cierre balanceado a partir de la posición del paréntesis de apertura.
      * Ignora correctamente los paréntesis que aparecen dentro de cadenas de texto.
@@ -701,12 +723,19 @@ final class FileUpdater
         $inDouble = false;
 
         for ($i = $openAt, $len = strlen($code); $i < $len; $i++) {
-            $ch   = $code[$i];
-            $prev = $i > 0 ? $code[$i - 1] : '';
+            $ch = $code[$i];
 
-            if ($ch === "'" && !$inDouble && $prev !== '\\') {
+            //contamos el numero de barras consecutivas
+            $count = 0;
+            for ($j = $i - 1; $j >= 0 && $code[$j] === '\\'; $j--) {
+                $count++;
+            }
+            // si el número de barras es impar, el carácter actual está escapado
+            $escaped = ($count % 2) === 1;
+
+            if ($ch === "'" && !$inDouble && !$escaped) {
                 $inSingle = !$inSingle;
-            } elseif ($ch === '"' && !$inSingle && $prev !== '\\') {
+            } elseif ($ch === '"' && !$inSingle && !$escaped) {
                 $inDouble = !$inDouble;
             } elseif (!$inSingle && !$inDouble) {
                 if ($ch === '(' || $ch === '[') {
@@ -787,14 +816,19 @@ final class FileUpdater
         $inDouble = false;   // cursor dentro de una cadena con comillas dobles
 
         for ($i = 0, $len = strlen($str); $i < $len; $i++) {
-            $ch   = $str[$i];
-            $prev = $i > 0 ? $str[$i - 1] : '';
+            $ch = $str[$i];
 
-            if ($ch === "'" && !$inDouble && $prev !== '\\') {
+            $bsCount = 0;
+            for ($j = $i - 1; $j >= 0 && $str[$j] === '\\'; $j--) {
+                $bsCount++;
+            }
+            $escaped = ($bsCount % 2) === 1;
+
+            if ($ch === "'" && !$inDouble && !$escaped) {
                 // apertura/cierre de cadena simple; el carácter pertenece al argumento
                 $inSingle = !$inSingle;
                 $current .= $ch;
-            } elseif ($ch === '"' && !$inSingle && $prev !== '\\') {
+            } elseif ($ch === '"' && !$inSingle && !$escaped) {
                 // apertura/cierre de cadena doble; el carácter pertenece al argumento
                 $inDouble = !$inDouble;
                 $current .= $ch;

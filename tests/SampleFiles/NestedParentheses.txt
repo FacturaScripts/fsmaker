@@ -1,0 +1,20 @@
+<?php
+
+namespace FacturaScripts\Plugins\TestPlugin\Model;
+
+use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+
+class TestModel
+{
+    // loadFromCode: el segundo argumento contiene paréntesis anidados
+    public function loadById(int $id): bool
+    {
+        return $this->loadFromCode('', [new DataBaseWhere('id', $this->getParentId())]);
+    }
+
+    // all: tercer argumento contiene paréntesis anidados (3 args → debe añadir 50)
+    public function findActive(): array
+    {
+        return self::all([new DataBaseWhere('active', 1)], null, $this->getOrder());
+    }
+}

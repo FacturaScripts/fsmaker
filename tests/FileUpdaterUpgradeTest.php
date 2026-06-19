@@ -283,4 +283,238 @@ class FileUpdaterUpgradeTest extends TestCase
             }
         }
     }
+
+    public function testUpgradeNestedCallArguments(): void
+    {
+        $originalDir = getcwd();
+        $sandbox = sys_get_temp_dir() . '/fsmaker_upgrade_' . uniqid('', true);
+
+        if (!mkdir($sandbox, 0755, true) && !is_dir($sandbox)) {
+            $this->fail('Unable to create temporary plugin directory.');
+        }
+
+        try {
+            chdir($sandbox);
+            Utils::setSilent(true);
+            Utils::setFolder($sandbox);
+
+            file_put_contents('facturascripts.ini', "[plugin]\nname = TestPlugin\n");
+            mkdir('Model', 0755, true);
+
+            $fixturePath = __DIR__ . '/SampleFiles/NestedParentheses.txt';
+            $targetPath = $sandbox . '/Model/TestModel.php';
+            if (!copy($fixturePath, $targetPath)) {
+                $this->fail('Unable to copy sample file.');
+            }
+
+            FileUpdater::upgradePhpFiles();
+
+            $updated = file_get_contents($targetPath);
+
+            // loadFromCode con 1 argumento se convierte en loadWhere con array de Where
+            $this->assertStringNotContainsString('->loadFromCode(', $updated);
+            $this->assertStringContainsString(
+                '$this->loadWhere([Where::eq(\'id\', $this->getParentId())])',
+                $updated
+            );
+
+            // all() con 3 args cuyo último contiene '()' → debe añadir el 4º parámetro (50)
+            $this->assertStringContainsString(
+                'self::all([Where::eq(\'active\', 1)], null, $this->getOrder(), 50)',
+                $updated
+            );
+        } finally {
+            chdir($originalDir);
+            Utils::setSilent(false);
+
+            if (is_dir($sandbox)) {
+                $items = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($sandbox, \FilesystemIterator::SKIP_DOTS),
+                    \RecursiveIteratorIterator::CHILD_FIRST
+                );
+                foreach ($items as $item) {
+                    $path = $item->getPathname();
+                    $item->isDir() ? rmdir($path) : unlink($path);
+                }
+                rmdir($sandbox);
+            }
+        }
+    }
+
+    public function testUpgradeDoubleBackslashBefore(): void
+    {
+        // número par de backslashes antes de comilla → la comilla cierra el string (no está escapada)
+        $originalDir = getcwd();
+        $sandbox = sys_get_temp_dir() . '/fsmaker_upgrade_' . uniqid('', true);
+
+        if (!mkdir($sandbox, 0755, true) && !is_dir($sandbox)) {
+            $this->fail('Unable to create temporary plugin directory.');
+        }
+
+        try {
+            chdir($sandbox);
+            Utils::setSilent(true);
+            Utils::setFolder($sandbox);
+
+            file_put_contents('facturascripts.ini', "[plugin]\nname = TestPlugin\n");
+            mkdir('Model', 0755, true);
+
+            $fixturePath = __DIR__ . '/SampleFiles/EscapedQuotes.txt';
+            $targetPath = $sandbox . '/Model/TestModel.php';
+            if (!copy($fixturePath, $targetPath)) {
+                $this->fail('Unable to copy sample file.');
+            }
+
+            FileUpdater::upgradePhpFiles();
+
+            $updated = file_get_contents($targetPath);
+
+            $this->assertStringNotContainsString('DataBaseWhere', $updated);
+            $this->assertSame(2, substr_count($updated, 'Where::eq('));
+
+            // 'C:\\' → dos backslashes + comilla que cierra: argumento único, no partido
+            $this->assertStringContainsString(
+                <<<'EOT'
+                Where::eq('ruta', 'C:\\')
+                EOT,
+                $updated
+            );
+
+            // "valor\\\\fin" → cuatro backslashes (dos literales) + comilla que cierra
+            $this->assertStringContainsString(
+                <<<'EOT'
+                Where::eq('desc', "valor\\\\fin")
+                EOT,
+                $updated
+            );
+        } finally {
+            chdir($originalDir);
+            Utils::setSilent(false);
+
+            if (is_dir($sandbox)) {
+                $items = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($sandbox, \FilesystemIterator::SKIP_DOTS),
+                    \RecursiveIteratorIterator::CHILD_FIRST
+                );
+                foreach ($items as $item) {
+                    $path = $item->getPathname();
+                    $item->isDir() ? rmdir($path) : unlink($path);
+                }
+                rmdir($sandbox);
+            }
+        }
+    }
+
+    public function testUpgradeFilesIsIdempotent(): void
+    {
+
+        $cases = [
+            ['fixture' => 'DeprecatedDataBaseWhere.txt', 'dir' => 'Model',      'file' => 'TestModel.php'],
+            ['fixture' => 'HttpFoundationBoth.txt',      'dir' => 'Controller', 'file' => 'TestController.php'],
+        ];
+
+        foreach ($cases as $case) {
+            $originalDir = getcwd();
+            $sandbox = sys_get_temp_dir() . '/fsmaker_upgrade_' . uniqid('', true);
+
+            if (!mkdir($sandbox, 0755, true) && !is_dir($sandbox)) {
+                $this->fail('Unable to create temporary plugin directory.');
+            }
+
+            try {
+                chdir($sandbox);
+                Utils::setSilent(true);
+                Utils::setFolder($sandbox);
+
+                file_put_contents('facturascripts.ini', "[plugin]\nname = TestPlugin\n");
+                mkdir($sandbox . '/' . $case['dir'], 0755, true);
+
+                $targetPath = $sandbox . '/' . $case['dir'] . '/' . $case['file'];
+                if (!copy(__DIR__ . '/SampleFiles/' . $case['fixture'], $targetPath)) {
+                    $this->fail('Unable to copy sample file: ' . $case['fixture']);
+                }
+
+                // primera pasada
+                FileUpdater::upgradePhpFiles();
+                $afterFirstPass = file_get_contents($targetPath);
+
+                // segunda pasada: debe ser un no-op
+                FileUpdater::upgradePhpFiles();
+                $afterSecondPass = file_get_contents($targetPath);
+
+                $this->assertSame(
+                    $afterFirstPass,
+                    $afterSecondPass,
+                    'Second upgrade pass must not change already-upgraded file: ' . $case['fixture']
+                );
+            } finally {
+                chdir($originalDir);
+                Utils::setSilent(false);
+
+                if (is_dir($sandbox)) {
+                    $items = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($sandbox, \FilesystemIterator::SKIP_DOTS),
+                        \RecursiveIteratorIterator::CHILD_FIRST
+                    );
+                    foreach ($items as $item) {
+                        $path = $item->getPathname();
+                        $item->isDir() ? rmdir($path) : unlink($path);
+                    }
+                    rmdir($sandbox);
+                }
+            }
+        }
+    }
+
+    public function testUpgradeRedirectResponse(): void
+    {
+        // ResponseFactory contiene el prefijo "Response": sin búsqueda exacta confundiría el import
+        $originalDir = getcwd();
+        $sandbox = sys_get_temp_dir() . '/fsmaker_upgrade_' . uniqid('', true);
+
+        if (!mkdir($sandbox, 0755, true) && !is_dir($sandbox)) {
+            $this->fail('Unable to create temporary plugin directory.');
+        }
+
+        try {
+            chdir($sandbox);
+            Utils::setSilent(true);
+            Utils::setFolder($sandbox);
+
+            file_put_contents('facturascripts.ini', "[plugin]\nname = TestPlugin\n");
+            mkdir('Controller', 0755, true);
+
+            $fixturePath = __DIR__ . '/SampleFiles/RedirectResponseWithFqcn.txt';
+            $targetPath = $sandbox . '/Controller/TestController.php';
+            if (!copy($fixturePath, $targetPath)) {
+                $this->fail('Unable to copy sample file.');
+            }
+
+            FileUpdater::upgradePhpFiles();
+
+            $updated = file_get_contents($targetPath);
+
+            // el import de Symfony desaparece y se añade el de FacturaScripts
+            $this->assertStringNotContainsString('use Symfony\Component\HttpFoundation\RedirectResponse;', $updated);
+            $this->assertStringContainsString('use FacturaScripts\Core\Response;', $updated);
+
+            // ResponseFactory no se toca
+            $this->assertStringContainsString('use FacturaScripts\Core\ResponseFactory;', $updated);
+        } finally {
+            chdir($originalDir);
+            Utils::setSilent(false);
+
+            if (is_dir($sandbox)) {
+                $items = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($sandbox, \FilesystemIterator::SKIP_DOTS),
+                    \RecursiveIteratorIterator::CHILD_FIRST
+                );
+                foreach ($items as $item) {
+                    $path = $item->getPathname();
+                    $item->isDir() ? rmdir($path) : unlink($path);
+                }
+                rmdir($sandbox);
+            }
+        }
+    }
 }
