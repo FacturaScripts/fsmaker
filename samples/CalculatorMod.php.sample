@@ -5,71 +5,71 @@ namespace FacturaScripts\[[NAME_SPACE]]\Mod;
 use FacturaScripts\Core\Template\CalculatorModClass;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
 use FacturaScripts\Core\Model\Base\BusinessDocumentLine;
-use FacturaScripts\Core\Model\RegimenIVA;
 
 /**
  * Mod para modificar los cálculos de totales y subtotales de los albaranes, facturas, etc.
- * 
+ *
  * @see https://facturascripts.com/publicaciones/como-modificar-el-calculator-desde-un-plugin
  */
-class [[NAME]] implements CalculatorModClass
+class [[NAME]] extends CalculatorModClass
 {
-    /** @var string */
-    private $regimenIVA;
-
     /**
-     * Podemos utilizar apply para aplicar configuraciones o precargar datos.
+     * Se ejecuta antes de los cálculos. Útil para precargar datos del documento.
      */
-    public function apply(BusinessDocument &$doc, array &$lines): bool
+    public function apply(BusinessDocument $doc, array &$lines): string
     {
-        // Obtener y guardar el régimen de IVA una sola vez
-        // $subject = $doc->getSubject();
-        // $this->regimenIVA = $subject->regimeniva ?? RegimenIVA::TAX_SYSTEM_GENERAL;
-        return true;
+        return $this->done();
     }
 
     /**
-     * La función calculate se usa para recalcular el total del documento.
+     * Se ejecuta para recalcular el total del documento.
      */
-    public function calculate(BusinessDocument &$doc, array &$lines): bool
+    public function calculate(BusinessDocument $doc, array &$lines): string
     {
         // $doc->total = 'aquí tu cálculo';
-        return true;
+        return $this->done();
     }
 
     /**
-     * Para recalcular las líneas de los documentos se usa calculateLine.
+     * Se ejecuta para recalcular cada línea del documento.
      */
-    public function calculateLine(BusinessDocument $doc, BusinessDocumentLine &$line): bool
+    public function calculateLine(BusinessDocument $doc, BusinessDocumentLine $line): string
     {
         // $line->pvptotal = 'aquí tu cálculo';
-        return true;
+        return $this->done();
     }
 
     /**
-     * Para inicializar los registros se usa clear. Normalmente se inicializan todos los valores a 0,
-     * aunque si es necesario se puede utilizar otro valor.
+     * Se ejecuta para inicializar los totales del documento a 0.
      */
-    public function clear(BusinessDocument &$doc, array &$lines): bool
+    public function clear(BusinessDocument $doc, array &$lines): string
     {
-        /*
-        $doc->total = 0.0;
-        
-        foreach ($lines as $line) {
-            $line->total = 0.0;
-        }
-        */
-        
-        return true;
+        return $this->done();
     }
 
     /**
-     * Para modificar los subtotales se utiliza getSubtotals, donde los subtotales se especifican mediante un array.
+     * Se ejecuta para acumular subtotales (neto, iva, etc.) desde las líneas.
      */
-    public function getSubtotals(array &$subtotals, BusinessDocument $doc, array $lines)
+    public function accumulateSubtotals(array &$subtotals, BusinessDocument $doc, array &$lines): string
+    {
+        return $this->done();
+    }
+
+    /**
+     * Se ejecuta para modificar los subtotales finales del documento.
+     */
+    public function updateSubtotals(array &$subtotals, BusinessDocument $doc, array $lines): string
     {
         // $subtotals['neto'] += 10;
         // $subtotals['total'] += 10;
-        return true;
+        return $this->done();
+    }
+
+    /**
+     * Se ejecuta al guardar el documento.
+     */
+    public function save(BusinessDocument $doc, array &$lines): string
+    {
+        return $this->done();
     }
 }
