@@ -56,10 +56,11 @@ class InitEditor
         // escoger el último de todos los use y donde termina
         $matches = self::getSentenceMatches($str, 'use');
         $lastUse = end($matches);
-        $endLastUse = strpos($str, "\n", $lastUse) + 1;
+        $nlPos = strpos($str, "\n", $lastUse);
+        $endLastUse = $nlPos !== false ? $nlPos + 1 : strlen($str);
 
         // colocar el nuevo use
-        return mb_substr($str, 0, $endLastUse) . $useInstruction . "\n" . mb_substr($str, $endLastUse);
+        return substr($str, 0, $endLastUse) . $useInstruction . "\n" . substr($str, $endLastUse);
     }
 
     /**

@@ -94,8 +94,7 @@ class ModCommand extends BaseCommand
         $newInitContent = InitEditor::addToInitFunction($initCode);
         if ($newInitContent !== null) {
             InitEditor::setInitContent($newInitContent);
-        }
-        else {
+        } else {
             return Command::FAILURE;
         }
 
