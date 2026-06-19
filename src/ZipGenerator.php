@@ -76,7 +76,7 @@ class ZipGenerator
             }
 
             // excluimos el propio zip
-            if ($name === $zipName) {
+            if ($name === './' . $zipName) {
                 continue;
             }
 
