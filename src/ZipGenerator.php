@@ -44,6 +44,9 @@ class ZipGenerator
         );
 
         foreach ($files as $name => $file) {
+            // normalizamos el separador de rutas para Windows
+            $name = str_replace('\\', '/', $name);
+
             // excluimos archivos y carpetas ocultas
             if (substr($name, 0, 3) === './.') {
                 continue;
