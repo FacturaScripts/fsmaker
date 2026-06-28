@@ -149,6 +149,7 @@ Opciones útiles:
 ```bash
 fsmaker web --port=8788
 fsmaker web --host=0.0.0.0 --no-open
+FSM_HOST=0.0.0.0 FSM_PORT=8788 fsmaker web
 ```
 
 ## ✅ Requisitos
@@ -241,7 +242,7 @@ fsmaker zip
 ```bash
 cd MiPlugin/
 fsmaker web
-# abre http://127.0.0.1:8787
+# abre http://127.0.0.1:8787 por defecto, configurable con --host/--port o FSM_HOST/FSM_PORT
 # en "Respuestas" escribe una por línea en orden de los prompts
 ```
 

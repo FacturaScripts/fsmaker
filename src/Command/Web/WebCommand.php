@@ -14,8 +14,8 @@ class WebCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->addOption('host', null, InputOption::VALUE_REQUIRED, 'Host', '127.0.0.1')
-            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'Puerto', '8787')
+            ->addOption('host', null, InputOption::VALUE_REQUIRED, 'Host', getenv('FSM_HOST') ?: '127.0.0.1')
+            ->addOption('port', null, InputOption::VALUE_REQUIRED, 'Puerto', getenv('FSM_PORT') ?: '8787')
             ->addOption('no-open', null, InputOption::VALUE_NONE, 'No abrir navegador');
     }
 
