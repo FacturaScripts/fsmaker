@@ -181,7 +181,7 @@ final class FileUpdater
                 strpos($fileStr, 'FacturaScripts\Core\Model\Base') === false &&
                 strpos($fileStr, 'function clear()') === false &&
                 strpos($fileStr, 'DataBaseWhere') === false &&
-                strpos($fileStr, '$this->addButton(') === false &&
+                strpos($fileStr, '->addButton(') === false &&
                 strpos($fileStr, 'Core\Model\Base\JoinModel') === false
             ) {
                 continue;
@@ -441,6 +441,13 @@ final class FileUpdater
 
             // reemplazamos protected function onChange($field) por protected function onChange(string $field): bool
             $fileStr = str_replace('protected function onChange($field)', 'protected function onChange(string $field): bool', $fileStr);
+
+            // migramos addButton($viewName, [...]) a tab($viewName)->addButton([...])
+            $fileStr = preg_replace(
+                '/\$this->addButton\(\s*([^,]+)\s*,\s*(\[[\s\S]*?\])\s*\);/m',
+                '$this->tab($1)->addButton($2);',
+                $fileStr
+            );
 
             // manejamos el archivo Init.php específicamente
             if (basename($pathFile) === 'Init.php') {
