@@ -111,6 +111,10 @@ class InitEditor
 
         // agregar indentation
         $indentation = self::getCurrentIndentation($body, mb_strlen($body) - 2);
+        if ($indentation === '') {
+            // función vacía: no hay línea previa de la que copiar la indentación
+            $indentation = $endIndents . '    ';
+        }
         $body .= self::formatTextWithIndentation($instructionStr, $indentation) . "\n" . $endIndents;
 
         return mb_substr($info['initContent'], 0, $info['functionStart']) . $body . mb_substr($info['initContent'], $info['functionEnd']);
