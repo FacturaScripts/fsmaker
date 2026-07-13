@@ -77,11 +77,11 @@ class ZipGenerator
 
     private static function globToRegex(string $glob): string
     {
-        $regex = preg_quote($glob, '/');
+        $regex = preg_quote($glob, '~');
         $regex = str_replace('\*\*', '.*', $regex);
         $regex = str_replace('\*', '[^/]*', $regex);
         $regex = str_replace('\?', '[^/]', $regex);
-        return '/^' . $regex . '$/';
+        return '~^' . $regex . '$~';
     }
 
     public static function generate(): void
