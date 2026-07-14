@@ -22,7 +22,7 @@ class Application extends BaseApplication
 {
     public function __construct()
     {
-        parent::__construct('fsmaker', '2.2.0');
+        parent::__construct('fsmaker', '2.3.0');
         $this->addCommands($this->getCommands());
     }
 
