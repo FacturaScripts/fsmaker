@@ -144,7 +144,17 @@ class PluginCreationIntegrationTest extends TestCase
 
         $filePath = '.github/workflows/tests.yml';
         $this->assertFileExists($filePath);
-        $this->assertStringContainsString($this->pluginName, file_get_contents($filePath));
+        $content = file_get_contents($filePath);
+        $this->assertStringContainsString($this->pluginName, $content);
+
+        // no lanza los tests si solo cambian traducciones, assets o documentación
+        $this->assertStringContainsString('paths-ignore: &ignored-paths', $content);
+        $this->assertStringContainsString("- 'Translation/**'", $content);
+
+        // cancela la ejecución anterior cuando llega un commit nuevo a la misma rama o PR
+        $this->assertStringContainsString('cancel-in-progress: true', $content);
+        $this->assertStringContainsString('workflow_dispatch:', $content);
+        $this->assertStringContainsString('timeout-minutes: 30', $content);
     }
 
     public function testGithubActionTestNotOverwritten(): void
