@@ -103,6 +103,14 @@ class PluginCreationIntegrationTest extends TestCase
         $gitignoreContent = file_get_contents('.gitignore');
         $this->assertStringContainsString('/.idea/', $gitignoreContent);
         $this->assertStringContainsString('/nbproject/', $gitignoreContent);
+
+        // lo local de Claude Code y Codex se ignora, pero AGENTS.md, CLAUDE.md y las skills se versionan
+        $lines = explode("\n", $gitignoreContent);
+        foreach (['/.claude/*', '!/.claude/skills', '/.agents/*', '!/.agents/skills', '/CLAUDE.local.md', '/AGENTS.override.md', '__pycache__/'] as $line) {
+            $this->assertContains($line, $lines);
+        }
+        $this->assertNotContains('CLAUDE.md', $lines);
+        $this->assertNotContains('/.claude', $lines);
     }
 
     public function testCronFileCreation(): void

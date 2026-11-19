@@ -9,6 +9,56 @@ final class FileGenerator
 {
     const OK = " -> OK.\n";
 
+    /**
+     * Crea o completa la estructura de documentación del plugin o del core en la carpeta actual:
+     * Doc/User, Doc/Dev, Doc/Context (con su índice README.md), Doc/Assets, Doc/forja.json,
+     * AGENTS.md y CLAUDE.md. Nunca sobrescribe lo que ya existe, así que se puede repetir para
+     * añadir solo lo que falte.
+     *
+     * @param string $name Nombre del plugin o del proyecto, para los textos de las plantillas
+     * @param string $intro Primera frase de AGENTS.md: qué es el plugin o el core
+     */
+    public static function createDocs(string $name, string $intro): void
+    {
+        // carpetas que pueden quedarse vacías: llevan .gitkeep para que git las suba
+        foreach (['Doc/User', 'Doc/Dev', 'Doc/Assets'] as $folder) {
+            if (false === Utils::createFolder($folder)) {
+                Utils::echo('* No se pudo crear la carpeta ' . $folder . "\n");
+                continue;
+            }
+
+            $files = array_diff(scandir($folder), ['.', '..', '.DS_Store']);
+            if (empty($files)) {
+                touch($folder . '/.gitkeep');
+                Utils::echo('* ' . $folder . '/.gitkeep' . self::OK);
+            }
+        }
+
+        Utils::createFolder('Doc/Context');
+        $files = [
+            'Doc/Context/README.md' => ['DocContextREADME.md.sample', ['[[NAME]]' => $name]],
+            'Doc/forja.json' => ['forja.json.sample', []],
+            'AGENTS.md' => ['AGENTS.md.sample', ['[[INTRO]]' => $intro]],
+            'CLAUDE.md' => ['CLAUDE.md.sample', []],
+        ];
+        foreach ($files as $fileName => [$sample, $replace]) {
+            if (file_exists($fileName)) {
+                Utils::echo('* ' . $fileName . " YA EXISTE\n");
+                continue;
+            }
+
+            $template = file_get_contents(__DIR__ . '/../samples/' . $sample);
+            file_put_contents($fileName, strtr($template, $replace));
+            Utils::echo('* ' . $fileName . self::OK);
+        }
+
+        // un CLAUDE.md anterior con instrucciones propias debe pasar a AGENTS.md y quedarse solo con la importación
+        $claude = file_get_contents('CLAUDE.md');
+        if (false === str_contains($claude, '@AGENTS.md')) {
+            Utils::echo("* CLAUDE.md no importa AGENTS.md: mueve sus instrucciones a AGENTS.md y deja solo la línea @AGENTS.md\n");
+        }
+    }
+
     public static function createGithubActionRelease(): void
     {
         if (!Utils::isPluginFolder()) {
@@ -248,5 +298,24 @@ final class FileGenerator
             . "</view>";
 
         file_put_contents($xmlFilename, $sample);
+    }
+
+    /**
+     * Devuelve la primera frase de AGENTS.md para el plugin de la carpeta actual o para el core.
+     */
+    public static function getDocsIntro(): string
+    {
+        if (Utils::isCoreFolder()) {
+            return 'Core de **FacturaScripts**: ERP y programa de facturación de código abierto, ampliable mediante plugins.';
+        }
+
+        $ini = parse_ini_file('facturascripts.ini');
+        $name = $ini['name'] ?? '';
+        $description = trim($ini['description'] ?? '');
+        if (empty($description) || $description === $name) {
+            return 'Plugin **' . $name . '** para FacturaScripts.';
+        }
+
+        return 'Plugin **' . $name . '** para FacturaScripts: ' . rtrim($description, '.') . '.';
     }
 }

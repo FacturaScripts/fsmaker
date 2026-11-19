@@ -58,6 +58,7 @@ class PluginCommand extends BaseCommand
         chdir($name);
         FileGenerator::createIni($name);
         FileGenerator::createGitIgnore();
+        FileGenerator::createDocs($name, FileGenerator::getDocsIntro());
         $this->createCron($name);
         $this->createInit();
 

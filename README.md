@@ -61,7 +61,8 @@ A partir de la versión 2.0, fsmaker utiliza **Symfony Console** para ofrecer:
 ### 🛠️ Creación de plugins y componentes
 
 #### `fsmaker plugin`
-Crea la estructura completa de un nuevo plugin con todas las carpetas necesarias.
+Crea la estructura completa de un nuevo plugin con todas las carpetas necesarias, incluida la estructura de
+documentación (ver `fsmaker docs`).
 
 #### `fsmaker model`
 Crea un modelo con su tabla XML correspondiente. Opcionalmente puede generar EditController y ListController.
@@ -101,7 +102,60 @@ Genera automáticamente la API REST para los modelos del plugin.
 Crea archivo de GitHub Actions para CI/CD.
 
 #### `fsmaker gitignore`
-Genera archivo .gitignore optimizado para plugins de FacturaScripts.
+Genera archivo .gitignore optimizado para plugins de FacturaScripts. Ignora lo local de Claude Code y Codex
+(`/.claude/*`, `/.agents/*`, `/CLAUDE.local.md`, `/AGENTS.override.md`), pero no `AGENTS.md`, `CLAUDE.md` ni las
+skills de `.claude/skills` y `.agents/skills`.
+
+#### `fsmaker docs`
+Crea o completa, sin sobrescribir lo que ya exista, la estructura de documentación de un plugin o del core:
+- `Doc/User/`: páginas `.md` de uso para usuarios.
+- `Doc/Dev/`: páginas `.md` para programadores que personalizan el plugin desde otro plugin.
+- `Doc/Context/`: el porqué de las decisiones del código, con su índice en `README.md`.
+- `Doc/Assets/`: imágenes, vídeos y otros archivos enlazados desde la documentación.
+- `Doc/forja.json`: datos de cada página para publicarlas en la forja de facturascripts.com.
+- `AGENTS.md` (descripción breve y enlace a `Doc/`) y `CLAUDE.md` (solo importa `@AGENTS.md`).
+
+Las carpetas vacías llevan un `.gitkeep` para que git las suba.
+
+`Doc/forja.json` agrupa en `User` y `Dev` las páginas de `Doc/User/` y `Doc/Dev/` por su nombre de archivo. Se crea
+con las dos secciones vacías; todos los campos de cada página son opcionales:
+
+```json
+{
+    "User": {
+        "mi-pagina-de-prueba.md": {
+            "title": "Mi página de prueba",
+            "title_short": "Página de prueba",
+            "permalink": "mi-pagina-de-prueba",
+            "parent": "mi-segunda-pagina-de-prueba.md",
+            "ordernum": 100,
+            "youtubeid": "https://mi-video-de-youtube.com",
+            "imageurl": "Doc/Assets/mi-imagen.png",
+            "icon": "fa-solid fa-book",
+            "color": "info",
+            "keywords": "ventas,facturas",
+            "controllers": "ListFacturaCliente,EditFacturaCliente",
+            "visibility": true
+        }
+    },
+    "Dev": {}
+}
+```
+
+| Campo | Qué indica |
+|---|---|
+| `title` | Título de la página; si falta, se usa el nombre del archivo `.md` formateado |
+| `title_short` | Título corto para SEO; si falta, se usa el nombre del archivo `.md` formateado |
+| `permalink` | Enlace de la página en la web (máx. 200 caracteres). Si ya existe, la forja le añade algo para hacerlo único al crear la página; después no se puede cambiar |
+| `parent` | Página padre, por su nombre de archivo en la misma sección |
+| `ordernum` | Orden de la página (número entero) |
+| `youtubeid` | Vídeo de YouTube de la página |
+| `imageurl` | Imagen principal: una URL o un archivo de `Doc/Assets/` |
+| `icon` | Icono de Font Awesome |
+| `color` | Color de Bootstrap: `primary`, `secondary`, `success`, `danger`, `warning`, `info` o `dark` |
+| `keywords` | Palabras clave para buscar la página, separadas por comas (máx. 300 caracteres) |
+| `controllers` | Controladores donde se muestra la página, separados por comas (máx. 300 caracteres) |
+| `visibility` | Si la página es visible (`true` o `false`) |
 
 #### `fsmaker init`
 Crea el archivo Init.php principal del plugin.
