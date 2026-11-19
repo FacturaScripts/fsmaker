@@ -1,14 +1,41 @@
 name: Tests
 
+# Los tests solo se lanzan si el commit o la PR cambia algo que pueda alterar el
+# comportamiento del programa. Si TODOS los archivos cambiados están en
+# paths-ignore (documentación y configuración de los asistentes de IA), el
+# workflow no se ejecuta y no consume minutos.
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+    paths-ignore: &ignored-paths
+      # documentación
+      - '**.md'
+      - 'LICENSE'
+      # configuración de los asistentes de IA (Claude Code, Codex...)
+      - '.claude/**'
+      - '.agents/**'
+      - '.codex/**'
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+    paths-ignore: *ignored-paths
+  # permite lanzarlo a mano desde la pestaña Actions cuando se quiera forzar
+  workflow_dispatch:
+
+# Si llega un commit nuevo a la misma rama o PR, se cancela la ejecución
+# anterior, que ya no sirve, en lugar de dejar que termine.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    # un job colgado no puede consumir las 6 horas por defecto
+    timeout-minutes: 30
     
     strategy:
       fail-fast: false
