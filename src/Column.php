@@ -197,6 +197,55 @@ final class Column
         return $fields;
     }
 
+    /**
+     * Crea los campos a partir de una especificación "nombre:tipo[(longitud)],...", sin preguntar.
+     * Si no hay campo serial ni primary key, el primero será la primary key.
+     */
+    public static function fromSpec(string $spec): array
+    {
+        $types = [
+            'serial' => 'serial',
+            'integer' => 'integer',
+            'float' => 'double precision',
+            'boolean' => 'boolean',
+            'string' => 'character varying',
+            'text' => 'text',
+            'timestamp' => 'timestamp',
+            'date' => 'date',
+            'time' => 'time',
+        ];
+
+        $fields = [];
+        foreach (explode(',', $spec) as $item) {
+            if (!preg_match('/^([a-z][a-z0-9_]*):(\w+)(?:\((\d+)\))?$/', trim($item), $match) || !isset($types[$match[2]])) {
+                throw new \InvalidArgumentException("Campo inválido: '$item'. Formato: nombre:tipo[(longitud)]");
+            }
+            if (in_array($match[1], explode(',', self::FORBIDDEN_WORDS))) {
+                throw new \InvalidArgumentException("El campo '$match[1]' no está permitido.");
+            }
+
+            $fields[] = new Column([
+                'display' => 'left',
+                'nombre' => $match[1],
+                'tipo' => $types[$match[2]],
+                'longitud' => (int)($match[3] ?? 100),
+                'primary' => $match[2] === 'serial',
+                'requerido' => $match[2] === 'serial',
+            ]);
+        }
+
+        $primaryKeys = array_filter($fields, fn(Column $field) => $field->primary);
+        if (count($primaryKeys) > 1) {
+            throw new \InvalidArgumentException('Solo puede haber un campo serial.');
+        }
+        if (empty($primaryKeys)) {
+            $fields[0]->primary = true;
+            $fields[0]->requerido = true;
+        }
+
+        return $fields;
+    }
+
     public function getModelClear(): string
     {
         if ($this->nombre === 'nick') {

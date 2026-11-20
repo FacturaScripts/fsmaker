@@ -8,6 +8,7 @@ namespace fsmaker\Command\Model;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use fsmaker\Console\BaseCommand;
 use fsmaker\Column;
@@ -22,13 +23,28 @@ use function Laravel\Prompts\text;
 )]
 class ModelCommand extends BaseCommand
 {
+    protected function configure(): void
+    {
+        $this->addOption('name', null, InputOption::VALUE_REQUIRED, 'Nombre del modelo (singular)')
+            ->addOption('table', null, InputOption::VALUE_REQUIRED, 'Nombre de la tabla (plural)')
+            ->addOption('fields', null, InputOption::VALUE_REQUIRED, 'Campos: nombre:tipo[(longitud)],... (tipos: serial,integer,float,boolean,string,text,timestamp,date,time)')
+            ->addOption('menu', null, InputOption::VALUE_REQUIRED, 'Nombre del menú de los controladores (por defecto: admin)')
+            ->addOption('edit-controller', null, InputOption::VALUE_NONE, 'Crear EditController')
+            ->addOption('list-controller', null, InputOption::VALUE_NONE, 'Crear ListController');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->requirePluginOrCore()) {
             return Command::FAILURE;
         }
 
-        $name = Utils::prompt(
+        // si se pasa --fields, el comando no pregunta nada más
+        $fieldsSpec = $input->getOption('fields');
+        $interactive = null === $fieldsSpec;
+        $menu = $input->getOption('menu') ?? ($interactive ? null : 'admin');
+
+        $name = $input->getOption('name') ?? Utils::prompt(
             label: 'Nombre del modelo (singular)',
             placeholder: 'Ej: Cliente',
             hint: 'El nombre debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.',
@@ -36,13 +52,18 @@ class ModelCommand extends BaseCommand
             errorMessage: 'Inválido, debe empezar por mayúscula y solo puede contener letras, números y guiones bajos.'
         );
 
-        $tableName = Utils::prompt(
+        $tableName = $input->getOption('table') ?? Utils::prompt(
             label: 'Nombre de la tabla (plural)',
             placeholder: 'Ej: facturascli',
             hint: 'El nombre debe empezar por minuscula y solo puede contener minusculas, números y guiones bajos.',
             regex: '/^[a-z][a-z0-9_]*$/',
             errorMessage: 'Inválido, debe empezar por minuscula y solo puede contener minusculas, números y guiones bajos.'
         );
+
+        if (1 !== preg_match('/^[A-Z][a-zA-Z0-9_]*$/', $name) || 1 !== preg_match('/^[a-z][a-z0-9_]*$/', $tableName)) {
+            Utils::echo("* Nombre de modelo o tabla inválido.\n");
+            return Command::FAILURE;
+        }
 
         $filePath = Utils::isCoreFolder() ? 'Core/Model/' : 'Model/';
         $fileName = $filePath . $name . '.php';
@@ -52,7 +73,12 @@ class ModelCommand extends BaseCommand
             return Command::FAILURE;
         }
 
-        $fields = Column::askMulti();
+        try {
+            $fields = $interactive ? Column::askMulti() : Column::fromSpec($fieldsSpec);
+        } catch (\InvalidArgumentException $e) {
+            Utils::echo('* ' . $e->getMessage() . "\n");
+            return Command::FAILURE;
+        }
         FileGenerator::createModelByFields($fileName, $tableName, $fields, $name, Utils::getNamespace());
         Utils::echo('* ' . $fileName . " -> OK.\n");
 
@@ -67,19 +93,19 @@ class ModelCommand extends BaseCommand
         }
 
         Utils::echo("\n");
-        if (Utils::promptYesOrNo('¿Crear EditController? (No - predeterminado)') === 'si') {
-            $this->createEditController($name, $fields);
+        if ($interactive ? Utils::promptYesOrNo('¿Crear EditController? (No - predeterminado)') === 'si' : $input->getOption('edit-controller')) {
+            $this->createEditController($name, $fields, $menu);
         }
 
         Utils::echo("\n");
-        if (Utils::promptYesOrNo('¿Crear ListController? (No - predeterminado)') === 'si') {
-            $this->createListController($name, $fields);
+        if ($interactive ? Utils::promptYesOrNo('¿Crear ListController? (No - predeterminado)') === 'si' : $input->getOption('list-controller')) {
+            $this->createListController($name, $fields, $menu, $interactive ? null : $name);
         }
 
         return Command::SUCCESS;
     }
 
-    private function createEditController(string $modelName, array $fields): void
+    private function createEditController(string $modelName, array $fields, ?string $menu): void
     {
         if (empty($modelName)) {
             Utils::echo('* No introdujo el nombre del EditController');
@@ -94,7 +120,7 @@ class ModelCommand extends BaseCommand
             return;
         }
 
-        $menu = \Laravel\Prompts\text(
+        $menu ??= \Laravel\Prompts\text(
             label: 'Nombre del menú',
             placeholder: 'Ej: sales',
             default: 'admin',
@@ -125,14 +151,14 @@ class ModelCommand extends BaseCommand
         Utils::echo('* ' . $xmlFilename . " -> OK.\n");
     }
 
-    private function createListController(string $modelName, array $fields): void
+    private function createListController(string $modelName, array $fields, ?string $menu, ?string $title): void
     {
         if (empty($modelName)) {
             Utils::echo('* No introdujo el nombre del ListController');
             return;
         }
 
-        $menu = text(
+        $menu ??= text(
             label: 'Nombre del menú',
             placeholder: 'Ej: sales',
             default: 'admin',
@@ -141,7 +167,7 @@ class ModelCommand extends BaseCommand
             hint: 'El nombre que se colocará en "$data[\'menu\'] = \'NOMBRE_ELEGIDO\';", por defecto es "admin".'
         );
 
-        $title = text(
+        $title ??= text(
             label: 'Nombre del submenú',
             placeholder: 'Ej: Productos',
             default: $modelName,
